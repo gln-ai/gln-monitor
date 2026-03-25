@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLN 모니터링</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #F6F5FF; margin: 0; }
+  .sidebar { width: 220px; min-height: 100vh; background: #130D2A; position: fixed; top: 0; left: 0; z-index: 20; display: flex; flex-direction: column; padding: 20px 14px; }
+  .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px; margin-bottom: 28px; }
+  .logo-mark { width: 28px; height: 28px; background: #7000FC; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .logo-title { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; }
+  .logo-sub { font-size: 10px; color: #5E5A71; }
+  .nav-section { margin-bottom: 20px; }
+  .nav-section-label { font-size: 9px; font-weight: 600; color: #5E5A71; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; margin-bottom: 2px; transition: background 0.15s; }
+  .nav-item:hover { background: rgba(255,255,255,0.06); }
+  .nav-item.active { background: #7000FC; }
+  .nav-item-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.5; flex-shrink: 0; }
+  .nav-item.active .nav-item-icon { opacity: 1; }
+  .nav-item-text { font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
+  .nav-item.active .nav-item-text { color: #fff; }
+  .nav-badge { margin-left: auto; background: #DC2626; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 99px; }
+  .nav-divider { border: none; border-top: 0.5px solid rgba(255,255,255,0.07); margin: 8px 0; }
+  .sidebar-bottom { margin-top: auto; }
+  .sidebar-info { background: rgba(112,0,252,0.15); border-radius: 10px; padding: 10px 12px; border: 0.5px solid rgba(112,0,252,0.3); }
+  .sidebar-info-text { font-size: 10px; color: #AAA7B8; line-height: 1.7; margin: 0; }
+  .main-wrap { margin-left: 220px; min-height: 100vh; display: flex; flex-direction: column; }
+  .topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar-left h1 { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0; }
+  .topbar-left p { font-size: 11px; color: #918DA0; margin: 2px 0 0; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .btn-primary { background: #7000FC; color: #fff; border: none; border-radius: 10px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-primary:hover { background: #5A00CC; }
+  .btn-ghost { background: #F0EAFF; color: #7000FC; border: none; border-radius: 10px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-ghost:hover { background: #E0D4FF; }
+  .status-toast { display: none; font-size: 11px; padding: 5px 10px; background: #F0EAFF; color: #7000FC; border-radius: 8px; font-weight: 500; }
+  .content { padding: 20px 24px 40px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .kpi-card { background: #fff; border-radius: 14px; padding: 16px 18px; border: 0.5px solid #E4E1EE; }
+  .kpi-label { font-size: 11px; color: #918DA0; margin-bottom: 4px; }
+  .kpi-value { font-size: 26px; font-weight: 700; color: #130D2A; line-height: 1; }
+  .kpi-sub { font-size: 10px; color: #AAA7B8; margin-top: 4px; }
+  .date-bar { background: #fff; border-radius: 12px; border: 0.5px solid #E4E1EE; padding: 10px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .date-bar-label { font-size: 11px; font-weight: 600; color: #918DA0; }
+  .date-input { border: 0.5px solid #DAD9EA; border-radius: 8px; padding: 5px 10px; font-size: 12px; color: #130D2A; background: #F6F5FF; }
+  .date-presets { margin-left: auto; display: flex; gap: 4px; }
+  .date-preset-btn { border: 0.5px solid #DAD9EA; border-radius: 8px; padding: 5px 10px; font-size: 11px; color: #5E5A71; background: #fff; cursor: pointer; }
+  .date-preset-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 600; }
+  .channel-tabs { display: flex; background: #fff; border-radius: 14px 14px 0 0; border: 0.5px solid #E4E1EE; border-bottom: none; padding: 0 4px; }
+  .channel-tab { display: flex; align-items: center; gap: 6px; padding: 11px 16px; font-size: 13px; color: #918DA0; border-bottom: 2px solid transparent; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  .channel-tab:hover { color: #130D2A; }
+  .channel-tab.active { color: #7000FC; border-bottom-color: #7000FC; font-weight: 600; }
+  .channel-tab-count { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px; background: #F0EDF7; color: #918DA0; }
+  .channel-tab.active .channel-tab-count { background: #7000FC; color: #fff; }
+  .filter-bar { background: #fff; border: 0.5px solid #E4E1EE; border-top: none; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .filter-chip { font-size: 11px; padding: 4px 12px; border-radius: 99px; border: 0.5px solid #DAD9EA; color: #5E5A71; background: #fff; cursor: pointer; text-decoration: none; }
+  .filter-chip:hover { border-color: #7000FC; color: #7000FC; }
+  .filter-chip.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 500; }
+  .filter-chip.red { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+  .filter-chip.amber { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+  .filter-sep { width: 1px; height: 14px; background: #E4E1EE; margin: 0 2px; }
+  .posts-wrap { background: #fff; border: 0.5px solid #E4E1EE; border-top: none; border-radius: 0 0 14px 14px; }
+  .post-meta-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 0.5px solid #F0EDF7; }
+  .post-meta-bar span { font-size: 11px; color: #918DA0; }
+  .post-meta-bar strong { color: #130D2A; font-weight: 600; }
+  .post-item { border-bottom: 0.5px solid #F6F5FF; padding: 14px 16px; display: flex; gap: 12px; }
+  .post-item:last-child { border-bottom: none; }
+  .post-item:hover { background: #FDFCFF; }
+  .post-item.urgent { border-left: 3px solid #7000FC; }
+  .post-num { font-size: 11px; color: #DAD9EA; font-weight: 500; width: 20px; flex-shrink: 0; padding-top: 2px; text-align: right; }
+  .post-body { flex: 1; min-width: 0; }
+  .post-badges { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }
+  .badge-urgent { background: #F0EAFF; color: #7000FC; }
+  .badge-neg { background: #FEF2F2; color: #DC2626; }
+  .badge-pos { background: #F0FDF4; color: #059669; }
+  .badge-neu { background: #F6F5FF; color: #918DA0; }
+  .badge-cat { background: #EFF6FF; color: #1D4ED8; }
+  .score-high { font-size: 11px; font-weight: 700; color: #DC2626; }
+  .score-mid { font-size: 11px; font-weight: 700; color: #D97706; }
+  .score-low { font-size: 11px; font-weight: 700; color: #AAA7B8; }
+  .post-link-btn { font-size: 11px; color: #7000FC; text-decoration: none; flex-shrink: 0; }
+  .post-title { font-size: 13px; font-weight: 600; color: #130D2A; margin-bottom: 4px; text-decoration: none; display: block; }
+  .post-title:hover { color: #7000FC; }
+  .post-summary { font-size: 11px; color: #5E5A71; line-height: 1.65; margin-bottom: 8px; }
+  .post-summary.muted { color: #AAA7B8; font-style: italic; }
+  .post-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+  .post-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .post-meta-item { font-size: 10px; color: #AAA7B8; }
+  .post-meta-dot { font-size: 10px; color: #DAD9EA; }
+  .post-keyword { font-size: 10px; color: #7000FC; font-weight: 500; }
+  .status-btns { display: flex; gap: 3px; flex-shrink: 0; }
+  .status-btn { font-size: 10px; padding: 3px 8px; border-radius: 6px; border: 0.5px solid #E4E1EE; background: #fff; color: #AAA7B8; cursor: pointer; }
+  .status-btn.s-new.active { background: #F6F5FF; color: #5E5A71; border-color: #DAD9EA; font-weight: 600; }
+  .status-btn.s-check.active { background: #FFFBEB; color: #D97706; border-color: #FDE68A; font-weight: 600; }
+  .status-btn.s-done.active { background: #F0FDF4; color: #059669; border-color: #BBF7D0; font-weight: 600; }
+  .empty-state { padding: 60px 20px; text-align: center; }
+  .empty-state p { font-size: 13px; color: #AAA7B8; margin: 4px 0; }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 16px; }
+  .page-btn { width: 30px; height: 30px; border-radius: 8px; border: 0.5px solid #E4E1EE; background: #fff; font-size: 12px; color: #5E5A71; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+  .page-btn:hover { border-color: #7000FC; color: #7000FC; }
+  .page-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 700; }
+  .page-btn.disabled { opacity: 0.3; pointer-events: none; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(19,13,42,0.5); z-index: 50; align-items: center; justify-content: center; }
+  .modal-box { background: #fff; border-radius: 16px; padding: 24px; width: 380px; max-width: 92vw; }
+  .modal-title { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0 0 6px; }
+  .modal-sub { font-size: 12px; color: #918DA0; margin: 0 0 16px; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+  @media (max-width: 768px) {
+    .sidebar { width: 60px; padding: 16px 8px; }
+    .logo-title, .nav-item-text, .sidebar-info, .nav-section-label, .logo-sub { display: none; }
+    .nav-item { justify-content: center; padding: 10px; }
+    .main-wrap { margin-left: 60px; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">G</div>
+    <div>
+      <div class="logo-title">GLN</div>
+      <div class="logo-sub">모니터링</div>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">메뉴</div>
+    <a href="/" class="nav-item active">
+      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+      <span class="nav-item-text">피드</span>
+    </a>
+    <a href="/insights" class="nav-item">
+      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+      <span class="nav-item-text">인사이트</span>
+    </a>
+    <a href="#" class="nav-item" style="opacity:0.35;pointer-events:none">
+      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg></span>
+      <span class="nav-item-text">설정</span>
+    </a>
+  </div>
+  <hr class="nav-divider">
+  <div class="nav-section">
+    <div class="nav-section-label">빠른 필터</div>
+    <a href="?urgent=1&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}" class="nav-item {% if filters.urgent == '1' %}active{% endif %}">
+      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+      <span class="nav-item-text">긴급</span>
+      {% if stats.urgent > 0 %}<span class="nav-badge">{{ stats.urgent }}</span>{% endif %}
+    </a>
+    <a href="?reply_status=미확인&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}" class="nav-item {% if filters.reply_status == '미확인' %}active{% endif %}">
+      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+      <span class="nav-item-text">미확인</span>
+    </a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-info">
+      <p class="sidebar-info-text">외부 공개 글만 수집<br>카페 작성일 미제공<br>답변 초안은 카페 전용</p>
+    </div>
+  </div>
+</div>
+
+<div class="main-wrap">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>모니터링 피드</h1>
+      <p id="last-updated"></p>
+    </div>
+    <div class="topbar-right">
+      <span id="status-badge" class="status-toast"></span>
+      <button onclick="triggerCollect()" class="btn-ghost">수집 실행</button>
+      <button onclick="openReportModal()" class="btn-primary">리포트 발송</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">오늘 수집</div>
+        <div class="kpi-value">{{ stats.today }}</div>
+        <div class="kpi-sub">카페 {{ channel_counts['카페'] }} · 블로그 {{ channel_counts['블로그'] }} · 뉴스 {{ channel_counts['뉴스'] }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">긴급 알림</div>
+        <div class="kpi-value" style="color:{% if stats.urgent > 0 %}#DC2626{% else %}#130D2A{% endif %}">{{ stats.urgent }}</div>
+        <div class="kpi-sub">중요도 7↑ 또는 부정 감성</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">부정 감성</div>
+        <div class="kpi-value">{{ stats.negative }}</div>
+        <div class="kpi-sub">전체 {{ stats.total }}건 중</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">전체 수집</div>
+        <div class="kpi-value" style="color:#7000FC">{{ stats.total }}</div>
+        <div class="kpi-sub">누적 전체</div>
+      </div>
+    </div>
+
+    <div class="date-bar">
+      <span class="date-bar-label">수집일</span>
+      <input type="date" id="date_from" value="{{ filters.date_from }}" onchange="applySingleDate(this.value)" class="date-input">
+      <div class="date-presets">
+        <button onclick="setDay(0)" class="date-preset-btn {% if filters.date_from == today_str %}active{% endif %}">오늘</button>
+        <button onclick="setDay(1)" class="date-preset-btn">어제</button>
+        <button onclick="setDay(2)" class="date-preset-btn">2일 전</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="channel-tabs">
+        <a href="?date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&sentiment={{ filters.sentiment }}&category={{ filters.category }}&urgent={{ filters.urgent }}&reply_status={{ filters.reply_status }}" class="channel-tab {% if not filters.channel %}active{% endif %}">전체 <span class="channel-tab-count">{{ stats.today }}</span></a>
+        <a href="?channel=카페&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&sentiment={{ filters.sentiment }}&category={{ filters.category }}&urgent={{ filters.urgent }}&reply_status={{ filters.reply_status }}" class="channel-tab {% if filters.channel == '카페' %}active{% endif %}">카페 <span class="channel-tab-count">{{ channel_counts['카페'] }}</span></a>
+        <a href="?channel=블로그&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&sentiment={{ filters.sentiment }}&category={{ filters.category }}&urgent={{ filters.urgent }}&reply_status={{ filters.reply_status }}" class="channel-tab {% if filters.channel == '블로그' %}active{% endif %}">블로그 <span class="channel-tab-count">{{ channel_counts['블로그'] }}</span></a>
+        <a href="?channel=뉴스&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&sentiment={{ filters.sentiment }}&category={{ filters.category }}&urgent={{ filters.urgent }}&reply_status={{ filters.reply_status }}" class="channel-tab {% if filters.channel == '뉴스' %}active{% endif %}">뉴스 <span class="channel-tab-count">{{ channel_counts['뉴스'] }}</span></a>
+      </div>
+      <div class="filter-bar">
+        <a href="?date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if not filters.sentiment and not filters.urgent and not filters.category and not filters.reply_status %}active{% endif %}">전체</a>
+        <a href="?urgent=1&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if filters.urgent == '1' %}active{% else %}red{% endif %}">긴급</a>
+        <a href="?sentiment=negative&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if filters.sentiment == 'negative' %}active{% endif %}">부정</a>
+        <a href="?sentiment=positive&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if filters.sentiment == 'positive' %}active{% endif %}">긍정</a>
+        <a href="?category=문의&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if filters.category == '문의' %}active{% endif %}">문의</a>
+        <a href="?category=불만&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if filters.category == '불만' %}active{% endif %}">불만</a>
+        <a href="?category=후기&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if filters.category == '후기' %}active{% endif %}">후기</a>
+        <div class="filter-sep"></div>
+        <a href="?reply_status=미확인&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if filters.reply_status == '미확인' %}active{% else %}amber{% endif %}">미확인</a>
+        <a href="?reply_status=확인완료&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if filters.reply_status == '확인완료' %}active{% endif %}">확인완료</a>
+        <a href="?reply_status=답변완료&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if filters.reply_status == '답변완료' %}active{% endif %}">답변완료</a>
+      </div>
+      <div class="posts-wrap">
+        <div class="post-meta-bar">
+          <span>전체 <strong>{{ total }}</strong>건</span>
+          <span>{{ page }} / {{ total_pages }} 페이지</span>
+        </div>
+        {% for post in posts %}
+        {% set s = post.reply_status or '미확인' %}
+        <div class="post-item {% if post.is_urgent %}urgent{% endif %}">
+          <div class="post-num">{{ (page - 1) * 50 + loop.index }}</div>
+          <div class="post-body">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+              <div class="post-badges">
+                {% if post.is_urgent %}<span class="badge badge-urgent">긴급</span>{% endif %}
+                {% if post.sentiment == 'positive' %}<span class="badge badge-pos">긍정</span>
+                {% elif post.sentiment == 'negative' %}<span class="badge badge-neg">부정</span>
+                {% elif post.sentiment %}<span class="badge badge-neu">중립</span>{% endif %}
+                {% if post.category %}<span class="badge badge-cat">{{ post.category }}</span>{% endif %}
+                {% if post.importance_score %}<span class="{% if post.importance_score >= 7 %}score-high{% elif post.importance_score >= 4 %}score-mid{% else %}score-low{% endif %}">{{ post.importance_score }}/10</span>{% endif %}
+              </div>
+              <a href="{{ post.link }}" target="_blank" class="post-link-btn">원문보기 →</a>
+            </div>
+            <a href="/post/{{ post.id }}" class="post-title">{{ post.title }}</a>
+            {% if post.summary %}<p class="post-summary">{{ post.summary }}</p>
+            {% else %}<p class="post-summary muted">분석 중...</p>{% endif %}
+            <div class="post-footer">
+              <div class="post-meta">
+                <span class="post-meta-item">{{ post.cafe_name or '-' }}</span>
+                {% if post.post_date and post.post_date|length >= 8 and post.post_date[:4].isdigit() %}
+                  <span class="post-meta-dot">·</span><span class="post-meta-item">작성 {{ post.post_date[:10] }}</span>
+                {% endif %}
+                <span class="post-meta-dot">·</span>
+                <span class="post-meta-item">수집 {{ post.created_at[:16] }}</span>
+                <span class="post-meta-dot">·</span>
+                <span class="post-keyword">{{ post.keyword }}</span>
+                {% if post.status_updated_at %}<span class="post-meta-dot">·</span><span class="post-meta-item">처리 {{ post.status_updated_at }}</span>{% endif %}
+              </div>
+              <div class="status-btns" id="status-{{ post.id }}">
+                <button onclick="updateStatus({{ post.id }}, '미확인')" class="status-btn s-new {% if s == '미확인' %}active{% endif %}">미확인</button>
+                <button onclick="updateStatus({{ post.id }}, '확인완료')" class="status-btn s-check {% if s == '확인완료' %}active{% endif %}">확인완료</button>
+                <button onclick="updateStatus({{ post.id }}, '답변완료')" class="status-btn s-done {% if s == '답변완료' %}active{% endif %}">답변완료</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <p>수집된 게시글이 없습니다.</p>
+          <p style="font-size:12px">날짜를 변경하거나 수집을 실행해보세요.</p>
+        </div>
+        {% endfor %}
+        {% if total_pages > 1 %}
+        <div class="pagination">
+          {% if page > 1 %}<a href="?page={{ page - 1 }}&sentiment={{ filters.sentiment }}&category={{ filters.category }}&urgent={{ filters.urgent }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}&reply_status={{ filters.reply_status }}" class="page-btn">←</a>{% endif %}
+          {% for p in range(1, total_pages + 1) %}
+            {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+              <a href="?page={{ p }}&sentiment={{ filters.sentiment }}&category={{ filters.category }}&urgent={{ filters.urgent }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}&reply_status={{ filters.reply_status }}" class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+            {% elif p == page - 3 or p == page + 3 %}<span class="page-btn disabled">…</span>{% endif %}
+          {% endfor %}
+          {% if page < total_pages %}<a href="?page={{ page + 1 }}&sentiment={{ filters.sentiment }}&category={{ filters.category }}&urgent={{ filters.urgent }}&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}&reply_status={{ filters.reply_status }}" class="page-btn">→</a>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="report-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3 class="modal-title">리포트 발송</h3>
+    <p class="modal-sub">수신자를 선택하거나 직접 입력하세요</p>
+    <div id="recipient-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px"></div>
+    <div style="display:flex;gap:6px">
+      <input type="email" id="custom-email" placeholder="직접 입력 (이메일 주소)"
+             style="flex:1;font-size:12px;border:0.5px solid #DAD9EA;border-radius:10px;padding:8px 12px;color:#130D2A;">
+      <button onclick="addCustomEmail()" class="btn-ghost" style="padding:8px 12px;font-size:12px">추가</button>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeReportModal()" style="font-size:12px;padding:8px 16px;border:0.5px solid #DAD9EA;border-radius:10px;background:#fff;cursor:pointer;color:#5E5A71">취소</button>
+      <button onclick="sendReport()" class="btn-primary" style="padding:8px 20px">발송</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const todayStr = '{{ today_str }}';
+  document.getElementById('last-updated').textContent = '마지막 업데이트: ' + new Date().toLocaleString('ko-KR');
+  function showStatus(msg) {
+    const el = document.getElementById('status-badge');
+    el.textContent = msg; el.style.display = 'inline-block';
+    setTimeout(() => el.style.display = 'none', 3000);
+  }
+  async function triggerCollect() {
+    showStatus('수집 중...');
+    await fetch('/api/collect', {method:'POST'});
+    showStatus('수집 시작됨');
+    setTimeout(() => location.reload(), 5000);
+  }
+  function applySingleDate(val) {
+    const params = new URLSearchParams(window.location.search);
+    params.set('page', 1); params.set('date_from', val); params.set('date_to', val);
+    window.location.search = params.toString();
+  }
+  function setDay(daysAgo) {
+    const d = new Date(); d.setDate(d.getDate() - daysAgo);
+    applySingleDate(d.toISOString().split('T')[0]);
+  }
+  async function updateStatus(postId, status) {
+    const res = await fetch('/api/status/' + postId, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({status})
+    });
+    const data = await res.json();
+    if (data.status) {
+      const container = document.getElementById('status-' + postId);
+      container.querySelectorAll('button').forEach(btn => {
+        if (btn.textContent.trim() === status) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+    }
+  }
+  let selectedRecipients = new Set();
+  function openReportModal() {
+    const list = document.getElementById('recipient-list');
+    list.innerHTML = ''; selectedRecipients = new Set();
+    const defaults = ('{{ report_to }}').split(',').map(e => e.trim()).filter(Boolean);
+    defaults.forEach(email => { addRecipientRow(email, true); selectedRecipients.add(email); });
+    document.getElementById('report-modal').style.display = 'flex';
+  }
+  function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
+  function addRecipientRow(email, checked) {
+    const list = document.getElementById('recipient-list');
+    const row = document.createElement('label');
+    row.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#130D2A;padding:4px 0;';
+    row.innerHTML = '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleRecipient(\'' + email + '\', this.checked)" style="width:14px;height:14px;accent-color:#7000FC;cursor:pointer;"> ' + email;
+    list.appendChild(row);
+  }
+  function toggleRecipient(email, checked) {
+    if (checked) selectedRecipients.add(email); else selectedRecipients.delete(email);
+  }
+  function addCustomEmail() {
+    const input = document.getElementById('custom-email');
+    const email = input.value.trim();
+    if (!email || !email.includes('@')) { alert('올바른 이메일 주소를 입력하세요'); return; }
+    addRecipientRow(email, true); selectedRecipients.add(email); input.value = '';
+  }
+  async function sendReport() {
+    if (selectedRecipients.size === 0) { alert('수신자를 1명 이상 선택하세요'); return; }
+    closeReportModal(); showStatus('발송 중...');
+    await fetch('/api/report', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({to: [...selectedRecipients].join(',')})
+    });
+    showStatus('발송 완료!');
+  }
+  document.getElementById('report-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeReportModal();
+  });
+</script>
+</body>
+</html>
