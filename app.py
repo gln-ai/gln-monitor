@@ -420,14 +420,22 @@ def send_email(to: str, subject: str, html_body: str):
     msg["To"]      = ", ".join(recipients)
     msg.attach(MIMEText(html_body, "html", "utf-8"))
 
+    print(f"[이메일] SMTP 연결 시도: {smtp_host}:{smtp_port} / user={smtp_user} / from={from_addr} / to={recipients}", flush=True)
     try:
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as server:
+            print("[이메일] SMTP 연결 성공", flush=True)
+            server.ehlo()
             server.starttls()
+            server.ehlo()
+            print("[이메일] TLS 완료, 로그인 시도", flush=True)
             server.login(smtp_user, smtp_pass)
+            print("[이메일] 로그인 성공, 발송 시도", flush=True)
             server.sendmail(from_addr, recipients, msg.as_string())
-        print(f"[이메일 발송] {subject} → {', '.join(recipients)}")
+        print(f"[이메일 발송] {subject} → {', '.join(recipients)}", flush=True)
     except Exception as e:
-        print(f"[이메일 오류] {e}")
+        import traceback
+        print(f"[이메일 오류] {e}", flush=True)
+        print(traceback.format_exc(), flush=True)
 
 def send_urgent_alert(title: str, analysis: dict, cafe_name: str = "", link: str = "", created_at: str = "", post_id: int = 0):
     to = os.getenv("URGENT_ALERT_TO", "brad@glninternational.com")
