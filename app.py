@@ -466,9 +466,9 @@ def send_urgent_alert(title: str, analysis: dict, cafe_name: str = "", link: str
 def send_daily_report(to: str = ""):
     if not to:
         to = os.getenv("REPORT_TO", "")
-    print(f"[리포트] 수신자: {to}")
-    print(f"[리포트] SMTP_USER: {os.getenv('SMTP_USER')}")
-    print(f"[리포트] SMTP_PASS: {'있음' if os.getenv('SMTP_PASS') else '없음'}")
+    print(f"[리포트] 수신자: {to}", flush=True)
+    print(f"[리포트] SMTP_USER: {os.getenv('SMTP_USER')}", flush=True)
+    print(f"[리포트] SMTP_PASS: {'있음' if os.getenv('SMTP_PASS') else '없음'}", flush=True)
     if not to:
         print("[리포트] 수신자 없음 — 스킵")
         return
@@ -734,9 +734,9 @@ def api_report():
     to = data.get("to", "").strip()
     if not to:
         to = os.getenv("REPORT_TO", "")
-    print(f"[API] 리포트 발송 요청 — 수신자: {to}")
-    send_daily_report(to)
-    return jsonify({"status": "리포트 발송 완료"})
+    print(f"[API] 리포트 발송 요청 수신 — 수신자: {to}", flush=True)
+    threading.Thread(target=send_daily_report, args=(to,), daemon=True).start()
+    return jsonify({"status": "리포트 발송 시작됨"})
 
 @app.route("/insights")
 def insights():
