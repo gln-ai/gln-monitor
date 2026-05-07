@@ -1,0 +1,38 @@
+{
+  "note": "보도자료 작성 규칙. gln-guard/checker.py PR 검수 및 pr_generator.html 프롬프트에서 참조.",
+  "last_updated": "2026-03-27",
+  "forbidden_replacements": [
+    {"from": "ATM출금",   "to": "QR출금",             "reason": "GLN 서비스명 공식 표기는 QR출금"},
+    {"from": "ATM 출금",  "to": "QR출금",             "reason": "띄어쓰기 변형 포함 차단"},
+    {"from": "ATMQR출금", "to": "QR출금",             "reason": "혼용 표기 차단"},
+    {"from": "금융서비스", "to": "현금 인출 서비스",   "reason": "포괄적·모호한 표현 금지"},
+    {"from": "금융 서비스","to": "현금 인출 서비스",   "reason": "띄어쓰기 변형 포함 차단"}
+  ],
+  "fixed_phrases": {
+    "ceo_quote_suffix": "앞으로도 해외여행 손님들에게 별도의 환전이나 실물카드 소지가 필요 없는 간편 출금 경험을 선도해 나가겠다",
+    "ceo_attribution": "이석 GLN 대표",
+    "company_intro": "GLN은 2021년 7월 하나은행에서 분사해 설립된 핀테크 자회사로, 베트남, 중국, 홍콩, 마카오, 태국, 필리핀, 라오스, 일본, 대만 등 주요 지역에서 QR결제 및 QR출금 서비스를 제공하고 있다. 글로벌 금융기관 및 플랫폼 기업과의 협력을 기반으로 해외 지급결제 네트워크를 확대하고 있다.",
+    "company_first_mention": "하나은행 자회사 GLN인터내셔널(대표: 이석, 이하 GLN)은",
+    "press_contact": "GLN 인터내셔널 마케팅부 민채영 매니저 (010-5675-2136)"
+  },
+  "naming_rules": {
+    "company_full": "GLN인터내셔널",
+    "company_short": "GLN",
+    "ceo": "이석 GLN 대표",
+    "service_withdrawal": "QR출금",
+    "partner_app_primary": "퍼플GLN",
+    "country_separator": "·"
+  },
+  "checklist": [
+    {"item": "회사명 최초 등장 시 전체 형식 사용",       "required": true},
+    {"item": "이석 대표 발언 + 고정 뒷 인용구 포함",    "required": true},
+    {"item": "대표 발언에 '금융서비스' 없는지 확인",     "required": true},
+    {"item": "기사 전체에 'ATM출금' 없는지 확인",        "required": true},
+    {"item": "기사 전체에 '금융서비스' 없는지 확인",     "required": true},
+    {"item": "국가 나열 이용자 규모 순 확인",            "required": true},
+    {"item": "'스마트폰만으로 여행' 컨셉 반영",          "required": true},
+    {"item": "회사 소개 고정 문구 마지막 단락 포함",     "required": true},
+    {"item": "보도 문의 담당자 정보 하단 포함",          "required": true},
+    {"item": "국가명 가운뎃점(·) 연결",                  "required": false}
+  ]
+}

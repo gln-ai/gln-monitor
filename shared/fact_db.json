@@ -1,0 +1,146 @@
+{
+  "last_updated": "2026-03-27",
+  "note": "이 파일은 수동 관리. LLM이 수수료/국가 정보 직접 생성 금지. 수치 변경 시 GLN 공식 채널 확인 필수.",
+  "global_disclaimer": "정확한 수수료와 이용 가능 여부는 GLN 앱에서 확인하세요. 현지 사정에 따라 서비스가 제한될 수 있습니다.",
+  "about": {
+    "company": "글로벌로컬네트워크(주)",
+    "brand": "GLN (Global Loyalty Network)",
+    "description": "한국 핀테크 기업이 운영하는 해외 여행자용 모바일 결제·ATM 출금 플랫폼",
+    "app_name": "GLN",
+    "supported_platforms": ["iOS", "Android"],
+    "headquarter": "대한민국 서울",
+    "key_features": ["QR 결제", "ATM 출금", "여행자 포인트 적립", "환율 우대"]
+  },
+  "countries": {
+    "thailand": {
+      "name_ko": "태국",
+      "qr_payment": true,
+      "atm": true,
+      "launch_status": "서비스 중",
+      "qr_network": ["PromptPay", "Thai QR"],
+      "atm_network": ["Bangkok Bank ATM", "Kasikorn Bank ATM"],
+      "major_cities": ["방콕", "치앙마이", "파타야", "푸켓"],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "태국 전역 편의점·관광지 가맹점에서 QR 결제 가능",
+      "currency": "THB"
+    },
+    "japan": {
+      "name_ko": "일본",
+      "qr_payment": true,
+      "atm": true,
+      "launch_status": "서비스 중",
+      "qr_network": ["JPQR", "UnionPay QR"],
+      "atm_network": ["7-Eleven ATM", "Japan Post ATM", "E-net ATM"],
+      "major_cities": ["도쿄", "오사카", "교토", "삿포로", "후쿠오카"],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "편의점 ATM(세븐일레븐·로손 등)에서 24시간 출금 가능",
+      "currency": "JPY"
+    },
+    "taiwan": {
+      "name_ko": "대만",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": ["台灣Pay", "TWQR"],
+      "atm_network": [],
+      "major_cities": ["타이베이", "가오슝", "타이중"],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "타이베이 관광지·백화점·편의점 가맹점 QR 결제 가능. ATM 서비스는 현재 미지원",
+      "currency": "TWD"
+    },
+    "vietnam": {
+      "name_ko": "베트남",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": ["VietQR", "NAPAS QR"],
+      "atm_network": [],
+      "major_cities": ["하노이", "호치민", "다낭", "나트랑"],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "주요 관광지·쇼핑몰·식당에서 QR 결제 이용 가능",
+      "currency": "VND"
+    },
+    "philippines": {
+      "name_ko": "필리핀",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": ["QRPh", "InstaPay QR"],
+      "atm_network": [],
+      "major_cities": ["마닐라", "세부", "보라카이"],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "마닐라 쇼핑몰·관광지 중심으로 가맹점 확대 중",
+      "currency": "PHP"
+    },
+    "singapore": {
+      "name_ko": "싱가포르",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": ["SGQR", "PayNow QR"],
+      "atm_network": [],
+      "major_cities": ["싱가포르"],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "마리나베이·오차드로드 등 주요 관광·쇼핑 지구에서 이용 가능",
+      "currency": "SGD"
+    },
+    "malaysia": {
+      "name_ko": "말레이시아",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": ["DuitNow QR", "MyQR"],
+      "atm_network": [],
+      "major_cities": ["쿠알라룸푸르", "코타키나발루", "조호르바루"],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "쿠알라룸푸르 쇼핑몰·관광지 중심으로 이용 가능",
+      "currency": "MYR"
+    },
+    "hongkong": {
+      "name_ko": "홍콩",
+      "qr_payment": true,
+      "atm": true,
+      "launch_status": "서비스 중",
+      "qr_network": ["AlipayHK QR", "FPS QR"],
+      "atm_network": ["HSBC ATM", "Hang Seng ATM"],
+      "major_cities": ["홍콩"],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "침사추이·몽콕·중환 등 주요 상권 가맹점에서 결제·출금 가능",
+      "currency": "HKD"
+    },
+    "cambodia": {
+      "name_ko": "캄보디아",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": ["KHQR"],
+      "atm_network": [],
+      "major_cities": ["프놈펜", "씨엠립"],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "앙코르와트 인근 관광지·숙소에서 이용 가능",
+      "currency": "KHR"
+    },
+    "mongolia": {
+      "name_ko": "몽골",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": ["QPay QR"],
+      "atm_network": [],
+      "major_cities": ["울란바토르"],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "울란바토르 시내 주요 가맹점에서 이용 가능",
+      "currency": "MNT"
+    }
+  },
+  "service_categories": {
+    "qr_payment": {
+      "description": "현지 QR코드를 GLN 앱으로 스캔해 결제",
+      "how_to": "앱 실행 → QR 스캔 → 금액 확인 → 결제"
+    },
+    "atm_withdrawal": {
+      "description": "해외 제휴 ATM에서 원화 기반 현지 통화 출금",
+      "how_to": "앱 실행 → ATM 출금 선택 → ATM QR 스캔 또는 앱 코드 입력"
+    }
+  }
+}

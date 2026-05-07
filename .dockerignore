@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.env.*
+gln_monitor.db
+reports/daily/
+reports/weekly/
+reports/monthly/
+static/generated/images/
+KnuSentiLex/
+.git/
+*.md
+app.py.bak

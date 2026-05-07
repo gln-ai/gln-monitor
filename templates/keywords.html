@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLN 키워드 관리</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #F6F5FF; margin: 0; }
+  .sidebar { width: 220px; min-height: 100vh; background: #130D2A; position: fixed; top: 0; left: 0; z-index: 20; display: flex; flex-direction: column; padding: 20px 14px; }
+  .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px; margin-bottom: 28px; }
+  .logo-mark { width: 28px; height: 28px; background: #7000FC; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .logo-title { font-size: 14px; font-weight: 700; color: #fff; }
+  .logo-sub { font-size: 10px; color: #5E5A71; }
+  .nav-section { margin-bottom: 20px; }
+  .nav-section-label { font-size: 9px; font-weight: 600; color: #5E5A71; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; margin-bottom: 2px; }
+  .nav-item:hover { background: rgba(255,255,255,0.06); }
+  .nav-item.active { background: #7000FC; }
+  .nav-item-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.5; flex-shrink: 0; }
+  .nav-item.active .nav-item-icon { opacity: 1; }
+  .nav-item-text { font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
+  .nav-item.active .nav-item-text { color: #fff; }
+  .main-wrap { margin-left: 220px; min-height: 100vh; }
+  .topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar-left h1 { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0; }
+  .topbar-left p { font-size: 11px; color: #918DA0; margin: 2px 0 0; }
+  .btn { border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: #7000FC; color: #fff; }
+  .btn-primary:hover { background: #5A00CC; }
+  .btn-collect { background: #F6F5FF; color: #7000FC; border: 1px solid #DDD6FE; }
+  .btn-collect:hover { background: #EDE9FE; }
+  .content { padding: 20px 24px 40px; }
+  .card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; padding: 20px 24px; margin-bottom: 16px; }
+  /* 추가 폼 */
+  .add-form { display: flex; gap: 8px; margin-bottom: 20px; }
+  .add-form input { flex: 1; border: 1.5px solid #E4E1EE; border-radius: 10px; padding: 9px 14px; font-size: 13px; outline: none; }
+  .add-form input:focus { border-color: #7000FC; }
+  .add-form select { border: 1.5px solid #E4E1EE; border-radius: 10px; padding: 9px 12px; font-size: 13px; outline: none; color: #130D2A; }
+  /* 키워드 목록 */
+  .kw-list { display: flex; flex-direction: column; gap: 0; }
+  .kw-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 0.5px solid #F6F5FF; }
+  .kw-row:last-child { border-bottom: none; }
+  .kw-name { font-size: 13px; font-weight: 600; color: #130D2A; flex: 1; }
+  .kw-channel { font-size: 10px; color: #918DA0; background: #F6F5FF; padding: 2px 8px; border-radius: 99px; }
+  .kw-date { font-size: 10px; color: #AAA7B8; }
+  .toggle-btn { width: 40px; height: 22px; border-radius: 99px; border: none; cursor: pointer; position: relative; transition: background 0.2s; }
+  .toggle-btn.on { background: #7000FC; }
+  .toggle-btn.off { background: #E4E1EE; }
+  .toggle-dot { position: absolute; width: 16px; height: 16px; background: #fff; border-radius: 50%; top: 3px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .toggle-btn.on .toggle-dot { left: 21px; }
+  .toggle-btn.off .toggle-dot { left: 3px; }
+  .del-btn { color: #AAA7B8; background: none; border: none; cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 6px; }
+  .del-btn:hover { color: #DC2626; background: #FEF2F2; }
+  .info-box { background: #F6F5FF; border: 0.5px solid #DDD6FE; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: #5E5A71; line-height: 1.7; margin-bottom: 16px; }
+  .sidebar-bottom { margin-top: auto; }
+  .sidebar-info { background: rgba(112,0,252,0.15); border-radius: 10px; padding: 10px 12px; border: 0.5px solid rgba(112,0,252,0.3); }
+  .sidebar-info-text { font-size: 10px; color: #AAA7B8; line-height: 1.7; margin: 0; }
+  .toast { display: none; position: fixed; bottom: 24px; right: 24px; background: #130D2A; color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 12px; font-weight: 500; z-index: 100; }
+  /* 알림 설정 */
+  .alert-row { display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:0.5px solid #F6F5FF; }
+  .alert-row:last-of-type { border-bottom:none; }
+  .alert-label { font-size:13px; font-weight:600; color:#130D2A; flex:1; }
+  .alert-sub { font-size:11px; color:#918DA0; }
+  .alert-input { width:64px; border:1.5px solid #E4E1EE; border-radius:8px; padding:5px 8px; font-size:13px; text-align:center; outline:none; }
+  .alert-input:focus { border-color:#7000FC; }
+  .alert-unit { font-size:12px; color:#918DA0; }
+  @media (max-width: 768px) {
+    .sidebar { width: 60px; padding: 16px 8px; }
+    .logo-title, .nav-item-text, .nav-section-label, .logo-sub { display: none; }
+    .nav-item { justify-content: center; padding: 10px; }
+    .main-wrap { margin-left: 60px; }
+    .content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div style="padding:0 2px;margin-bottom:20px">
+    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
+    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
+    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">메뉴</div>
+    <a href="/insights" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-item-text">인사이트</span></a>
+    <a href="/" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-item-text">GLN 모니터링</span></a>
+    <a href="/content" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-item-text">콘텐츠</span></a>
+    <a href="/pr" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-item-text">보도자료</span></a>
+    <a href="/reports" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-item-text">보고서 아카이브</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-info"><p class="sidebar-info-text">수집 키워드 관리<br>다음 수집 사이클에 즉시 반영</p></div>
+  </div>
+</div>
+
+<div class="main-wrap">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>키워드 관리</h1>
+      <p>수집 키워드 추가·비활성화·삭제 — 다음 수집 사이클부터 즉시 반영</p>
+    </div>
+    <button class="btn btn-collect" onclick="triggerCollect()">지금 수집</button>
+  </div>
+
+  <div class="content">
+    <div class="info-box">
+      키워드는 네이버 카페 · 블로그 · 뉴스 전 채널에서 검색됩니다.<br>
+      토글로 임시 비활성화 가능. 기본 키워드는 DB에 키워드가 없을 때 자동 사용됩니다.<br>
+      기본값: GLN, 퍼플GLN, GLN ATM, GLN 해외결제, GLN 출금
+    </div>
+
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;color:#130D2A;margin-bottom:14px">키워드 추가</div>
+      <div class="add-form">
+        <input type="text" id="kwInput" placeholder="키워드 입력 (예: GLN 환전)" onkeydown="if(event.key==='Enter')addKeyword()">
+        <select id="chSelect">
+          <option value="all">전 채널</option>
+          {% for ch in channels %}
+          <option value="{{ ch }}">{{ ch }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-primary" onclick="addKeyword()">추가</button>
+      </div>
+
+      <div class="kw-list" id="kwList">
+        {% if keywords %}
+          {% for kw in keywords %}
+          <div class="kw-row" id="kw-{{ kw.id }}">
+            <div class="kw-name" style="color:{% if kw.is_active %}#130D2A{% else %}#AAA7B8{% endif %}">
+              {{ kw.keyword }}
+            </div>
+            <span class="kw-channel">{{ kw.channel }}</span>
+            <span class="kw-date">{{ kw.created_at[:10] }}</span>
+            <button class="toggle-btn {% if kw.is_active %}on{% else %}off{% endif %}"
+                    id="toggle-{{ kw.id }}"
+                    onclick="toggleKw({{ kw.id }}, {{ kw.is_active }})">
+              <div class="toggle-dot"></div>
+            </button>
+            <button class="del-btn" onclick="deleteKw({{ kw.id }})">✕</button>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div style="text-align:center;padding:32px;color:#AAA7B8;font-size:12px">
+            키워드가 없습니다. 기본 키워드 5개가 자동으로 사용됩니다.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 알림 설정 -->
+    <div class="card" style="margin-top:8px">
+      <div style="font-size:13px;font-weight:700;color:#130D2A;margin-bottom:4px">알림 설정</div>
+      <div style="font-size:11px;color:#918DA0;margin-bottom:16px">토글은 즉시 반영 · 수치는 저장 버튼 클릭</div>
+
+      <div class="alert-row">
+        <div>
+          <div class="alert-label">SLA 리마인더</div>
+          <div class="alert-sub">미처리 건 알림 이메일 (2시간마다)</div>
+        </div>
+        <input type="number" class="alert-input" id="inp-sla_hours" min="1" max="72" value="6">
+        <span class="alert-unit">시간 초과 시</span>
+        <button class="toggle-btn on" id="toggle-sla" onclick="toggleAlert('sla')">
+          <div class="toggle-dot"></div>
+        </button>
+      </div>
+
+      <div class="alert-row">
+        <div>
+          <div class="alert-label">급증 감지 알림</div>
+          <div class="alert-sub">전일 대비 언급량 급증 시 이메일 (1시간마다)</div>
+        </div>
+        <input type="number" class="alert-input" id="inp-spike_threshold" min="1.1" max="10" step="0.1" value="2.0">
+        <span class="alert-unit">배 이상 시</span>
+        <button class="toggle-btn on" id="toggle-spike" onclick="toggleAlert('spike')">
+          <div class="toggle-dot"></div>
+        </button>
+      </div>
+
+      <div class="alert-row">
+        <div>
+          <div class="alert-label">긴급 게시글 알림</div>
+          <div class="alert-sub">중요도 7↑ 또는 부정 게시글 즉시 알림</div>
+        </div>
+        <button class="toggle-btn on" id="toggle-urgent" onclick="toggleAlert('urgent')">
+          <div class="toggle-dot"></div>
+        </button>
+      </div>
+
+      <div class="alert-row" style="border-bottom:none">
+        <div>
+          <div class="alert-label">알림 허용 시간대</div>
+          <div class="alert-sub">SLA 리마인더 발송 시간 범위</div>
+        </div>
+        <input type="number" class="alert-input" id="inp-alert_start_hour" min="0" max="23" value="8">
+        <span class="alert-unit">시 ~</span>
+        <input type="number" class="alert-input" id="inp-alert_end_hour" min="0" max="23" value="20">
+        <span class="alert-unit">시</span>
+      </div>
+
+      <div style="text-align:right;margin-top:16px">
+        <button class="btn btn-primary" onclick="saveAlertSettings()">수치 저장</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function showToast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, duration);
+}
+
+async function addKeyword() {
+  const kw = document.getElementById('kwInput').value.trim();
+  const ch = document.getElementById('chSelect').value;
+  if (!kw) return;
+
+  const res  = await fetch('/api/keywords', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({keyword: kw, channel: ch})
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    showToast('오류: ' + (err.error || '알 수 없는 오류'));
+    return;
+  }
+  const data = await res.json();
+  document.getElementById('kwInput').value = '';
+
+  // DOM에 추가
+  const list = document.getElementById('kwList');
+  const emptyEl = list.querySelector('[style*="text-align:center"]');
+  if (emptyEl) emptyEl.remove();
+
+  const row = document.createElement('div');
+  row.className = 'kw-row';
+  row.id = `kw-${data.id}`;
+  row.innerHTML = `
+    <div class="kw-name">${escHtml(data.keyword)}</div>
+    <span class="kw-channel">${escHtml(data.channel)}</span>
+    <span class="kw-date">오늘</span>
+    <button class="toggle-btn on" id="toggle-${data.id}" onclick="toggleKw(${data.id}, 1)">
+      <div class="toggle-dot"></div>
+    </button>
+    <button class="del-btn" onclick="deleteKw(${data.id})">✕</button>
+  `;
+  list.appendChild(row);
+  showToast(`"${data.keyword}" 추가됨`);
+}
+
+async function toggleKw(id, currentActive) {
+  const newActive = currentActive ? 0 : 1;
+  await fetch(`/api/keywords/${id}`, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({is_active: newActive})
+  });
+  const btn  = document.getElementById(`toggle-${id}`);
+  const name = document.querySelector(`#kw-${id} .kw-name`);
+  if (newActive) {
+    btn.className = 'toggle-btn on';
+    if (name) name.style.color = '#130D2A';
+  } else {
+    btn.className = 'toggle-btn off';
+    if (name) name.style.color = '#AAA7B8';
+  }
+  btn.setAttribute('onclick', `toggleKw(${id}, ${newActive})`);
+  showToast(newActive ? '활성화됨' : '비활성화됨');
+}
+
+async function deleteKw(id) {
+  if (!confirm('이 키워드를 삭제하시겠습니까?')) return;
+  await fetch(`/api/keywords/${id}`, {method: 'DELETE'});
+  const row = document.getElementById(`kw-${id}`);
+  if (row) row.remove();
+  showToast('삭제됨');
+}
+
+async function triggerCollect() {
+  showToast('수집 시작 중...', 4000);
+  const res = await fetch('/api/keywords/collect', {method:'POST'});
+  const data = await res.json();
+  showToast(data.status);
+}
+
+function escHtml(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── 알림 설정 ─────────────────────────────────────────────────
+const ALERT_KEYS = {
+  sla:    "alert_sla_enabled",
+  spike:  "alert_spike_enabled",
+  urgent: "alert_urgent_enabled",
+};
+
+async function loadAlertSettings() {
+  try {
+    const res  = await fetch('/api/settings');
+    const data = await res.json();
+    for (const [name, key] of Object.entries(ALERT_KEYS)) {
+      const btn = document.getElementById(`toggle-${name}`);
+      if (!btn) continue;
+      const isOn = (data[key] ?? "1") === "1";
+      btn.className = `toggle-btn ${isOn ? 'on' : 'off'}`;
+    }
+    const numKeys = ["sla_hours","spike_threshold","alert_start_hour","alert_end_hour"];
+    for (const key of numKeys) {
+      const el = document.getElementById(`inp-${key}`);
+      if (el && data[key] !== undefined) el.value = data[key];
+    }
+  } catch (e) {
+    console.warn("알림 설정 로드 실패:", e);
+  }
+}
+
+async function toggleAlert(name) {
+  const btn  = document.getElementById(`toggle-${name}`);
+  const isOn = btn.classList.contains('on');
+  const newVal = isOn ? "0" : "1";
+  btn.className = `toggle-btn ${isOn ? 'off' : 'on'}`;
+  await fetch('/api/settings', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({[ALERT_KEYS[name]]: newVal})
+  });
+  showToast(isOn ? '알림 OFF' : '알림 ON');
+}
+
+async function saveAlertSettings() {
+  const payload = {};
+  for (const key of ["sla_hours","spike_threshold","alert_start_hour","alert_end_hour"]) {
+    const el = document.getElementById(`inp-${key}`);
+    if (el) payload[key] = el.value;
+  }
+  const res = await fetch('/api/settings', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  if (res.ok) showToast('설정 저장됨');
+  else showToast('저장 실패');
+}
+
+loadAlertSettings();
+</script>
+</body>
+</html>

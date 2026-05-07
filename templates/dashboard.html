@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GLN 모니터링</title>
+<title>GLN 마케팅 에이전트</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   * { box-sizing: border-box; }
@@ -43,9 +43,12 @@
   .kpi-label { font-size: 11px; color: #918DA0; margin-bottom: 4px; }
   .kpi-value { font-size: 26px; font-weight: 700; color: #130D2A; line-height: 1; }
   .kpi-sub { font-size: 10px; color: #AAA7B8; margin-top: 4px; }
-  .date-bar { background: #fff; border-radius: 12px; border: 0.5px solid #E4E1EE; padding: 10px 16px; display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .date-bar-label { font-size: 11px; font-weight: 600; color: #918DA0; }
+  .date-bar { background: #fff; border-radius: 12px; border: 0.5px solid #E4E1EE; padding: 10px 16px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .date-bar-label { font-size: 11px; font-weight: 600; color: #918DA0; flex-shrink: 0; }
   .date-input { border: 0.5px solid #DAD9EA; border-radius: 8px; padding: 5px 10px; font-size: 12px; color: #130D2A; background: #F6F5FF; }
+  .date-sep { font-size: 11px; color: #DAD9EA; }
+  .date-apply-btn { background: #7000FC; color: #fff; border: none; border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer; }
+  .date-apply-btn:hover { background: #5A00CC; }
   .date-presets { margin-left: auto; display: flex; gap: 4px; }
   .date-preset-btn { border: 0.5px solid #DAD9EA; border-radius: 8px; padding: 5px 10px; font-size: 11px; color: #5E5A71; background: #fff; cursor: pointer; }
   .date-preset-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 600; }
@@ -79,6 +82,7 @@
   .badge-pos { background: #F0FDF4; color: #059669; }
   .badge-neu { background: #F6F5FF; color: #918DA0; }
   .badge-cat { background: #EFF6FF; color: #1D4ED8; }
+  .badge-country { background: #F0FFF4; color: #166534; border: 0.5px solid #BBF7D0; }
   .score-high { font-size: 11px; font-weight: 700; color: #DC2626; }
   .score-mid { font-size: 11px; font-weight: 700; color: #D97706; }
   .score-low { font-size: 11px; font-weight: 700; color: #AAA7B8; }
@@ -99,6 +103,18 @@
   .status-btn.s-done.active { background: #F0FDF4; color: #059669; border-color: #BBF7D0; font-weight: 600; }
   .empty-state { padding: 60px 20px; text-align: center; }
   .empty-state p { font-size: 13px; color: #AAA7B8; margin: 4px 0; }
+  /* 일괄 선택 */
+  .post-cb { width: 15px; height: 15px; accent-color: #7000FC; cursor: pointer; flex-shrink: 0; margin-top: 3px; }
+  .bulk-bar { display: none; align-items: center; gap: 8px; padding: 8px 16px; background: #F5F3FF; border-bottom: 0.5px solid #DDD6FE; flex-wrap: wrap; }
+  .bulk-bar.visible { display: flex; }
+  .bulk-count { font-size: 12px; font-weight: 600; color: #7000FC; }
+  .bulk-btn { font-size: 11px; padding: 4px 12px; border-radius: 8px; cursor: pointer; border: 0.5px solid; font-weight: 600; }
+  .bulk-btn-check  { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+  .bulk-btn-done   { background: #F0FDF4; color: #059669; border-color: #BBF7D0; }
+  .bulk-btn-new    { background: #F6F5FF; color: #5E5A71; border-color: #DAD9EA; }
+  .bulk-btn-cancel { background: #fff; color: #AAA7B8; border-color: #E4E1EE; }
+  .select-all-wrap { display: flex; align-items: center; gap: 6px; padding: 8px 16px 0; }
+  .select-all-wrap label { font-size: 11px; color: #918DA0; cursor: pointer; }
   .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 16px; }
   .page-btn { width: 30px; height: 30px; border-radius: 8px; border: 0.5px solid #E4E1EE; background: #fff; font-size: 12px; color: #5E5A71; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
   .page-btn:hover { border-color: #7000FC; color: #7000FC; }
@@ -122,27 +138,18 @@
 <body>
 
 <div class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-mark">G</div>
-    <div>
-      <div class="logo-title">GLN</div>
-      <div class="logo-sub">모니터링</div>
-    </div>
+  <div style="padding:0 2px;margin-bottom:20px">
+    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
+    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
+    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
   </div>
   <div class="nav-section">
     <div class="nav-section-label">메뉴</div>
-    <a href="/" class="nav-item active">
-      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
-      <span class="nav-item-text">피드</span>
-    </a>
-    <a href="/insights" class="nav-item">
-      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-      <span class="nav-item-text">인사이트</span>
-    </a>
-    <a href="#" class="nav-item" style="opacity:0.35;pointer-events:none">
-      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg></span>
-      <span class="nav-item-text">설정</span>
-    </a>
+    <a href="/insights" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-item-text">인사이트</span></a>
+    <a href="/" class="nav-item active"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-item-text">GLN 모니터링</span></a>
+    <a href="/content" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-item-text">콘텐츠</span></a>
+    <a href="/pr" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-item-text">보도자료</span></a>
+    <a href="/reports" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-item-text">보고서 아카이브</span></a>
   </div>
   <hr class="nav-divider">
   <div class="nav-section">
@@ -167,11 +174,12 @@
 <div class="main-wrap">
   <div class="topbar">
     <div class="topbar-left">
-      <h1>모니터링 피드</h1>
+      <h1>GLN 모니터링</h1>
       <p id="last-updated"></p>
     </div>
     <div class="topbar-right">
       <span id="status-badge" class="status-toast"></span>
+      <button onclick="openKwModal()" class="btn-ghost" title="키워드 관리">⚙ 설정</button>
       <button onclick="triggerCollect()" class="btn-ghost">수집 실행</button>
       <button onclick="openReportModal()" class="btn-primary">리포트 발송</button>
     </div>
@@ -203,11 +211,15 @@
 
     <div class="date-bar">
       <span class="date-bar-label">수집일</span>
-      <input type="date" id="date_from" value="{{ filters.date_from }}" onchange="applySingleDate(this.value)" class="date-input">
+      <input type="date" id="date_from" value="{{ filters.date_from }}" class="date-input">
+      <span class="date-sep">~</span>
+      <input type="date" id="date_to" value="{{ filters.date_to }}" class="date-input">
+      <button onclick="applyDateRange()" class="date-apply-btn">조회</button>
       <div class="date-presets">
-        <button onclick="setDay(0)" class="date-preset-btn {% if filters.date_from == today_str %}active{% endif %}">오늘</button>
-        <button onclick="setDay(1)" class="date-preset-btn">어제</button>
-        <button onclick="setDay(2)" class="date-preset-btn">2일 전</button>
+        <button onclick="setRange(0,0)"  class="date-preset-btn {% if filters.date_from == today_str and filters.date_to == today_str %}active{% endif %}">오늘</button>
+        <button onclick="setRange(6,0)"  class="date-preset-btn">7일</button>
+        <button onclick="setRange(29,0)" class="date-preset-btn">30일</button>
+        <button onclick="setRange(89,0)" class="date-preset-btn">전체</button>
       </div>
     </div>
 
@@ -232,13 +244,27 @@
         <a href="?reply_status=답변완료&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}&channel={{ filters.channel }}" class="filter-chip {% if filters.reply_status == '답변완료' %}active{% endif %}">답변완료</a>
       </div>
       <div class="posts-wrap">
+        <!-- 일괄 액션 바 -->
+        <div class="bulk-bar" id="bulkBar">
+          <span class="bulk-count" id="bulkCount">0건 선택</span>
+          <button class="bulk-btn bulk-btn-check" onclick="bulkUpdate('확인완료')">✓ 확인완료</button>
+          <button class="bulk-btn bulk-btn-done"  onclick="bulkUpdate('답변완료')">✓ 답변완료</button>
+          <button class="bulk-btn bulk-btn-new"   onclick="bulkUpdate('미확인')">↩ 미확인</button>
+          <button class="bulk-btn bulk-btn-cancel" onclick="clearSelection()">선택 해제</button>
+        </div>
         <div class="post-meta-bar">
-          <span>전체 <strong>{{ total }}</strong>건</span>
+          <div class="select-all-wrap" style="padding:0">
+            <input type="checkbox" id="selectAll" class="post-cb" onchange="toggleSelectAll(this.checked)">
+            <label for="selectAll">전체선택</label>
+            <span style="color:#DAD9EA;margin:0 4px">|</span>
+            <span>전체 <strong>{{ total }}</strong>건</span>
+          </div>
           <span>{{ page }} / {{ total_pages }} 페이지</span>
         </div>
         {% for post in posts %}
         {% set s = post.reply_status or '미확인' %}
         <div class="post-item {% if post.is_urgent %}urgent{% endif %}">
+          <input type="checkbox" class="post-cb post-check" data-id="{{ post.id }}" onchange="onCheckChange()">
           <div class="post-num">{{ (page - 1) * 50 + loop.index }}</div>
           <div class="post-body">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
@@ -249,6 +275,7 @@
                 {% elif post.sentiment %}<span class="badge badge-neu">중립</span>{% endif %}
                 {% if post.category %}<span class="badge badge-cat">{{ post.category }}</span>{% endif %}
                 {% if post.importance_score %}<span class="{% if post.importance_score >= 7 %}score-high{% elif post.importance_score >= 4 %}score-mid{% else %}score-low{% endif %}">{{ post.importance_score }}/10</span>{% endif %}
+                {% if post.country %}<span class="badge badge-country">{{ country_label.get(post.country, post.country) }}</span>{% endif %}
               </div>
               <a href="{{ post.link }}" target="_blank" class="post-link-btn">원문보기 →</a>
             </div>
@@ -328,15 +355,25 @@
     showStatus('수집 시작됨');
     setTimeout(() => location.reload(), 5000);
   }
-  function applySingleDate(val) {
+  function applyDateRange() {
     const params = new URLSearchParams(window.location.search);
-    params.set('page', 1); params.set('date_from', val); params.set('date_to', val);
+    params.set('page', 1);
+    params.set('date_from', document.getElementById('date_from').value);
+    params.set('date_to',   document.getElementById('date_to').value);
     window.location.search = params.toString();
   }
-  function setDay(daysAgo) {
-    const d = new Date(); d.setDate(d.getDate() - daysAgo);
-    applySingleDate(d.toISOString().split('T')[0]);
+  function setRange(fromDaysAgo, toDaysAgo) {
+    const fmt = d => d.toISOString().split('T')[0];
+    const to   = new Date(); to.setDate(to.getDate() - toDaysAgo);
+    const from = new Date(); from.setDate(from.getDate() - fromDaysAgo);
+    document.getElementById('date_from').value = fmt(from);
+    document.getElementById('date_to').value   = fmt(to);
+    applyDateRange();
   }
+  // Enter 키로 조회
+  ['date_from','date_to'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => { if(e.key==='Enter') applyDateRange(); });
+  });
   async function updateStatus(postId, status) {
     const res = await fetch('/api/status/' + postId, {
       method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -349,6 +386,53 @@
         if (btn.textContent.trim() === status) btn.classList.add('active');
         else btn.classList.remove('active');
       });
+    }
+  }
+
+  // ── 일괄 선택 ──────────────────────────────────────────────
+  function getChecked() {
+    return [...document.querySelectorAll('.post-check:checked')].map(el => parseInt(el.dataset.id));
+  }
+  function onCheckChange() {
+    const ids = getChecked();
+    const bar = document.getElementById('bulkBar');
+    document.getElementById('bulkCount').textContent = ids.length + '건 선택';
+    if (ids.length > 0) bar.classList.add('visible');
+    else bar.classList.remove('visible');
+    // 전체선택 체크박스 상태 동기화
+    const all = document.querySelectorAll('.post-check');
+    document.getElementById('selectAll').checked = all.length > 0 && ids.length === all.length;
+  }
+  function toggleSelectAll(checked) {
+    document.querySelectorAll('.post-check').forEach(el => el.checked = checked);
+    onCheckChange();
+  }
+  function clearSelection() {
+    document.querySelectorAll('.post-check').forEach(el => el.checked = false);
+    document.getElementById('selectAll').checked = false;
+    document.getElementById('bulkBar').classList.remove('visible');
+  }
+  async function bulkUpdate(status) {
+    const ids = getChecked();
+    if (!ids.length) return;
+    const res  = await fetch('/api/status/bulk', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ids, status})
+    });
+    const data = await res.json();
+    if (data.updated) {
+      // UI 즉시 반영
+      ids.forEach(id => {
+        const container = document.getElementById('status-' + id);
+        if (container) {
+          container.querySelectorAll('button').forEach(btn => {
+            if (btn.textContent.trim() === status) btn.classList.add('active');
+            else btn.classList.remove('active');
+          });
+        }
+      });
+      showStatus(data.updated + '건 ' + status + ' 처리 완료');
+      clearSelection();
     }
   }
   let selectedRecipients = new Set();
@@ -388,6 +472,99 @@
   document.getElementById('report-modal').addEventListener('click', function(e) {
     if (e.target === this) closeReportModal();
   });
+</script>
+
+<!-- 키워드 관리 모달 -->
+<div id="kw-modal" class="modal-overlay" onclick="if(event.target===this)closeKwModal()">
+  <div style="background:#fff;border-radius:16px;width:460px;max-width:94vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
+    <!-- 헤더 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:0.5px solid #F0EDF7">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:#130D2A">⚙ 키워드 관리</div>
+        <div style="font-size:11px;color:#918DA0;margin-top:2px">수집 대상 키워드 — 활성 키워드만 모니터링에 사용됩니다</div>
+      </div>
+      <button onclick="closeKwModal()" style="background:#F6F5FF;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:13px;color:#5E5A71;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <!-- 키워드 목록 -->
+    <div id="kw-list-wrap" style="flex:1;overflow-y:auto;padding:10px 20px">
+      <div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">불러오는 중...</div>
+    </div>
+    <!-- 추가 입력 -->
+    <div style="padding:14px 20px;border-top:0.5px solid #F0EDF7;display:flex;gap:8px">
+      <input id="kw-input" type="text" placeholder="새 키워드 입력 후 Enter"
+        style="flex:1;border:0.5px solid #DAD9EA;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;color:#130D2A"
+        onkeydown="if(event.key==='Enter')addKeyword()"
+        onfocus="this.style.borderColor='#7000FC'" onblur="this.style.borderColor='#DAD9EA'">
+      <button onclick="addKeyword()"
+        style="background:#7000FC;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">+ 추가</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openKwModal() {
+  document.getElementById('kw-modal').style.display = 'flex';
+  loadKeywords();
+}
+function closeKwModal() {
+  document.getElementById('kw-modal').style.display = 'none';
+}
+
+async function loadKeywords() {
+  const wrap = document.getElementById('kw-list-wrap');
+  wrap.innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">불러오는 중...</div>';
+  const res  = await fetch('/api/keywords');
+  const list = await res.json();
+  if (!list.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">등록된 키워드가 없습니다</div>';
+    return;
+  }
+  wrap.innerHTML = list.map(kw => `
+    <div id="kwrow_${kw.id}" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid #F6F5FF">
+      <div style="flex:1;font-size:13px;font-weight:500;color:#130D2A">${escKw(kw.keyword)}</div>
+      <button onclick="toggleKeyword(${kw.id}, ${kw.is_active})"
+        style="font-size:10px;font-weight:600;padding:3px 10px;border-radius:99px;border:0.5px solid ${kw.is_active ? '#BBF7D0' : '#DAD9EA'};
+               background:${kw.is_active ? '#F0FDF4' : '#F6F5FF'};color:${kw.is_active ? '#059669' : '#918DA0'};cursor:pointer"
+        id="kwtoggle_${kw.id}">${kw.is_active ? '● 활성' : '○ 비활성'}</button>
+      <button onclick="deleteKeyword(${kw.id})"
+        style="font-size:11px;padding:3px 8px;border-radius:6px;border:0.5px solid #FECACA;background:#FEF2F2;color:#DC2626;cursor:pointer">삭제</button>
+    </div>
+  `).join('');
+}
+
+async function addKeyword() {
+  const input = document.getElementById('kw-input');
+  const kw = input.value.trim();
+  if (!kw) return;
+  const res = await fetch('/api/keywords', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({keyword: kw})
+  });
+  if (res.ok) { input.value = ''; loadKeywords(); }
+  else {
+    const d = await res.json();
+    alert(d.error || '추가 실패 (중복 키워드일 수 있습니다)');
+  }
+}
+
+async function toggleKeyword(id, current) {
+  const newVal = current ? 0 : 1;
+  await fetch(`/api/keywords/${id}`, {
+    method: 'PATCH', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({is_active: newVal})
+  });
+  loadKeywords();
+}
+
+async function deleteKeyword(id) {
+  if (!confirm('이 키워드를 삭제하시겠습니까?')) return;
+  await fetch(`/api/keywords/${id}`, {method: 'DELETE'});
+  loadKeywords();
+}
+
+function escKw(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 </script>
 </body>
 </html>

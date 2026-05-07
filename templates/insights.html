@@ -32,9 +32,35 @@
   .topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
   .topbar h1 { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0; }
   .topbar p { font-size: 11px; color: #918DA0; margin: 2px 0 0; }
-  .period-btns { display: flex; gap: 4px; }
-  .period-btn { border: 0.5px solid #DAD9EA; border-radius: 8px; padding: 6px 12px; font-size: 12px; color: #5E5A71; background: #fff; cursor: pointer; font-weight: 500; }
+  .period-btn { border: 0.5px solid #DAD9EA; border-radius: 8px; padding: 6px 14px; font-size: 12px; color: #5E5A71; background: #fff; cursor: pointer; font-weight: 500; }
   .period-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 600; }
+  .date-sep { font-size: 11px; color: #DAD9EA; margin: 0 2px; }
+  .date-input { border: 0.5px solid #DAD9EA; border-radius: 8px; padding: 5px 10px; font-size: 12px; color: #130D2A; background: #F6F5FF; outline: none; font-family: inherit; }
+  .date-input:focus { border-color: #7000FC; }
+  .date-apply-btn { background: #7000FC; color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .date-apply-btn:hover { background: #5A00CC; }
+  /* 이슈 섹션 */
+  .issue-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 0.5px solid #F0EDF7; align-items: flex-start; }
+  .issue-item:last-child { border-bottom: none; }
+  .issue-score { width: 38px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #F6F5FF; border-radius: 10px; padding: 8px 4px; gap: 2px; }
+  .issue-score-num { font-size: 16px; font-weight: 800; color: #130D2A; line-height: 1; }
+  .issue-score-label { font-size: 8px; color: #918DA0; font-weight: 600; letter-spacing: 0.02em; }
+  .issue-body { flex: 1; min-width: 0; }
+  .issue-title { font-size: 13px; font-weight: 700; color: #130D2A; margin-bottom: 5px; line-height: 1.45; display: flex; align-items: flex-start; gap: 6px; flex-wrap: wrap; }
+  .issue-title a { color: #130D2A; text-decoration: none; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .issue-title a:hover { color: #7000FC; }
+  .issue-summary { font-size: 11px; color: #5E5A71; line-height: 1.6; margin-bottom: 7px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .issue-source { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .issue-source-name { font-size: 10px; font-weight: 600; color: #918DA0; background: #F6F5FF; border-radius: 5px; padding: 2px 7px; }
+  .issue-source-date { font-size: 10px; color: #C4C1D4; }
+  .issue-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+  .btn-issue { font-size: 11px; padding: 4px 10px; border-radius: 7px; cursor: pointer; font-weight: 500; border: 0.5px solid; }
+  .btn-issue-content { background: #F5F3FF; color: #7000FC; border-color: #DDD6FE; }
+  .btn-issue-content:hover { background: #EDE9FE; }
+  .btn-issue-done { background: #F0FDF4; color: #059669; border-color: #BBF7D0; font-size: 10px; }
+  .issue-filter-btns { display: flex; gap: 5px; margin-bottom: 12px; }
+  .issue-filter-btn { font-size: 11px; padding: 4px 12px; border-radius: 99px; border: 0.5px solid #DAD9EA; color: #5E5A71; background: #fff; cursor: pointer; }
+  .issue-filter-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; }
   .content { padding: 20px 24px 40px; }
   .stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
   .stat-card { background: #fff; border-radius: 14px; padding: 16px 18px; border: 0.5px solid #E4E1EE; }
@@ -44,6 +70,9 @@
   .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
   .chart-card { background: #fff; border-radius: 14px; border: 0.5px solid #E4E1EE; padding: 18px 20px; }
   .chart-title { font-size: 13px; font-weight: 600; color: #130D2A; margin-bottom: 16px; }
+  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .chart-header .chart-title { margin-bottom: 0; }
+  .chart-date-range { font-size: 10px; color: #AAA7B8; font-weight: 500; }
   .kw-card { background: #fff; border-radius: 14px; border: 0.5px solid #E4E1EE; padding: 18px 20px; }
   .kw-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid #F6F5FF; }
   .kw-row:last-child { border-bottom: none; }
@@ -67,27 +96,18 @@
 <body>
 
 <div class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-mark">G</div>
-    <div>
-      <div class="logo-title">GLN</div>
-      <div class="logo-sub">모니터링</div>
-    </div>
+  <div style="padding:0 2px;margin-bottom:20px">
+    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
+    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
+    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
   </div>
   <div class="nav-section">
     <div class="nav-section-label">메뉴</div>
-    <a href="/" class="nav-item">
-      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
-      <span class="nav-item-text">피드</span>
-    </a>
-    <a href="/insights" class="nav-item active">
-      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
-      <span class="nav-item-text">인사이트</span>
-    </a>
-    <a href="#" class="nav-item" style="opacity:0.35;pointer-events:none">
-      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg></span>
-      <span class="nav-item-text">설정</span>
-    </a>
+    <a href="/insights" class="nav-item active"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-item-text">인사이트</span></a>
+    <a href="/" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-item-text">GLN 모니터링</span></a>
+    <a href="/content" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-item-text">콘텐츠</span></a>
+    <a href="/pr" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-item-text">보도자료</span></a>
+    <a href="/reports" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-item-text">보고서 아카이브</span></a>
   </div>
   <hr class="nav-divider">
   <div class="nav-section">
@@ -114,50 +134,143 @@
       <h1>인사이트</h1>
       <p>수집 데이터 기반 트렌드 분석</p>
     </div>
-    <div class="period-btns">
-      <button class="period-btn" onclick="loadData(1)">오늘</button>
-      <button class="period-btn active" onclick="loadData(7)" id="btn-7">7일</button>
-      <button class="period-btn" onclick="loadData(30)">30일</button>
-      <button class="period-btn" onclick="loadData(90)">전체</button>
-    </div>
   </div>
 
   <div class="content">
-    <!-- 요약 통계 -->
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-label">총 수집</div>
-        <div class="stat-value" id="s-total">-</div>
-        <div class="stat-change" style="color:#918DA0" id="s-total-sub">로딩 중...</div>
+
+    <!-- 날짜 필터 바 -->
+    <div style="background:#fff;border:0.5px solid #E4E1EE;border-radius:14px;padding:12px 20px;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <span style="font-size:11px;color:#918DA0;font-weight:500;margin-right:4px">기간</span>
+      <button class="period-btn active" id="btn-today" onclick="setInsightRange(0,0,this)">오늘</button>
+      <button class="period-btn" id="btn-7d" onclick="setInsightRange(6,0,this)">7일</button>
+      <button class="period-btn" id="btn-30d" onclick="setInsightRange(29,0,this)">30일</button>
+      <button class="period-btn" id="btn-all" onclick="setInsightRange(9999,0,this)">전체</button>
+      <span class="date-sep" style="margin:0 4px">|</span>
+      <input type="date" id="i-date-from" class="date-input">
+      <span class="date-sep">~</span>
+      <input type="date" id="i-date-to" class="date-input">
+      <button class="date-apply-btn" onclick="applyInsightDate()">조회</button>
+    </div>
+
+    <!-- 브랜드 헬스 + 전기간 비교 -->
+    <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-bottom:10px">
+      <!-- 브랜드 헬스 스코어 -->
+      <div class="stat-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px">
+        <div style="font-size:11px;color:#918DA0;margin-bottom:8px;letter-spacing:0.05em;text-transform:uppercase">브랜드 헬스 스코어</div>
+        <div style="position:relative;width:90px;height:90px;margin-bottom:8px">
+          <svg viewBox="0 0 36 36" width="90" height="90" style="transform:rotate(-90deg)">
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#F0EDF7" stroke-width="3"/>
+            <circle id="health-arc" cx="18" cy="18" r="15.9" fill="none" stroke="#7000FC" stroke-width="3"
+              stroke-dasharray="0 100" stroke-linecap="round"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div id="health-score" style="font-size:22px;font-weight:800;color:#130D2A;line-height:1">-</div>
+            <div id="health-label" style="font-size:10px;font-weight:600;margin-top:1px">-</div>
+          </div>
+        </div>
+        <div style="font-size:10px;color:#918DA0;text-align:center">긍정×0.6 + (1-부정)×0.4</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-label">긴급 알림</div>
-        <div class="stat-value" id="s-urgent">-</div>
-        <div class="stat-change" style="color:#918DA0" id="s-urgent-sub">중요도 7↑ 또는 부정</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">부정 감성</div>
-        <div class="stat-value" id="s-negative">-</div>
-        <div class="stat-change" id="s-neg-pct" style="color:#918DA0">전체 대비 비율</div>
+
+      <!-- 전기간 비교 카드 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+        <div class="stat-card">
+          <div class="stat-label">총 수집</div>
+          <div class="stat-value" id="s-total">-</div>
+          <div class="stat-change" id="s-total-change" style="color:#918DA0;font-size:11px;margin-top:4px">로딩 중...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">긴급 알림</div>
+          <div class="stat-value" id="s-urgent">-</div>
+          <div class="stat-change" id="s-urgent-change" style="color:#918DA0;font-size:11px;margin-top:4px">로딩 중...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">부정 감성</div>
+          <div class="stat-value" id="s-negative">-</div>
+          <div class="stat-change" id="s-neg-change" style="color:#918DA0;font-size:11px;margin-top:4px">로딩 중...</div>
+        </div>
       </div>
     </div>
 
     <!-- 차트 -->
     <div class="chart-grid">
       <div class="chart-card">
-        <div class="chart-title">일별 언급량 추이</div>
+        <div class="chart-header">
+          <div class="chart-title">일별 언급량 추이</div>
+          <span class="chart-date-range" id="daily-chart-date"></span>
+        </div>
         <canvas id="dailyChart" height="140"></canvas>
       </div>
       <div class="chart-card">
-        <div class="chart-title">감성 분포</div>
+        <div class="chart-header">
+          <div class="chart-title">감성 분포</div>
+          <span class="chart-date-range" id="sentiment-chart-date"></span>
+        </div>
         <canvas id="sentimentChart" height="140"></canvas>
       </div>
     </div>
 
-    <!-- 키워드 현황 -->
-    <div class="kw-card">
+    <!-- 키워드별 감성 트렌드 -->
+    <div class="kw-card" style="margin-bottom:10px">
+      <div class="chart-title">키워드별 감성 트렌드</div>
+      <div id="kw-sentiment-list"><div class="loading">로딩 중...</div></div>
+    </div>
+
+    <!-- 키워드 수집 현황 -->
+    <div class="kw-card" style="margin-bottom:10px">
       <div class="chart-title">키워드별 수집 현황</div>
       <div id="kw-list"><div class="loading">로딩 중...</div></div>
+    </div>
+
+    <!-- SLA 미처리 현황 -->
+    <div style="background:#fff;border:0.5px solid #E4E1EE;border-radius:14px;padding:16px 20px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="chart-title" style="margin:0">미처리 SLA 현황</div>
+        <a href="/?reply_status=미확인" style="font-size:11px;color:#7000FC;text-decoration:none;font-weight:600">처리하기 →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div style="text-align:center">
+          <div id="sla-total" style="font-size:24px;font-weight:700;color:#130D2A">-</div>
+          <div style="font-size:10px;color:#918DA0;margin-top:2px">미확인 전체</div>
+        </div>
+        <div style="text-align:center">
+          <div id="sla-6h" style="font-size:24px;font-weight:700;color:#D97706">-</div>
+          <div style="font-size:10px;color:#918DA0;margin-top:2px">6시간 초과</div>
+        </div>
+        <div style="text-align:center">
+          <div id="sla-24h" style="font-size:24px;font-weight:700;color:#DC2626">-</div>
+          <div style="font-size:10px;color:#918DA0;margin-top:2px">24시간 초과</div>
+        </div>
+        <div style="text-align:center">
+          <div id="sla-rate" style="font-size:24px;font-weight:700;color:#16A34A">-</div>
+          <div style="font-size:10px;color:#918DA0;margin-top:2px">응답률</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:0.5px solid #F0EDF7;display:flex;align-items:flex-start;gap:6px">
+        <span style="font-size:10px;color:#DAD9EA;font-weight:700;flex-shrink:0;margin-top:1px">ℹ</span>
+        <p style="font-size:10px;color:#BAB8C8;margin:0;line-height:1.6">
+          <strong style="color:#918DA0">SLA (Service Level Agreement)</strong> — 서비스 응답 목표 시간.
+          수집된 언급에 팀이 얼마나 빠르게 반응하는지 측정합니다.
+          6시간 이내 확인 완료를 기본 목표로 하며, 24시간 초과 건은 즉시 처리가 필요합니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- 발굴된 이슈 -->
+    <div style="background:#fff;border:0.5px solid #E4E1EE;border-radius:14px;padding:16px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div class="chart-title" style="margin:0">🔍 발굴된 이슈</div>
+          <div style="font-size:11px;color:#918DA0;margin-top:2px" id="issue-subtitle">기간 내 주목 언급</div>
+        </div>
+        <a href="/" style="font-size:11px;color:#7000FC;text-decoration:none;font-weight:600">모니터링 보기 →</a>
+      </div>
+      <div class="issue-filter-btns">
+        <button class="issue-filter-btn active" onclick="loadIssues('all',this)">전체</button>
+        <button class="issue-filter-btn" onclick="loadIssues('urgent',this)">긴급</button>
+        <button class="issue-filter-btn" onclick="loadIssues('negative',this)">부정 감성</button>
+        <button class="issue-filter-btn" onclick="loadIssues('no_content',this)">콘텐츠 미생성</button>
+      </div>
+      <div id="issue-list"><div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">로딩 중...</div></div>
     </div>
   </div>
 </div>
@@ -165,35 +278,183 @@
 <script>
 let dailyChart = null;
 let sentimentChart = null;
-let currentDays = 7;
+let currentDateFrom = '';
+let currentDateTo   = '';
+let currentIssueFilter = 'all';
 
-document.querySelectorAll('.period-btn').forEach(btn => {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-    this.classList.add('active');
-  });
-});
-
-async function loadData(days) {
-  currentDays = days;
-  const res = await fetch('/api/insights?days=' + days);
-  const data = await res.json();
-  renderStats(data.summary, data.sentiment);
-  renderDailyChart(data.daily);
-  renderSentimentChart(data.sentiment);
-  renderKeywords(data.keywords);
+function _fmt(d) {
+  return d.getFullYear() + '-' +
+    String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    String(d.getDate()).padStart(2, '0');
 }
 
-function renderStats(summary, sentiment) {
+function setInsightRange(fromDaysAgo, toDaysAgo, activeBtn) {
+  const today = new Date();
+  const from  = new Date(today);
+  if (fromDaysAgo < 9000) from.setDate(today.getDate() - fromDaysAgo);
+  else from.setFullYear(2020, 0, 1);
+  const to = new Date(today); to.setDate(today.getDate() - toDaysAgo);
+  document.getElementById('i-date-from').value = _fmt(from);
+  document.getElementById('i-date-to').value   = _fmt(to);
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  if (activeBtn) activeBtn.classList.add('active');
+  applyInsightDate();
+}
+
+function applyInsightDate() {
+  currentDateFrom = document.getElementById('i-date-from').value;
+  currentDateTo   = document.getElementById('i-date-to').value;
+  // 수동 입력 조회 시 프리셋 버튼 active 해제
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  loadData();
+  loadIssues(currentIssueFilter);
+}
+
+async function loadData() {
+  const params = new URLSearchParams();
+  if (currentDateFrom) params.set('date_from', currentDateFrom);
+  if (currentDateTo)   params.set('date_to',   currentDateTo);
+  const [res, advRes] = await Promise.all([
+    fetch('/api/insights?' + params),
+    fetch('/api/insights/advanced?' + params)
+  ]);
+  const data    = await res.json();
+  const advData = await advRes.json();
+  renderStats(data.summary, data.sentiment, advData);
+  renderHealthScore(advData.health_score);
+  renderSLA(advData.sla, advData.response_rate);
+  renderDailyChart(data.daily);
+  renderSentimentChart(data.sentiment);
+  renderKwSentiment(advData.kw_sentiment);
+  renderKeywords(data.keywords);
+  // subtitle & chart date labels
+  if (currentDateFrom && currentDateTo) {
+    const dateLabel = currentDateFrom + ' ~ ' + currentDateTo;
+    document.getElementById('issue-subtitle').textContent = dateLabel + ' 주목 언급';
+    document.getElementById('daily-chart-date').textContent = dateLabel;
+    document.getElementById('sentiment-chart-date').textContent = dateLabel;
+  }
+}
+
+async function loadIssues(filter, btn) {
+  currentIssueFilter = filter || 'all';
+  if (btn) {
+    document.querySelectorAll('.issue-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const params = new URLSearchParams({ filter: currentIssueFilter });
+  if (currentDateFrom) params.set('date_from', currentDateFrom);
+  if (currentDateTo)   params.set('date_to',   currentDateTo);
+  document.getElementById('issue-list').innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">로딩 중...</div>';
+  const res    = await fetch('/api/insights/issues?' + params);
+  const issues = await res.json();
+  renderIssues(issues);
+}
+
+function renderIssues(issues) {
+  if (!issues || issues.length === 0) {
+    document.getElementById('issue-list').innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">이슈 없음</div>';
+    return;
+  }
+  const sentimentColor = { positive: '#7000FC', neutral: '#918DA0', negative: '#DC2626' };
+  const sentimentLabel = { positive: '긍정', neutral: '중립', negative: '부정' };
+  const html = issues.map(issue => {
+    const sc    = issue.importance_score || 0;
+    const senti = issue.sentiment || 'neutral';
+    const badge = `<span style="font-size:10px;padding:1px 7px;border-radius:20px;background:${sentimentColor[senti]}22;color:${sentimentColor[senti]};font-weight:600">${sentimentLabel[senti]}</span>`;
+    const urgBadge = issue.is_urgent ? `<span style="font-size:10px;padding:1px 7px;border-radius:20px;background:#FEE2E2;color:#DC2626;font-weight:600;margin-left:4px">긴급</span>` : '';
+    const contentBtn = issue.content_count > 0
+      ? `<span style="font-size:11px;color:#918DA0">콘텐츠 ${issue.content_count}건</span>`
+      : '';
+    const sourceName = [issue.cafe_name, issue.keyword].filter(Boolean).join(' · ');
+    return `
+      <div class="issue-item">
+        <div class="issue-score">
+          <span class="issue-score-num">${sc}</span>
+          <span class="issue-score-label">중요도</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">
+            <a href="${issue.link || '#'}" target="_blank">${issue.title || '(제목 없음)'}</a>
+            ${badge}${urgBadge}
+          </div>
+          ${issue.summary ? `<div class="issue-summary">${issue.summary}</div>` : ''}
+          <div class="issue-source">
+            ${sourceName ? `<span class="issue-source-name">${sourceName}</span>` : ''}
+            <span class="issue-source-date">${(issue.created_at || '').slice(0,10)}</span>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+  document.getElementById('issue-list').innerHTML = html;
+}
+
+function renderChangeLabel(change, invertColor) {
+  if (change === null || change === undefined) return '';
+  const abs   = Math.abs(change);
+  const arrow = change > 0 ? '▲' : change < 0 ? '▼' : '─';
+  const good  = invertColor ? change < 0 : change > 0;
+  const bad   = invertColor ? change > 0 : change < 0;
+  const color = good ? '#16A34A' : bad ? '#DC2626' : '#918DA0';
+  return `<span style="color:${color}">${arrow} 전기간 대비 ${change > 0 ? '+' : ''}${abs}%</span>`;
+}
+
+function renderStats(summary, sentiment, adv) {
   document.getElementById('s-total').textContent = summary.total.toLocaleString();
-  document.getElementById('s-total-sub').textContent = currentDays + '일간 수집';
+  document.getElementById('s-total-change').innerHTML = renderChangeLabel(adv.comparison.total.change, false);
   document.getElementById('s-urgent').textContent = summary.urgent;
-  document.getElementById('s-urgent-sub').textContent = '전체 ' + summary.total + '건 중';
+  document.getElementById('s-urgent-change').innerHTML = renderChangeLabel(adv.comparison.urgent.change, true);
   document.getElementById('s-negative').textContent = summary.negative;
-  const pct = summary.total > 0 ? ((summary.negative / summary.total) * 100).toFixed(1) : 0;
-  const pctEl = document.getElementById('s-neg-pct');
-  pctEl.textContent = '전체의 ' + pct + '%';
-  pctEl.style.color = pct > 10 ? '#DC2626' : '#918DA0';
+  document.getElementById('s-neg-change').innerHTML = renderChangeLabel(adv.comparison.negative.change, true);
+}
+
+function renderHealthScore(score) {
+  const el    = document.getElementById('health-score');
+  const label = document.getElementById('health-label');
+  const arc   = document.getElementById('health-arc');
+  el.textContent = score;
+  const color = score >= 70 ? '#16A34A' : score >= 50 ? '#D97706' : '#DC2626';
+  const text  = score >= 70 ? '양호' : score >= 50 ? '주의' : '위험';
+  label.textContent  = text;
+  label.style.color  = color;
+  arc.style.stroke   = color;
+  arc.setAttribute('stroke-dasharray', `${score} 100`);
+}
+
+function renderSLA(sla, responseRate) {
+  document.getElementById('sla-total').textContent = sla.total_unprocessed;
+  document.getElementById('sla-6h').textContent    = sla.over_6h;
+  document.getElementById('sla-24h').textContent   = sla.over_24h;
+  document.getElementById('sla-rate').textContent  = responseRate + '%';
+}
+
+function renderKwSentiment(kwList) {
+  if (!kwList || kwList.length === 0) {
+    document.getElementById('kw-sentiment-list').innerHTML = '<div class="loading">데이터 없음</div>';
+    return;
+  }
+  const html = kwList.map(kw => {
+    const total  = kw.total || 1;
+    const posPct = Math.round(kw.positive / total * 100);
+    const neuPct = Math.round(kw.neutral  / total * 100);
+    const negPct = Math.round(kw.negative / total * 100);
+    return `
+      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:0.5px solid #F6F5FF">
+        <div style="width:90px;font-size:12px;color:#130D2A;font-weight:600;text-align:right;flex-shrink:0">${kw.kw}</div>
+        <div style="flex:1;height:10px;border-radius:5px;overflow:hidden;display:flex;gap:1px">
+          <div style="width:${posPct}%;background:#7000FC;transition:width 0.5s" title="긍정 ${kw.positive}건"></div>
+          <div style="width:${neuPct}%;background:#DAD9EA;transition:width 0.5s" title="중립 ${kw.neutral}건"></div>
+          <div style="width:${negPct}%;background:#DC2626;transition:width 0.5s" title="부정 ${kw.negative}건"></div>
+        </div>
+        <div style="width:120px;display:flex;gap:6px;font-size:10px;flex-shrink:0">
+          <span style="color:#7000FC">긍 ${posPct}%</span>
+          <span style="color:#9CA3AF">중 ${neuPct}%</span>
+          <span style="color:#DC2626">부 ${negPct}%</span>
+        </div>
+        <div style="width:32px;font-size:11px;font-weight:600;color:#918DA0;text-align:right">${total}</div>
+      </div>`;
+  }).join('');
+  document.getElementById('kw-sentiment-list').innerHTML = html;
 }
 
 function renderDailyChart(daily) {
@@ -254,7 +515,8 @@ function renderKeywords(keywords) {
   document.getElementById('kw-list').innerHTML = html || '<div class="loading">데이터 없음</div>';
 }
 
-loadData(7);
+// init with 7-day range
+setInsightRange(6, 0, document.getElementById('btn-7d'));
 </script>
 </body>
 </html>

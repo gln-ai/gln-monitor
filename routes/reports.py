@@ -1,0 +1,59 @@
+"""
+routes/reports.py — 로그 보고서 뷰어
+"""
+import json
+import os
+
+from flask import Blueprint, jsonify, render_template
+
+MONITOR_DIR  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPORTS_ROOT = os.path.join(MONITOR_DIR, "reports")
+
+reports_bp = Blueprint("reports", __name__)
+
+
+def _list_reports(subdir: str) -> list[dict]:
+    folder = os.path.join(REPORTS_ROOT, subdir)
+    if not os.path.isdir(folder):
+        return []
+    files = []
+    for fname in sorted(os.listdir(folder), reverse=True):
+        if fname.endswith(".json"):
+            fpath = os.path.join(folder, fname)
+            try:
+                with open(fpath, encoding="utf-8") as f:
+                    data = json.load(f)
+                files.append({
+                    "filename":   fname,
+                    "type":       data.get("report_type", subdir),
+                    "period_start": data.get("period_start", ""),
+                    "period_end":   data.get("period_end", ""),
+                    "generated_at": data.get("generated_at", ""),
+                    "total":        data.get("total", 0),
+                    "urgent":       data.get("urgent", 0),
+                    "health_score": data.get("health_score", 0),
+                })
+            except Exception:
+                pass
+    return files
+
+
+@reports_bp.route("/reports")
+def reports_index():
+    daily   = _list_reports("daily")
+    weekly  = _list_reports("weekly")
+    monthly = _list_reports("monthly")
+    return render_template("reports.html",
+                           daily=daily, weekly=weekly, monthly=monthly)
+
+
+@reports_bp.route("/api/reports/<subdir>/<filename>")
+def api_report_detail(subdir, filename):
+    if subdir not in ("daily", "weekly", "monthly"):
+        return jsonify({"error": "invalid"}), 400
+    fpath = os.path.join(REPORTS_ROOT, subdir, filename)
+    if not os.path.isfile(fpath):
+        return jsonify({"error": "not found"}), 404
+    with open(fpath, encoding="utf-8") as f:
+        data = json.load(f)
+    return jsonify(data)

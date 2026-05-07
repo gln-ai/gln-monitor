@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>콘텐츠 제작 — 설정</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #F6F5FF; margin: 0; }
+.sidebar { width: 220px; min-height: 100vh; background: #130D2A; position: fixed; top: 0; left: 0; z-index: 20; display: flex; flex-direction: column; padding: 20px 14px; }
+.nav-section { margin-bottom: 20px; }
+.nav-section-label { font-size: 9px; font-weight: 600; color: #5E5A71; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; margin-bottom: 2px; transition: background 0.15s; }
+.nav-link:hover { background: rgba(255,255,255,0.06); }
+.nav-link.active { background: #7000FC; }
+.nav-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.5; flex-shrink: 0; }
+.nav-link.active .nav-icon { opacity: 1; }
+.nav-text { font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
+.nav-link.active .nav-text { color: #fff; }
+.sidebar-bottom { margin-top: auto; }
+.main-wrap { margin-left: 220px; min-height: 100vh; }
+.topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+.back-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #130D2A; text-decoration: none; padding: 6px 10px; border-radius: 8px; transition: background 0.15s; }
+.back-btn:hover { background: #F0EAFF; }
+.content { padding: 24px; max-width: 640px; }
+.section-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 16px; padding: 20px 22px; margin-bottom: 14px; }
+.section-label { font-size: 11px; font-weight: 700; color: #918DA0; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 14px; }
+/* 채널 버튼 */
+.ch-btn { flex: 1; padding: 14px 12px; border-radius: 12px; border: 1.5px solid #E4E1EE; background: #fff; cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s; }
+.ch-btn.active { border-color: #7000FC; background: #F5EEFF; }
+.ch-btn-title { font-size: 13px; font-weight: 700; color: #130D2A; }
+.ch-btn-sub { font-size: 10px; color: #918DA0; margin-top: 2px; }
+.ch-btn.active .ch-btn-title { color: #7000FC; }
+/* 포맷 칩 */
+.fmt-chip { padding: 8px 16px; border-radius: 20px; border: 1.5px solid #E4E1EE; background: #fff; font-size: 12px; font-weight: 600; color: #5E5A71; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.fmt-chip.active { border-color: #7000FC; background: #F5EEFF; color: #7000FC; }
+/* 토픽 라디오 */
+.topic-option { padding: 14px 16px; border-radius: 12px; border: 1.5px solid #E4E1EE; cursor: pointer; transition: border-color 0.15s; margin-bottom: 8px; }
+.topic-option.active { border-color: #7000FC; }
+.topic-option-header { display: flex; align-items: center; gap: 10px; }
+.radio-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #C4B5FD; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.radio-dot.checked { border-color: #7000FC; }
+.radio-dot.checked::after { content:''; width:8px; height:8px; border-radius:50%; background:#7000FC; display:block; }
+.topic-option-title { font-size: 13px; font-weight: 600; color: #130D2A; }
+.topic-option-sub { font-size: 11px; color: #918DA0; margin-top: 2px; margin-left: 26px; }
+/* 자동 소재 목록 */
+.brief-list { margin-top: 10px; margin-left: 26px; display: flex; flex-direction: column; gap: 6px; }
+.brief-item { font-size: 11px; color: #5E5A71; background: #F6F5FF; border-radius: 8px; padding: 7px 10px; line-height: 1.4; }
+.brief-score { display: inline-block; font-size: 9px; font-weight: 700; color: #7000FC; background: #F0EAFF; border-radius: 4px; padding: 1px 5px; margin-right: 5px; }
+/* 직접 입력 */
+.manual-input { margin-top: 10px; margin-left: 26px; display: flex; flex-direction: column; gap: 8px; }
+.input-field { width: 100%; padding: 9px 12px; border: 1px solid #E4E1EE; border-radius: 10px; font-size: 13px; color: #130D2A; outline: none; font-family: inherit; }
+.input-field:focus { border-color: #7000FC; }
+/* 생성 버튼 */
+.gen-btn { width: 100%; padding: 15px; border-radius: 14px; background: #7000FC; color: #fff; font-size: 14px; font-weight: 700; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: opacity 0.2s; }
+.gen-btn:hover { opacity: 0.9; }
+.gen-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div style="padding:0 2px;margin-bottom:20px">
+    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
+    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
+    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">메뉴</div>
+    <a href="/insights" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-text">인사이트</span></a>
+    <a href="/" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-text">GLN 모니터링</span></a>
+    <a href="/content" class="nav-link active"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-text">콘텐츠</span></a>
+    <a href="/pr" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-text">보도자료</span></a>
+    <a href="/reports" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-text">보고서 아카이브</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div style="background:rgba(112,0,252,0.15);border-radius:10px;padding:10px 12px;border:0.5px solid rgba(112,0,252,0.3)">
+      <p style="font-size:10px;color:#AAA7B8;line-height:1.7;margin:0">수집: 매 30분<br>AI분석: 수집 직후<br>리포트: 매일 오전 8시</p>
+    </div>
+  </div>
+</div>
+
+<div class="main-wrap">
+  <div class="topbar">
+    <a href="/content" class="back-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      콘텐츠 제작
+    </a>
+  </div>
+
+  <div class="content">
+
+    <!-- 채널 선택 -->
+    <div class="section-card">
+      <div class="section-label">채널 선택</div>
+      <div style="display:flex;gap:10px">
+        <button class="ch-btn active" id="ch-official" onclick="selectChannel('official')">
+          <div class="ch-btn-title">메인채널</div>
+          <div class="ch-btn-sub">블로그 · 인스타 · 유튜브</div>
+        </button>
+        <button class="ch-btn" id="ch-gorani" onclick="selectChannel('gorani')">
+          <div class="ch-btn-title">서브채널</div>
+          <div class="ch-btn-sub">인스타 · 스레드 · 툰</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- 포맷 선택 -->
+    <div class="section-card">
+      <div class="section-label">포맷 선택</div>
+      <div id="fmt-chips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+
+    <!-- 토픽 설정 -->
+    <div class="section-card">
+      <div class="section-label">토픽 설정</div>
+
+      <div class="topic-option active" id="opt-auto" onclick="selectTopic('auto')">
+        <div class="topic-option-header">
+          <div class="radio-dot checked" id="dot-auto"></div>
+          <div class="topic-option-title">모니터링에서 자동 선택</div>
+        </div>
+        <div class="topic-option-sub">중요도 높은 최신 소재를 AI가 자동으로 선택합니다</div>
+        {% if briefs %}
+        <div class="brief-list" id="brief-preview">
+          {% for b in briefs %}
+          <div class="brief-item">
+            <span class="brief-score">중요도 {{ b.importance_score }}</span>
+            {{ (b.summary or b.title)[:60] }}{% if (b.summary or b.title)|length > 60 %}…{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="brief-list"><div class="brief-item" style="color:#AAA7B8">현재 활용 가능한 소재가 없습니다 — 직접 입력을 사용하세요</div></div>
+        {% endif %}
+      </div>
+
+      <div class="topic-option" id="opt-manual" onclick="selectTopic('manual')">
+        <div class="topic-option-header">
+          <div class="radio-dot" id="dot-manual"></div>
+          <div class="topic-option-title">직접 입력</div>
+        </div>
+        <div class="topic-option-sub">토픽과 국가를 직접 입력합니다</div>
+        <div class="manual-input" id="manual-fields" style="display:none">
+          <input class="input-field" id="topic-input" type="text" placeholder="예: 태국 여행 전 GLN으로 결제 준비하는 법">
+          <select class="input-field" id="country-input" style="appearance:auto">
+            <option value="">국가 선택 (선택사항)</option>
+            <option value="thailand">태국</option>
+            <option value="japan">일본</option>
+            <option value="vietnam">베트남</option>
+            <option value="taiwan">대만</option>
+            <option value="philippines">필리핀</option>
+            <option value="singapore">싱가포르</option>
+            <option value="hongkong">홍콩</option>
+            <option value="macau">마카오</option>
+            <option value="china">중국</option>
+            <option value="cambodia">캄보디아</option>
+            <option value="mongolia">몽골</option>
+            <option value="laos">라오스</option>
+            <option value="guam">괌</option>
+            <option value="saipan">사이판</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 생성 버튼 -->
+    <button class="gen-btn" id="gen-btn" onclick="startGenerate()">
+      <div class="spinner" id="spinner"></div>
+      <span id="gen-label">생성하기</span>
+    </button>
+
+    <div id="error-msg" style="display:none;margin-top:12px;padding:12px 14px;background:#FEF2F2;border-radius:10px;font-size:12px;color:#DC2626"></div>
+
+  </div>
+</div>
+
+<script>
+const FORMATS = {
+  official: [
+    { label: '블로그',      code: 'blog' },
+    { label: '인스타그램',  code: 'instagram_card' },
+    { label: '유튜브',      code: 'youtube_shorts' },
+    { label: '스레드',      code: 'threads' },
+  ],
+  gorani: [
+    { label: '인스타그램',  code: 'reels' },
+    { label: '스레드',      code: 'threads' },
+    { label: '툰',          code: 'cartoon' },
+  ],
+};
+
+let selectedChannel = 'official';
+let selectedFormat  = 'blog';
+let topicMode       = 'auto';
+
+function selectChannel(ch) {
+  selectedChannel = ch;
+  document.getElementById('ch-official').classList.toggle('active', ch === 'official');
+  document.getElementById('ch-gorani').classList.toggle('active', ch === 'gorani');
+  renderFormats();
+}
+
+function renderFormats() {
+  const container = document.getElementById('fmt-chips');
+  container.innerHTML = '';
+  const fmts = FORMATS[selectedChannel];
+  selectedFormat = fmts[0].code;
+  fmts.forEach(f => {
+    const btn = document.createElement('button');
+    btn.className = 'fmt-chip' + (f.code === selectedFormat ? ' active' : '');
+    btn.textContent = f.label;
+    btn.onclick = () => {
+      selectedFormat = f.code;
+      container.querySelectorAll('.fmt-chip').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+    };
+    container.appendChild(btn);
+  });
+}
+
+function selectTopic(mode) {
+  topicMode = mode;
+  document.getElementById('opt-auto').classList.toggle('active', mode === 'auto');
+  document.getElementById('opt-manual').classList.toggle('active', mode === 'manual');
+  document.getElementById('dot-auto').classList.toggle('checked', mode === 'auto');
+  document.getElementById('dot-manual').classList.toggle('checked', mode === 'manual');
+  document.getElementById('manual-fields').style.display = mode === 'manual' ? 'flex' : 'none';
+}
+
+async function startGenerate() {
+  const btn     = document.getElementById('gen-btn');
+  const spinner = document.getElementById('spinner');
+  const label   = document.getElementById('gen-label');
+  const errDiv  = document.getElementById('error-msg');
+
+  errDiv.style.display = 'none';
+  btn.disabled = true;
+  spinner.style.display = 'block';
+  label.textContent = '생성 중...';
+
+  const payload = {
+    channel:  selectedChannel,
+    format:   selectedFormat,
+    use_auto: topicMode === 'auto',
+    topic:    document.getElementById('topic-input').value.trim(),
+    country:  document.getElementById('country-input').value.trim(),
+  };
+
+  try {
+    const res  = await fetch('/api/content/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      throw new Error(data.error || '생성 실패');
+    }
+    window.location.href = `/content?channel=${selectedChannel}`;
+  } catch (e) {
+    errDiv.textContent = '오류: ' + e.message;
+    errDiv.style.display = 'block';
+    btn.disabled = false;
+    spinner.style.display = 'none';
+    label.textContent = '다시 시도';
+  }
+}
+
+// 초기화
+renderFormats();
+</script>
+</body>
+</html>

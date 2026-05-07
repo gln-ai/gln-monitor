@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLN 보도자료 생성기</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #F6F5FF; margin: 0; }
+/* ── 사이드바 (공통) ── */
+.sidebar-nav { width: 220px; min-height: 100vh; background: #130D2A; position: fixed; top: 0; left: 0; z-index: 20; display: flex; flex-direction: column; padding: 20px 14px; }
+.sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px; margin-bottom: 28px; }
+.logo-mark { width: 28px; height: 28px; background: #7000FC; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.logo-title { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; }
+.logo-sub { font-size: 10px; color: #5E5A71; }
+.nav-section { margin-bottom: 20px; }
+.nav-section-label { font-size: 9px; font-weight: 600; color: #5E5A71; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; margin-bottom: 2px; transition: background 0.15s; }
+.nav-link:hover { background: rgba(255,255,255,0.06); }
+.nav-link.active { background: #7000FC; }
+.nav-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.5; flex-shrink: 0; }
+.nav-link.active .nav-icon { opacity: 1; }
+.nav-text { font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
+.nav-link.active .nav-text { color: #fff; }
+.nav-divider { border: none; border-top: 0.5px solid rgba(255,255,255,0.07); margin: 8px 0; }
+.sidebar-bottom { margin-top: auto; }
+.sidebar-info { background: rgba(112,0,252,0.15); border-radius: 10px; padding: 10px 12px; border: 0.5px solid rgba(112,0,252,0.3); }
+.sidebar-info-text { font-size: 10px; color: #AAA7B8; line-height: 1.7; margin: 0; }
+/* ── 메인 래퍼 ── */
+.main-wrap { margin-left: 220px; min-height: 100vh; display: flex; flex-direction: column; }
+.topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.topbar-left h1 { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0; }
+.topbar-left p { font-size: 11px; color: #918DA0; margin: 2px 0 0; }
+/* ── 앱 컴포넌트 (원본 CSS 유지) ── */
+:root {
+  --color-text-primary: #1a1a2e;
+  --color-text-secondary: #5a6a7a;
+  --color-text-tertiary: #8a9ab0;
+  --color-text-info: #7000FC;
+  --color-text-danger: #c0392b;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f4f6f8;
+  --color-background-info: #F5F3FF;
+  --color-border-secondary: #d5dce4;
+  --color-border-tertiary: #e8ecf0;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+  --font-mono: 'SF Mono', 'Consolas', monospace;
+}
+.app { display: flex; flex-direction: column; flex: 1; background: #fff; margin: 16px 24px 40px; border-radius: 14px; border: 0.5px solid #E4E1EE; overflow: hidden; }
+.top-bar { display: flex; align-items: center; gap: 10px; padding: 0.75rem 1.25rem; border-bottom: 0.5px solid var(--color-border-tertiary); flex-shrink: 0; }
+.tabs { display: flex; margin-left: auto; gap: 0; }
+.tab { padding: 6px 15px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--color-text-secondary); border-bottom: 2px solid transparent; white-space: nowrap; transition: color 0.1s; }
+.tab.active { color: #7000FC; border-bottom-color: #7000FC; }
+.tab:hover:not(.active) { color: var(--color-text-primary); background: var(--color-background-secondary); }
+.tab-content { display: none; flex: 1; overflow: hidden; }
+.tab-content.active { display: flex; flex: 1; }
+.app-sidebar { width: 320px; min-width: 320px; border-right: 0.5px solid var(--color-border-tertiary); padding: 1.1rem; overflow-y: auto; max-height: calc(100vh - 130px); }
+.main-panel { flex: 1; padding: 1.1rem; overflow-y: auto; max-height: calc(100vh - 130px); }
+.sl { font-size: 10px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin: 0.9rem 0 0.35rem; }
+.sl:first-child { margin-top: 0; }
+input[type=text], textarea, select { width: 100%; font-size: 13px; padding: 7px 10px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); color: var(--color-text-primary); font-family: var(--font-sans); resize: vertical; }
+input[type=text]:focus, textarea:focus, select:focus { outline: none; border-color: #7000FC; box-shadow: 0 0 0 2px rgba(112,0,252,0.1); }
+textarea { line-height: 1.55; }
+select { height: 34px; cursor: pointer; }
+.tag-wrap { display: flex; flex-wrap: wrap; gap: 5px; padding: 5px 8px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); background: var(--color-background-primary); min-height: 34px; cursor: text; }
+.tag { display: inline-flex; align-items: center; gap: 3px; background: #F5F3FF; color: #7000FC; font-size: 11px; padding: 2px 7px; border-radius: 10px; }
+.tag button { background: none; border: none; cursor: pointer; color: #7000FC; font-size: 13px; line-height: 1; padding: 0; }
+.tag-input { border: none; outline: none; font-size: 13px; background: transparent; color: var(--color-text-primary); min-width: 70px; flex: 1; }
+.btn-primary { width: 100%; margin-top: 1rem; padding: 9px; background: #7000FC; color: #fff; border: none; border-radius: var(--border-radius-md); font-size: 13px; font-weight: 500; cursor: pointer; }
+.btn-primary:hover { background: #5A00CC; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-sm { padding: 6px 13px; background: none; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); font-size: 12px; cursor: pointer; color: var(--color-text-primary); }
+.btn-sm:hover { background: var(--color-background-secondary); }
+.btn-sm.blue { border-color: #DDD6FE; color: #7000FC; }
+.char-c { font-size: 10px; color: var(--color-text-tertiary); text-align: right; margin-top: 2px; }
+.opt { font-size: 10px; color: var(--color-text-tertiary); margin-left: 3px; }
+.placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 400px; gap: 10px; }
+.preview-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem; font-size: 12px; line-height: 1.8; color: var(--color-text-primary); white-space: pre-wrap; border: 0.5px solid var(--color-border-tertiary); margin-top: 0.75rem; }
+.loading-box { display: flex; align-items: center; gap: 8px; padding: 1rem; font-size: 12px; color: var(--color-text-secondary); }
+.lib-nav-grp { font-size: 10px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 8px 3px; }
+.nav-item { padding: 7px 9px; font-size: 13px; border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-secondary); margin-bottom: 1px; }
+.nav-item:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+.nav-item.active { background: #F5F3FF; color: #7000FC; font-weight: 500; }
+.phrase-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 0.9rem 1.1rem; margin-bottom: 0.65rem; }
+.phrase-lbl { font-size: 10px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.4rem; }
+.phrase-txt { font-size: 13px; line-height: 1.8; color: var(--color-text-primary); background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.65rem 0.9rem; position: relative; padding-right: 60px; }
+.pcopy { position: absolute; top: 7px; right: 7px; padding: 2px 7px; font-size: 10px; background: none; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-secondary); }
+.pcopy:hover { background: var(--color-background-primary); }
+.phrase-note { font-size: 11px; color: var(--color-text-tertiary); margin-top: 5px; line-height: 1.6; }
+.vbadge { display: inline-block; background: #fff3cd; color: #856404; font-size: 10px; padding: 1px 5px; border-radius: 3px; font-family: var(--font-mono); }
+.rnew { display: inline-block; background: #fde8e8; color: #c0392b; font-size: 9px; font-weight: 500; padding: 1px 5px; border-radius: 3px; margin-left: 5px; }
+.gh2 { font-size: 15px; font-weight: 500; margin-bottom: 0.9rem; padding-bottom: 0.5rem; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); }
+.gh3 { font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin: 0.9rem 0 0.35rem; }
+.gbox { border-radius: var(--border-radius-md); padding: 0.65rem 0.9rem; margin-bottom: 0.65rem; font-size: 13px; line-height: 1.75; }
+.gbox.good { background: #eaf6f0; border-left: 3px solid #27ae60; color: #1a4731; }
+.gbox.bad { background: #fdf0f0; border-left: 3px solid #e74c3c; color: #5c1a1a; }
+.gbox.info { background: #F5F3FF; border-left: 3px solid #7000FC; color: #4C0099; }
+.gbox.warn { background: #fefae0; border-left: 3px solid #f0c040; color: #5a4a00; }
+.gtbl { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 0.9rem; }
+.gtbl th { background: var(--color-background-secondary); padding: 6px 9px; text-align: left; font-weight: 500; border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+.gtbl td { padding: 6px 9px; border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: top; line-height: 1.6; }
+.badge { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 9px; font-weight: 500; }
+.br { background: #fde8e8; color: #c0392b; }
+.bo { background: #fff0e0; color: #d35400; }
+.bg { background: #e8f5e9; color: #27ae60; }
+.revise-layout { display: flex; gap: 0; flex: 1; overflow: hidden; }
+.revise-left { width: 340px; min-width: 340px; border-right: 0.5px solid var(--color-border-tertiary); padding: 1.1rem; overflow-y: auto; max-height: calc(100vh - 130px); display: flex; flex-direction: column; gap: 0; }
+.revise-right { flex: 1; padding: 1.1rem; overflow-y: auto; max-height: calc(100vh - 130px); }
+.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 0.35rem; }
+.mode-card { border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 9px 10px; cursor: pointer; transition: all 0.1s; }
+.mode-card:hover { border-color: #7000FC; background: #EDE9FE; }
+.mode-card.selected { border-color: #7000FC; background: #F5F3FF; }
+.mode-card .mc-title { font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+.mode-card .mc-desc { font-size: 10px; color: var(--color-text-secondary); line-height: 1.4; }
+.mode-card.selected .mc-title { color: #7000FC; }
+.focus-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 0.35rem; }
+.chip { padding: 4px 10px; font-size: 11px; border: 0.5px solid var(--color-border-secondary); border-radius: 12px; cursor: pointer; color: var(--color-text-secondary); transition: all 0.1s; }
+.chip:hover { border-color: #7000FC; color: #7000FC; }
+.chip.selected { background: #7000FC; color: #fff; border-color: #7000FC; }
+.intensity-row { display: flex; gap: 6px; margin-top: 0.35rem; }
+.int-btn { flex: 1; padding: 6px; font-size: 11px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-secondary); text-align: center; transition: all 0.1s; }
+.int-btn:hover { border-color: #7000FC; }
+.int-btn.selected { background: #7000FC; color: #fff; border-color: #7000FC; }
+/* ── 규칙 학습 탭 ── */
+.learn-layout { display: flex; gap: 0; flex: 1; overflow: hidden; }
+.learn-left { width: 360px; min-width: 360px; border-right: 0.5px solid var(--color-border-tertiary); padding: 1.1rem; overflow-y: auto; max-height: calc(100vh - 130px); display: flex; flex-direction: column; gap: 0; }
+.learn-right { flex: 1; padding: 1.1rem; overflow-y: auto; max-height: calc(100vh - 130px); }
+.suggest-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 0.85rem 1rem; margin-bottom: 0.65rem; background: var(--color-background-primary); }
+.suggest-card.forbidden { border-left: 3px solid #e74c3c; }
+.suggest-card.phrase { border-left: 3px solid #7000FC; }
+.suggest-card.naming { border-left: 3px solid #27ae60; }
+.suggest-card.checklist { border-left: 3px solid #f0c040; }
+.suggest-type { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.suggest-type.forbidden { color: #e74c3c; }
+.suggest-type.phrase { color: #7000FC; }
+.suggest-type.naming { color: #27ae60; }
+.suggest-type.checklist { color: #856404; }
+.suggest-body { font-size: 12px; line-height: 1.7; color: var(--color-text-primary); margin-bottom: 6px; }
+.suggest-reason { font-size: 11px; color: var(--color-text-tertiary); line-height: 1.5; }
+.suggest-actions { display: flex; gap: 5px; margin-top: 8px; }
+.btn-accept { padding: 4px 12px; font-size: 11px; background: #7000FC; color: #fff; border: none; border-radius: var(--border-radius-md); cursor: pointer; font-weight: 500; }
+.btn-accept:hover { background: #5A00CC; }
+.btn-accept:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-reject { padding: 4px 12px; font-size: 11px; background: none; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-secondary); }
+.btn-reject:hover { background: var(--color-background-secondary); }
+.saved-badge { font-size: 10px; color: #27ae60; font-weight: 600; display: none; margin-left: 6px; }
+.learn-summary { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.65rem 0.9rem; font-size: 11px; color: var(--color-text-secondary); line-height: 1.7; margin-bottom: 1rem; border: 0.5px solid var(--color-border-tertiary); }
+@media (max-width: 768px) {
+  .sidebar-nav { width: 60px; padding: 16px 8px; }
+  .logo-title, .nav-text, .sidebar-info, .nav-section-label, .logo-sub { display: none; }
+  .nav-link { justify-content: center; padding: 10px; }
+  .main-wrap { margin-left: 60px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── 사이드바 ── -->
+<div class="sidebar-nav">
+  <div style="padding:0 2px;margin-bottom:20px">
+    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
+    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
+    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">메뉴</div>
+    <a href="/insights" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-text">인사이트</span></a>
+    <a href="/" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-text">GLN 모니터링</span></a>
+    <a href="/content" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-text">콘텐츠</span></a>
+    <a href="/pr" class="nav-link active"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-text">보도자료</span></a>
+    <a href="/reports" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-text">보고서 아카이브</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-info">
+      <p class="sidebar-info-text">보도자료 생성 + 리바이즈<br>Claude API 직접 연결</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── 메인 ── -->
+<div class="main-wrap">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>보도자료 생성기</h1>
+      <p>GLN 보도자료 작성 규칙 적용 · Claude API 연결</p>
+    </div>
+    <a href="/pr/drafts" style="font-size:12px;font-weight:600;color:#7000FC;text-decoration:none;padding:7px 14px;border:1.5px solid #DDD6FE;border-radius:9px;background:#F5F3FF;">초안 목록 보기</a>
+  </div>
+
+  <!-- ── 앱 컴포넌트 ── -->
+  <div class="app">
+    <div class="top-bar">
+      <div style="width:24px;height:24px;background:#7000FC;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <span style="color:#fff;font-size:10px;font-weight:500;">G</span>
+      </div>
+      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);">GLN 보도자료 생성기</div>
+      <div style="font-size:10px;color:var(--color-text-tertiary);margin-left:1px;">v5</div>
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('gen',this)">✏️ 기사 생성</div>
+        <div class="tab" onclick="switchTab('rev',this)">🔄 초안 리바이즈</div>
+        <div class="tab" onclick="switchTab('lib',this)">📚 고정문구</div>
+        <div class="tab" onclick="switchTab('guide',this)">📖 작성 가이드</div>
+        <div class="tab" onclick="switchTab('learn',this)">🧠 규칙 학습</div>
+      </div>
+    </div>
+
+    <!-- 기사 생성 탭 -->
+    <div id="tab-gen" class="tab-content active">
+      <div class="app-sidebar">
+        <div class="sl">보도자료 유형</div>
+        <select id="pressType">
+          <option value="서비스 출시">서비스 출시 / 론칭</option>
+          <option value="제휴·파트너십">제휴 · 파트너십 체결</option>
+          <option value="서비스 확대">서비스 확대 / 지역 확장</option>
+          <option value="프로모션·이벤트">프로모션 · 이벤트</option>
+          <option value="투자·성과">투자 유치 / 실적 성과</option>
+          <option value="기술·솔루션">기술 · 솔루션 발표</option>
+        </select>
+        <div class="sl">발표 국가 / 지역 <span style="font-size:9px;color:var(--color-text-tertiary);">(이용자 많은 순)</span></div>
+        <input type="text" id="country" placeholder="예: 일본, 베트남, 라오스" />
+        <div class="sl">핵심 내용 요약 <span style="color:var(--color-text-danger)">*</span></div>
+        <textarea id="summary" placeholder="보도자료 핵심 내용을 1~3줄로 요약해 주세요." style="min-height:75px;"></textarea>
+        <div class="char-c" id="summaryCount">0자</div>
+        <div class="sl">주요 서비스명</div>
+        <input type="text" id="serviceName" placeholder="예: QR출금, 위챗페이 QR결제" />
+        <div class="sl">제휴사 / 파트너 <span class="opt">(선택)</span></div>
+        <input type="text" id="partner" placeholder="예: Tenpay Global" />
+        <div class="sl">포함할 주요 앱</div>
+        <div class="tag-wrap" id="appsWrap" onclick="document.getElementById('appTagInput').focus()">
+          <input class="tag-input" id="appTagInput" placeholder="앱 이름 입력 후 Enter" />
+        </div>
+        <div class="sl">강조 키워드</div>
+        <div class="tag-wrap" id="keywordsWrap" onclick="document.getElementById('kwTagInput').focus()">
+          <input class="tag-input" id="kwTagInput" placeholder="키워드 입력 후 Enter" />
+        </div>
+        <div class="sl">이석 대표 발언 맥락 <span class="opt">(선택)</span></div>
+        <textarea id="ceoContext" placeholder="없으면 기본 문구 자동 사용" style="min-height:45px;"></textarea>
+        <div class="sl">추가 사항 <span class="opt">(선택)</span></div>
+        <textarea id="extra" placeholder="프로모션 기간, 수치, 특이사항 등" style="min-height:45px;"></textarea>
+        <div class="sl">발표 날짜</div>
+        <input type="text" id="releaseDate" placeholder="예: 2026년 4월 15일" />
+        <button class="btn-primary" id="genBtn" onclick="buildAndSend()">기사문 생성하기 ↗</button>
+      </div>
+      <div class="main-panel" id="outputPanel">
+        <div class="placeholder">
+          <div style="font-size:32px;">📄</div>
+          <p style="font-size:13px;color:var(--color-text-secondary);text-align:center;">좌측 양식을 입력하고<br>기사문 생성하기를 눌러주세요</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 리바이즈 탭 -->
+    <div id="tab-rev" class="tab-content">
+      <div class="revise-layout">
+        <div class="revise-left">
+          <div class="sl" style="margin-top:0;">리바이즈 모드 선택</div>
+          <div class="mode-grid" id="modeGrid">
+            <div class="mode-card selected" onclick="selectMode('단락 수정',this)">
+              <div class="mc-title">📝 단락 수정</div>
+              <div class="mc-desc">특정 단락만 골라서 다시 쓰기</div>
+            </div>
+            <div class="mode-card" onclick="selectMode('전체 재편집',this)">
+              <div class="mc-title">🔁 전체 재편집</div>
+              <div class="mc-desc">초안 전체를 새 방향으로 개편</div>
+            </div>
+            <div class="mode-card" onclick="selectMode('톤 교정',this)">
+              <div class="mc-title">🎯 톤 교정</div>
+              <div class="mc-desc">문체·어조만 GLN 규칙에 맞게</div>
+            </div>
+            <div class="mode-card" onclick="selectMode('금지어 교정',this)">
+              <div class="mc-title">🚫 금지어 교정</div>
+              <div class="mc-desc">ATM출금·금융서비스 등 자동 수정</div>
+            </div>
+          </div>
+          <div class="sl">초안 붙여넣기 <span style="color:var(--color-text-danger)">*</span></div>
+          <textarea id="draftInput" placeholder="기존에 작성한 보도자료 초안을 여기에 붙여넣으세요." style="min-height:140px;" oninput="updateDraftCount()"></textarea>
+          <div class="char-c" id="draftCount">0자</div>
+          <div class="sl" id="focusLabel">수정 초점 <span class="opt">(복수 선택 가능)</span></div>
+          <div class="focus-chips" id="focusChips">
+            <div class="chip selected" onclick="toggleChip(this)">이용자 규모 순 강조</div>
+            <div class="chip selected" onclick="toggleChip(this)">모바일만으로 여행 컨셉</div>
+            <div class="chip" onclick="toggleChip(this)">대표 발언 개선</div>
+            <div class="chip" onclick="toggleChip(this)">파트너 앱 강조</div>
+            <div class="chip" onclick="toggleChip(this)">프로모션 부각</div>
+            <div class="chip" onclick="toggleChip(this)">서비스 차별점 강화</div>
+            <div class="chip" onclick="toggleChip(this)">리드 문단 강화</div>
+            <div class="chip" onclick="toggleChip(this)">회사 소개 확인</div>
+          </div>
+          <div class="sl">수정 강도</div>
+          <div class="intensity-row" id="intensityRow">
+            <div class="int-btn selected" onclick="selectIntensity(this)">가볍게<br><span style="font-size:9px;opacity:0.8;">표현만 다듬기</span></div>
+            <div class="int-btn" onclick="selectIntensity(this)">보통<br><span style="font-size:9px;opacity:0.8;">구조 일부 조정</span></div>
+            <div class="int-btn" onclick="selectIntensity(this)">강하게<br><span style="font-size:9px;opacity:0.8;">전면 재작성</span></div>
+          </div>
+          <div class="sl">수정 요청 사항 <span class="opt">(선택 — 직접 입력)</span></div>
+          <textarea id="reviseNote" placeholder="예: 일본을 더 전면에 부각시켜줘&#10;예: 대표 발언 앞 인용구가 너무 딱딱해, 좀 더 자연스럽게&#10;예: 3단락이 너무 길어, 핵심만 남기고 압축해줘" style="min-height:70px;"></textarea>
+          <div class="sl">특정 단락 지정 <span class="opt">(선택 — 단락 수정 모드 시)</span></div>
+          <select id="paraSelect">
+            <option value="">전체 (선택 안 함)</option>
+            <option value="제목·소제목">제목 · 소제목</option>
+            <option value="1단락 (리드)">1단락 — 리드 문단</option>
+            <option value="2단락">2단락 — 서비스 특징</option>
+            <option value="3단락">3단락 — 이용 방법 / 앱</option>
+            <option value="4단락 (대표 발언)">4단락 — 이석 대표 발언</option>
+            <option value="5단락 (회사 소개)">5단락 — 회사 소개</option>
+          </select>
+          <button class="btn-primary" id="revBtn" onclick="buildReviseAndSend()">리바이즈 요청하기 ↗</button>
+        </div>
+        <div class="revise-right" id="reviseOutput">
+          <div class="placeholder">
+            <div style="font-size:32px;">🔄</div>
+            <p style="font-size:13px;color:var(--color-text-secondary);text-align:center;">초안을 붙여넣고<br>리바이즈 요청하기를 눌러주세요</p>
+            <p style="font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:6px;">GLN 규칙을 적용해 Claude가<br>수정된 기사문을 바로 작성합니다</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 고정문구 탭 -->
+    <div id="tab-lib" class="tab-content">
+      <div style="display:flex;gap:1.25rem;padding:1.1rem;flex:1;overflow:hidden;max-height:calc(100vh - 130px);">
+        <div style="min-width:195px;border-right:0.5px solid var(--color-border-tertiary);padding-right:1.1rem;overflow-y:auto;">
+          <div class="lib-nav-grp">고정 필수 문구</div>
+          <div class="nav-item active" onclick="showLib('ceo',this)">이석 대표 발언</div>
+          <div class="nav-item" onclick="showLib('intro',this)">회사 소개 단락</div>
+          <div class="nav-item" onclick="showLib('company',this)">회사명 표기법</div>
+          <div class="lib-nav-grp" style="margin-top:6px;">유형별 서두 문구</div>
+          <div class="nav-item" onclick="showLib('launch',this)">서비스 출시</div>
+          <div class="nav-item" onclick="showLib('partnerlib',this)">제휴·파트너십</div>
+          <div class="nav-item" onclick="showLib('expand',this)">서비스 확대</div>
+          <div class="nav-item" onclick="showLib('promo',this)">프로모션·이벤트</div>
+          <div class="lib-nav-grp" style="margin-top:6px;">앱·서비스 표기</div>
+          <div class="nav-item" onclick="showLib('apps',this)">파트너 앱 나열</div>
+          <div class="nav-item" onclick="showLib('noapp',this)">모바일만으로 여행 강조</div>
+        </div>
+        <div style="flex:1;overflow-y:auto;" id="libContent"></div>
+      </div>
+    </div>
+
+    <!-- 가이드 탭 -->
+    <div id="tab-guide" class="tab-content">
+      <div style="display:flex;gap:1.25rem;padding:1.1rem;flex:1;overflow:hidden;max-height:calc(100vh - 130px);">
+        <div style="min-width:185px;border-right:0.5px solid var(--color-border-tertiary);padding-right:1.1rem;overflow-y:auto;">
+          <div class="lib-nav-grp">기본 원칙</div>
+          <div class="nav-item active" onclick="showGuide('structure',this)">보도자료 구조</div>
+          <div class="nav-item" onclick="showGuide('tone',this)">문체·어조 원칙</div>
+          <div class="nav-item" onclick="showGuide('headline',this)">제목 작성법</div>
+          <div class="lib-nav-grp" style="margin-top:6px;">단락별 가이드</div>
+          <div class="nav-item" onclick="showGuide('para1',this)">1단락: 서두</div>
+          <div class="nav-item" onclick="showGuide('para2',this)">2~3단락: 본문</div>
+          <div class="nav-item" onclick="showGuide('para4',this)">4단락: 대표 발언</div>
+          <div class="nav-item" onclick="showGuide('para5',this)">5단락: 회사 소개</div>
+          <div class="lib-nav-grp" style="margin-top:6px;">표기 규정</div>
+          <div class="nav-item" onclick="showGuide('naming',this)">고유명사 표기</div>
+          <div class="nav-item" onclick="showGuide('forbidden',this)" style="color:#c0392b;font-weight:500;">🚫 금지어 규정</div>
+          <div class="nav-item" onclick="showGuide('checklist',this)">최종 체크리스트</div>
+        </div>
+        <div style="flex:1;overflow-y:auto;" id="guideContent"></div>
+      </div>
+    </div>
+
+    <!-- 규칙 학습 탭 -->
+    <div id="tab-learn" class="tab-content">
+      <div class="learn-layout">
+        <!-- 왼쪽: 입력 -->
+        <div class="learn-left">
+          <div class="sl" style="margin-top:0;">완성 기사문 붙여넣기 <span style="color:var(--color-text-danger)">*</span></div>
+          <textarea id="learnArticle" placeholder="최종 승인된 보도자료를 붙여넣으세요.&#10;Claude가 기사를 분석해 pr_rules.json에 추가할 규칙 후보를 추출합니다." style="min-height:200px;" oninput="document.getElementById('learnCount').textContent=this.value.length+'자'"></textarea>
+          <div class="char-c" id="learnCount">0자</div>
+
+          <div class="sl">이 기사에 대한 메모 <span class="opt">(선택)</span></div>
+          <textarea id="learnNote" placeholder="예: 일본 QR출금 출시 기사, 2026년 4월 승인본&#10;예: 이 표현 방식 앞으로 계속 쓸 예정&#10;예: 대표 발언 앞 인용구 이 버전으로 고정" style="min-height:60px;"></textarea>
+
+          <div class="sl">분석 범위</div>
+          <div style="display:flex;flex-direction:column;gap:5px;margin-top:0.35rem;">
+            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
+              <input type="checkbox" id="chkForbidden" checked style="width:auto;"> 금지어 위반·신규 패턴 탐지
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
+              <input type="checkbox" id="chkPhrase" checked style="width:auto;"> 재사용 가치 있는 표현·문구 추출
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
+              <input type="checkbox" id="chkNaming" checked style="width:auto;"> 고유명사 표기 패턴 확인
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
+              <input type="checkbox" id="chkChecklist" checked style="width:auto;"> 체크리스트 항목 추가 제안
+            </label>
+          </div>
+
+          <button class="btn-primary" id="learnBtn" onclick="runLearn()" style="margin-top:1.2rem;">기사 분석하기 ↗</button>
+        </div>
+
+        <!-- 오른쪽: 분석 결과 -->
+        <div class="learn-right" id="learnOutput">
+          <div class="placeholder">
+            <div style="font-size:32px;">🧠</div>
+            <p style="font-size:13px;color:var(--color-text-secondary);text-align:center;">완성 기사를 붙여넣고<br>분석하기를 눌러주세요</p>
+            <p style="font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:6px;">새로운 금지어, 재사용 표현, 명칭 규칙 등<br>pr_rules.json 업데이트 후보를 제안합니다</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /.app -->
+</div><!-- /.main-wrap -->
+
+<script>
+const appTags=[], kwTags=[];
+let selectedMode='단락 수정';
+let selectedIntensity='가볍게';
+let selectedChips=new Set(['이용자 규모 순 강조','모바일만으로 여행 컨셉']);
+
+function switchTab(t,el){
+  document.querySelectorAll('.tab').forEach(e=>{e.classList.remove('active');});
+  el.classList.add('active');
+  document.querySelectorAll('.tab-content').forEach(e=>e.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+}
+function selectMode(mode,el){
+  selectedMode=mode;
+  document.querySelectorAll('.mode-card').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function selectIntensity(el){
+  selectedIntensity=el.textContent.split('\n')[0].trim();
+  document.querySelectorAll('.int-btn').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function toggleChip(el){
+  el.classList.toggle('selected');
+  const t=el.textContent.trim();
+  if(el.classList.contains('selected')) selectedChips.add(t);
+  else selectedChips.delete(t);
+}
+function setupTagInput(inputId,tags,wrapId){
+  const input=document.getElementById(inputId);
+  input.addEventListener('keydown',e=>{
+    if((e.key==='Enter'||e.key===',')&&input.value.trim()){
+      e.preventDefault();
+      const val=input.value.trim().replace(/,$/,'');
+      if(val&&!tags.includes(val)){tags.push(val);renderTags(tags,wrapId,inputId);}
+      input.value='';
+    }
+    if(e.key==='Backspace'&&!input.value&&tags.length){tags.pop();renderTags(tags,wrapId,inputId);}
+  });
+}
+function renderTags(tags,wrapId,inputId){
+  const wrap=document.getElementById(wrapId),input=document.getElementById(inputId);
+  wrap.innerHTML='';
+  tags.forEach((t,i)=>{
+    const s=document.createElement('span');s.className='tag';
+    s.innerHTML=t+'<button onclick="removeTag('+i+',\''+wrapId+'\',\''+inputId+'\')">×</button>';
+    wrap.appendChild(s);
+  });
+  wrap.appendChild(input);
+}
+function removeTag(i,wrapId,inputId){
+  if(wrapId==='appsWrap'){appTags.splice(i,1);renderTags(appTags,wrapId,inputId);}
+  else{kwTags.splice(i,1);renderTags(kwTags,wrapId,inputId);}
+}
+setupTagInput('appTagInput',appTags,'appsWrap');
+setupTagInput('kwTagInput',kwTags,'keywordsWrap');
+document.getElementById('summary').addEventListener('input',function(){document.getElementById('summaryCount').textContent=this.value.length+'자';});
+function updateDraftCount(){document.getElementById('draftCount').textContent=document.getElementById('draftInput').value.length+'자';}
+
+function buildAndSend(){
+  const summary=document.getElementById('summary').value.trim();
+  if(!summary){alert('핵심 내용 요약은 필수입니다.');return;}
+  const pressType=document.getElementById('pressType').value;
+  const country=document.getElementById('country').value.trim();
+  const serviceName=document.getElementById('serviceName').value.trim();
+  const partner=document.getElementById('partner').value.trim();
+  const apps=appTags.length?appTags.join(', '):'퍼플GLN, 토스, 네이버페이';
+  const keywords=kwTags.length?kwTags.join(', '):'없음';
+  const ceoContext=document.getElementById('ceoContext').value.trim();
+  const extra=document.getElementById('extra').value.trim();
+  const releaseDate=document.getElementById('releaseDate').value.trim();
+  const prompt=`GLN인터내셔널(하나은행 자회사) 공식 보도자료를 아래 정보로 작성해줘.
+
+[필수 규칙]
+- 회사명: GLN인터내셔널 (약칭 GLN, 하나은행 자회사)
+- 대표: 이석 GLN 대표
+- 이석 GLN 대표 발언 반드시 포함: 이석 GLN 대표는 "~"며 "앞으로도 해외여행 손님들에게 별도의 환전이나 실물카드 소지가 필요 없는 간편 출금 경험을 선도해 나가겠다"고 밝혔다.
+- 마지막 단락에 반드시 포함: "GLN은 2021년 7월 하나은행에서 분사해 설립된 핀테크 자회사로, 베트남, 중국, 홍콩, 마카오, 태국, 필리핀, 라오스, 일본, 대만 등 주요 지역에서 QR결제 및 QR출금 서비스를 제공하고 있다."
+- 형식: 제목(【제목】), 소제목 2개(【소제목1】, 【소제목2】), 본문 4~5단락
+- 문체: 공식 보도자료 문어체 (~다, ~했다, ~밝혔다)
+- 앱은 "퍼플GLN 및 토스, 네이버페이 등 국내 파트너사 앱" 형식으로
+
+[금지어 규칙]
+- "ATM출금", "ATM 출금", "ATMQR출금" 절대 금지 → "QR출금"으로만 표기
+- "금융서비스", "금융 서비스" 전체 금지 → "현금 인출 서비스", "QR출금 서비스" 등 구체적 표현 사용
+
+[작성 톤 규칙]
+- 국가 순서 = 이용자 규모 순. 앞 국가를 더 비중 있게 강조
+- 전체 컨셉: "카드 없이 스마트폰 하나로 여행 가능" — 모바일 앱만으로 해결되는 편리함 전면 강조
+- 현지 앱 설치 불필요, 환전 불필요, 실물카드 불필요를 자연스럽게 녹여서 작성
+
+[입력 정보]
+유형: ${pressType}
+국가/지역: ${country||'미입력'}
+핵심내용: ${summary}
+서비스명: ${serviceName||'미입력'}
+제휴사: ${partner||'없음'}
+포함앱: ${apps}
+키워드: ${keywords}
+대표발언맥락: ${ceoContext||'기본문구사용'}
+추가사항: ${extra||'없음'}
+날짜: ${releaseDate||'미입력'}`;
+
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true; btn.textContent='생성 중...';
+  document.getElementById('outputPanel').innerHTML='<div class="loading-box"><span>⏳</span> Claude가 보도자료를 작성하고 있습니다...</div>';
+
+  fetch('/api/pr/generate', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({prompt:prompt})})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.error){
+        document.getElementById('outputPanel').innerHTML='<div style="color:#c0392b;padding:1rem;font-size:13px;">오류: '+escHtml(d.error)+'</div>';
+      } else {
+        window._lastPrResult = d.result;
+        document.getElementById('outputPanel').innerHTML='<div class="preview-box" id="prResultText">'+escHtml(d.result)+'</div><div style="display:flex;gap:6px;margin-top:0.6rem;flex-wrap:wrap;"><button class="btn-sm" onclick="cpText(\'#outputPanel .preview-box\',\'복사\',this)">복사</button><button class="btn-sm" style="background:#059669;color:#fff;border:none;" onclick="savePrDraft(this)">DB 저장</button><button class="btn-sm blue" onclick="buildAndSend()">재생성 ↗</button></div>';
+      }
+    })
+    .catch(e=>{document.getElementById('outputPanel').innerHTML='<div style="color:#c0392b;padding:1rem;font-size:13px;">네트워크 오류: '+escHtml(e.message)+'</div>';})
+    .finally(()=>{btn.disabled=false; btn.textContent='기사문 생성하기 ↗';});
+}
+
+function buildReviseAndSend(){
+  const draft=document.getElementById('draftInput').value.trim();
+  if(!draft){alert('초안을 먼저 붙여넣어 주세요.');return;}
+  const reviseNote=document.getElementById('reviseNote').value.trim();
+  const paraSelect=document.getElementById('paraSelect').value;
+  const focusList=[...selectedChips].join(', ')||'없음';
+  const intensityDesc={
+    '가볍게':'표현과 단어만 다듬는 수준. 구조는 최대한 유지.',
+    '보통':'일부 문장·순서를 조정하되 전체 흐름은 유지.',
+    '강하게':'초안을 참고해 GLN 규칙에 맞게 전면 재작성.'
+  }[selectedIntensity]||'';
+
+  let modeInstruction='';
+  if(selectedMode==='단락 수정'){
+    modeInstruction=paraSelect
+      ? `[${paraSelect}] 단락만 수정해줘. 나머지 단락은 원문 그대로 유지.`
+      : '각 단락을 검토하고 문제가 있는 단락을 수정해줘.';
+  } else if(selectedMode==='전체 재편집'){
+    modeInstruction='초안의 핵심 내용과 정보는 유지하되, 전체 구조와 흐름을 GLN 규칙에 맞게 새롭게 재편집해줘.';
+  } else if(selectedMode==='톤 교정'){
+    modeInstruction='내용은 최대한 유지하고, 문체와 어조만 GLN 공식 보도자료 규칙(문어체, 컨셉 톤)에 맞게 교정해줘.';
+  } else if(selectedMode==='금지어 교정'){
+    modeInstruction='내용과 구조는 유지하고, 금지어(ATM출금→QR출금, 금융서비스→구체적 표현)만 찾아서 수정해줘. 수정한 부분은 【수정】표시로 명시해줘.';
+  }
+
+  const prompt=`아래 GLN인터내셔널 보도자료 초안을 리바이즈해줘.
+
+[리바이즈 모드] ${selectedMode}
+[수정 강도] ${selectedIntensity} — ${intensityDesc}
+[수정 초점] ${focusList}
+${paraSelect?'[대상 단락] '+paraSelect:''}
+${reviseNote?'[추가 요청] '+reviseNote:''}
+
+${modeInstruction}
+
+[GLN 필수 규칙 — 리바이즈 후에도 반드시 준수]
+- 이석 GLN 대표 발언 포함: 이석 GLN 대표는 "~"며 "앞으로도 해외여행 손님들에게 별도의 환전이나 실물카드 소지가 필요 없는 간편 출금 경험을 선도해 나가겠다"고 밝혔다.
+- 마지막 단락: "GLN은 2021년 7월 하나은행에서 분사해 설립된 핀테크 자회사로..." 고정 문구 유지
+- "ATM출금", "ATM 출금" → "QR출금"으로만 표기
+- "금융서비스" → "현금 인출 서비스" 등 구체적 표현으로
+- 문체: 공식 보도자료 문어체 (~다, ~했다, ~밝혔다)
+- 컨셉: "카드 없이 스마트폰 하나로 여행 가능" 전면 강조
+- 국가 나열 순서 = 이용자 규모 순 (앞 국가를 더 비중 있게)
+
+[원문 초안]
+${draft}`;
+
+  const btn=document.getElementById('revBtn');
+  btn.disabled=true; btn.textContent='요청 중...';
+  document.getElementById('reviseOutput').innerHTML='<div class="loading-box"><span>⏳</span> Claude가 리바이즈하고 있습니다...</div>';
+
+  fetch('/api/pr/revise', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({prompt:prompt})})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.error){
+        document.getElementById('reviseOutput').innerHTML='<div style="color:#c0392b;padding:1rem;font-size:13px;">오류: '+escHtml(d.error)+'</div>';
+      } else {
+        document.getElementById('reviseOutput').innerHTML='<div style="font-size:12px;font-weight:500;margin-bottom:0.5rem;">리바이즈 완료</div><div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:0.6rem;">모드: <b>'+selectedMode+'</b> · 강도: <b>'+selectedIntensity+'</b> · 초점: '+focusList+'</div><div class="preview-box">'+escHtml(d.result)+'</div><div style="display:flex;gap:6px;margin-top:0.6rem;"><button class="btn-sm" onclick="cpText(\'#reviseOutput .preview-box\',\'복사\',this)">복사</button><button class="btn-sm blue" onclick="buildReviseAndSend()">재요청 ↗</button></div>';
+      }
+    })
+    .catch(e=>{document.getElementById('reviseOutput').innerHTML='<div style="color:#c0392b;padding:1rem;font-size:13px;">네트워크 오류: '+escHtml(e.message)+'</div>';})
+    .finally(()=>{btn.disabled=false; btn.textContent='리바이즈 요청하기 ↗';});
+}
+
+function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+async function savePrDraft(btn) {
+  const raw = window._lastPrResult || '';
+  if (!raw) return;
+  // 간단 파싱: ## 섹션으로 분리
+  const sections = {};
+  let cur = '', buf = [];
+  raw.split('\n').forEach(line => {
+    if (line.startsWith('## ')) {
+      if (cur) sections[cur] = buf.join('\n').trim();
+      cur = line.slice(3).trim(); buf = [];
+    } else { buf.push(line); }
+  });
+  if (cur) sections[cur] = buf.join('\n').trim();
+
+  btn.disabled = true; btn.textContent = '저장 중...';
+  const res  = await fetch('/api/pr/save', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      headline:     sections['PR_HEADLINE'] || sections['헤드라인'] || raw.slice(0,80),
+      subheadline:  sections['PR_SUBHEADLINE'] || sections['부제'] || '',
+      body:         sections['PRESS_RELEASE'] || sections['보도자료 본문'] || raw,
+      key_messages: sections['KEY_MESSAGES'] || sections['핵심 메시지'] || '',
+      verify_list:  sections['VERIFY_LIST'] || sections['검증 목록'] || '',
+    })
+  });
+  const data = await res.json();
+  btn.textContent = '✓ 저장됨 #' + data.id;
+  btn.style.background = '#047857';
+  loadPrDrafts();
+}
+
+async function loadPrDrafts() {
+  const res   = await fetch('/api/pr/drafts');
+  const items = await res.json();
+  const wrap  = document.getElementById('prDraftList');
+  if (!wrap) return;
+  if (!items.length) { wrap.innerHTML = '<div style="color:#AAA7B8;font-size:12px;padding:12px">저장된 초안 없음</div>'; return; }
+  wrap.innerHTML = items.map(d => `
+    <div style="padding:10px 0;border-bottom:0.5px solid #F6F5FF;display:flex;align-items:flex-start;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;color:#130D2A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(d.headline||'(제목 없음)')}</div>
+        <div style="font-size:10px;color:#AAA7B8;margin-top:2px">${(d.created_at||'').slice(0,16)}</div>
+      </div>
+      <button onclick="deletePrDraft(${d.id},this)" style="background:none;border:none;color:#AAA7B8;cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px" title="삭제">✕</button>
+    </div>`).join('');
+}
+
+async function deletePrDraft(id, btn) {
+  if (!confirm('삭제하시겠습니까?')) return;
+  await fetch(`/api/pr/drafts/${id}`, {method:'DELETE'});
+  loadPrDrafts();
+}
+
+function cpText(sel,label,btn){
+  const t=document.querySelector(sel)?.textContent||'';
+  navigator.clipboard.writeText(t).then(()=>{btn.textContent='복사 완료!';setTimeout(()=>btn.textContent=label,1500);});
+}
+
+const libData={
+  ceo:{title:'이석 대표 발언',items:[
+    {label:'기본 필수 문구 — 뒷 인용구 (고정)',text:'"앞으로도 해외여행 손님들에게 별도의 환전이나 실물카드 소지가 필요 없는 간편 출금 경험을 선도해 나가겠다"',note:'모든 보도자료에 반드시 포함. 단 한 글자도 수정 금지.',vars:[]},
+    {label:'QR출금 출시 시 앞 인용구 예시',text:'이번 [국가] QR출금 서비스 출시를 통해, 해외에서도 스마트폰 하나로 현금 인출까지 해결할 수 있는 환경을 갖추게 됐다',note:'🚫 "금융서비스" 표현 금지',vars:['[국가]']},
+    {label:'서비스 확대 시 앞 인용구 예시',text:'이번 [국가] QR출금 서비스 확대를 통해, 여행객들이 스마트폰 하나로 현금 인출부터 결제까지 모두 해결할 수 있게 됐다',note:'🚫 "금융서비스" 표현 금지',vars:['[국가]']},
+  ]},
+  intro:{title:'회사 소개 단락 (마지막 단락 고정)',items:[
+    {label:'표준 회사 소개 (필수)',text:'GLN은 2021년 7월 하나은행에서 분사해 설립된 핀테크 자회사로, 베트남, 중국, 홍콩, 마카오, 태국, 필리핀, 라오스, 일본, 대만 등 주요 지역에서 QR결제 및 QR출금 서비스를 제공하고 있다. 글로벌 금융기관 및 플랫폼 기업과의 협력을 기반으로 해외 지급결제 네트워크를 확대하고 있다.',note:'모든 보도자료 마지막 단락. 수정 금지.',vars:[]},
+    {label:'보도 문의',text:'GLN 인터내셔널 마케팅부 민채영 매니저 (010-5675-2136)',note:'보도자료 하단에 항상 포함',vars:[]},
+  ]},
+  company:{title:'회사명·브랜드 표기법',items:[
+    {label:'최초 등장 표기',text:'하나은행 자회사 GLN인터내셔널(대표: 이석, 이하 GLN)은',note:'첫 문장에 이 형식으로 시작',vars:[]},
+    {label:'약칭',text:'GLN',note:'최초 표기 이후 약칭 사용 가능',vars:[]},
+  ]},
+  launch:{title:'서비스 출시 서두',items:[
+    {label:'기본 서두',text:'하나은행 자회사 GLN인터내셔널(대표: 이석, 이하 GLN)은 [국가/지역]에서 [서비스명] 서비스를 새롭게 출시한다고 밝혔다.',note:'',vars:['[국가/지역]','[서비스명]']},
+    {label:'확대 출시 서두',text:'하나은행 자회사 GLN인터내셔널(대표: 이석, 이하 GLN)은 기존 [기존 국가]에 이어 [신규 국가]까지 [서비스명] 서비스를 확대 출시한다고 밝혔다.',note:'국가 순서 = 이용자 많은 순',vars:['[기존 국가]','[신규 국가]','[서비스명]']},
+  ]},
+  partnerlib:{title:'제휴·파트너십 서두',items:[
+    {label:'제휴 체결',text:'하나은행 자회사 GLN인터내셔널(대표: 이석, 이하 GLN)은 [파트너사]와의 제휴를 통해 [국가/지역]에서 [서비스명] 서비스를 제공한다고 밝혔다.',note:'',vars:['[파트너사]','[국가/지역]','[서비스명]']},
+  ]},
+  expand:{title:'서비스 확대 서두',items:[
+    {label:'지역 확대',text:'하나은행 자회사 GLN인터내셔널(대표: 이석, 이하 GLN)은 [서비스명] 서비스를 [기존 지역]에서 [신규 지역]까지 확대한다고 밝혔다.',note:'이용자 많은 국가 우선 배치',vars:['[서비스명]','[기존 지역]','[신규 지역]']},
+  ]},
+  promo:{title:'프로모션·이벤트',items:[
+    {label:'수수료 캐시백',text:'GLN은 서비스 출시를 기념해 오는 [날짜]부터 [국가] QR출금 이용 시 출금 수수료를 캐시백으로 환급하는 프로모션을 진행할 예정이다.',note:'🚫 "ATM출금" 금지 → "QR출금"으로',vars:['[날짜]','[국가]']},
+  ]},
+  apps:{title:'파트너 앱 나열',items:[
+    {label:'기본 형식',text:'퍼플GLN 및 토스, 네이버페이 등 국내 파트너사 앱',note:'',vars:[]},
+    {label:'전체 나열',text:'퍼플GLN, 토스, 네이버페이, 하나은행 스타뱅킹, 하나머니, 하나카드, KB국민카드 등 주요 제휴 앱',note:'7개 이상 시 사용',vars:[]},
+    {label:'앱 편의 강조',text:'GLN 이용자는 별도 현지 앱 설치 없이, 퍼플GLN 및 토스, 네이버페이 등 국내 파트너사 앱 하나만으로도 [국가/서비스] 서비스를 간편하게 이용할 수 있게 됐다.',note:'',vars:['[국가/서비스]']},
+  ]},
+  noapp:{title:'모바일만으로 여행 강조',items:[
+    {label:'핵심 컨셉 문구',text:'이용자는 실물카드나 현금 없이 스마트폰 하나만으로 [국가]에서 현금 인출부터 결제까지 모두 해결할 수 있다.',note:'기사 전반에 이 컨셉 반복 강조',vars:['[국가]']},
+    {label:'여행 편의 강조',text:'[국가]를 방문하는 여행객은 환전 창구나 실물카드 없이, 평소 사용하는 국내 앱만으로 현지에서 직접 현금을 인출할 수 있다.',note:'🚫 "ATM출금" 대신 "현지에서 직접 현금을 인출" 형식으로',vars:['[국가]']},
+  ]}
+};
+
+const guideData={
+  structure:`<div class="gh2">보도자료 전체 구조</div><div class="gbox info">제목 → 소제목 2개 → 본문 4~5단락 → 회사 소개 → 보도 문의 순서 고수</div><table class="gtbl"><thead><tr><th>구성</th><th>역할</th><th>분량</th></tr></thead><tbody><tr><td>제목</td><td>핵심 헤드라인</td><td>20~35자</td></tr><tr><td>소제목 1~2</td><td>특장점 2가지 보완</td><td>각 1줄</td></tr><tr><td>1단락</td><td>회사명·서비스·핵심 발표</td><td>2~3문장</td></tr><tr><td>2~3단락</td><td>서비스 특징, 이용 방법, 앱</td><td>각 3~4문장</td></tr><tr><td>4단락</td><td>이석 대표 발언 (필수)</td><td>1~2문장</td></tr><tr><td>5단락</td><td>회사 소개 (고정)</td><td>2문장</td></tr></tbody></table>`,
+  tone:`<div class="gh2">문체·어조 원칙</div><div class="gbox info">모든 문장은 "~다", "~했다", "~밝혔다"로 끝납니다.</div><div class="gbox good">✓ "GLN인터내셔널은 일본·베트남·라오스에서 QR출금 서비스를 출시한다고 밝혔다."</div><div class="gbox bad">✗ "ATM출금 서비스를 시작합니다!" / "금융서비스를 제공해요."</div><div class="gbox warn">⚠ ATM출금 → QR출금<br>⚠ 금융서비스 → 현금 인출 서비스 등 구체 표현<br>⚠ 구어체·감탄·마케팅 슬로건 금지</div>`,
+  headline:`<div class="gh2">제목 작성법</div><div class="gbox info">공식: [회사명], [국가] [서비스명] [동사]<br>예: "하나은행 자회사 GLN, 일본·베트남·라오스 QR출금 서비스 출시"</div><div class="gbox good">✓ "하나은행 자회사 GLN"으로 시작<br>✓ 국가명은 가운뎃점(·)으로 연결<br>✓ 이용자 많은 국가 앞에 배치<br>✓ "QR출금" 표기 사용</div><div class="gbox bad">✗ "ATM출금" 표현<br>✗ 35자 초과</div>`,
+  para1:`<div class="gh2">1단락: 리드 문단</div><div class="gbox info">누가·무엇을·어디서를 첫 문장에. 이용자 많은 국가 중심으로.</div><div class="gbox good">하나은행 자회사 GLN인터내셔널(대표: 이석, 이하 GLN)은 일본·베트남·라오스에서 QR출금 서비스를 새롭게 출시한다고 밝혔다.</div>`,
+  para2:`<div class="gh2">2~3단락: 본문</div><div class="gh3">2단락: 서비스 특징</div><div class="gbox info">이용자 규모 큰 국가(일본 등) 앞에 서술.</div><div class="gh3">3단락: 모바일 편의성 강조</div><div class="gbox info">핵심 컨셉: 카드 없이 스마트폰만으로 여행 가능<br>- 현지 앱 설치 불필요<br>- 환전 불필요<br>- 실물카드 불필요</div><div class="gbox warn">⚠ "ATM출금" → "QR출금"<br>⚠ "금융서비스" → 구체적 표현</div>`,
+  para4:`<div class="gh2">4단락: 이석 대표 발언</div><div class="gbox bad" style="background:#fde8e8;border-left-color:#c0392b;">필수. 절대 누락 금지.</div><div class="gbox good">뒷 인용구 (고정): "앞으로도 해외여행 손님들에게 별도의 환전이나 실물카드 소지가 필요 없는 간편 출금 경험을 선도해 나가겠다"</div><div class="gbox bad">✗ 앞 인용구에 "금융서비스" 절대 금지</div>`,
+  para5:`<div class="gh2">5단락: 회사 소개 (고정)</div><div class="gbox good">GLN은 2021년 7월 하나은행에서 분사해 설립된 핀테크 자회사로, 베트남, 중국, 홍콩, 마카오, 태국, 필리핀, 라오스, 일본, 대만 등 주요 지역에서 QR결제 및 QR출금 서비스를 제공하고 있다. 글로벌 금융기관 및 플랫폼 기업과의 협력을 기반으로 해외 지급결제 네트워크를 확대하고 있다.</div>`,
+  naming:`<div class="gh2">고유명사 표기</div><table class="gtbl"><thead><tr><th>항목</th><th>올바른 표기</th><th>금지 표기</th></tr></thead><tbody><tr><td>출금 서비스명</td><td>QR출금</td><td>ATM출금, ATM 출금, ATMQR출금</td></tr><tr><td>회사명 (전체)</td><td>GLN인터내셔널</td><td>GLN 인터내셔널</td></tr><tr><td>대표</td><td>이석 GLN 대표</td><td>이석 대표이사</td></tr><tr><td>파트너 앱</td><td>퍼플GLN</td><td>퍼플 GLN</td></tr><tr><td>위챗페이</td><td>위챗페이(Weixin Pay)</td><td>WeChat Pay</td></tr><tr><td>국가 나열</td><td>일본·베트남·라오스</td><td>일본/베트남/라오스</td></tr></tbody></table>`,
+  forbidden:`<div class="gh2">🚫 금지어 규정</div><table class="gtbl"><thead><tr><th>금지 표현</th><th>대체 표현</th></tr></thead><tbody><tr><td style="color:#c0392b;font-weight:500;">ATM출금 / ATM 출금 / ATMQR출금</td><td>QR출금</td></tr><tr><td style="color:#c0392b;font-weight:500;">금융서비스 / 금융 서비스</td><td>현금 인출 서비스 / QR출금 서비스</td></tr></tbody></table><div class="gbox bad">✗ "해외에서도 편리한 금융서비스를 누릴 수 있게 됐다"</div><div class="gbox good">✓ "스마트폰만으로 현금 인출 서비스를 이용할 수 있게 됐다"</div>`,
+  checklist:`<div class="gh2">배포 전 최종 체크리스트</div><table class="gtbl"><thead><tr><th>항목</th><th></th></tr></thead><tbody><tr><td>회사명 최초 등장 시 전체 형식 사용</td><td><span class="badge br">필수</span></td></tr><tr><td>이석 대표 발언 + 뒷 인용구 고정 문구</td><td><span class="badge br">필수</span></td></tr><tr><td>대표 발언에 "금융서비스" 없는지 확인</td><td><span class="badge br">필수</span></td></tr><tr><td>기사 전체에 "ATM출금" 없는지 확인</td><td><span class="badge br">필수</span></td></tr><tr><td>기사 전체에 "금융서비스" 없는지 확인</td><td><span class="badge br">필수</span></td></tr><tr><td>국가 나열 이용자 규모 순 확인</td><td><span class="badge br">필수</span></td></tr><tr><td>"스마트폰만으로 여행" 컨셉 반영</td><td><span class="badge br">필수</span></td></tr><tr><td>회사 소개 고정 문구 마지막 단락 포함</td><td><span class="badge br">필수</span></td></tr><tr><td>국가명 가운뎃점(·) 연결</td><td><span class="badge bo">권장</span></td></tr><tr><td>보도 문의 담당자 정보 하단 포함</td><td><span class="badge br">필수</span></td></tr></tbody></table>`
+};
+
+function showLib(key,el){
+  document.querySelectorAll('#tab-lib .nav-item').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const d=libData[key];if(!d)return;
+  let html=`<div style="font-size:14px;font-weight:500;margin-bottom:0.9rem;">${d.title}</div>`;
+  d.items.forEach((item,idx)=>{
+    const vb=item.vars.map(v=>`<span class="vbadge">${v}</span>`).join(' ');
+    html+=`<div class="phrase-card"><div class="phrase-lbl">${item.label}</div><div class="phrase-txt">${item.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}<button class="pcopy" onclick="copyPhrase(${idx},'${key}',this)">복사</button></div>${item.vars.length?'<div style="margin-top:5px;display:flex;gap:4px;flex-wrap:wrap;">'+vb+'</div>':''}${item.note?`<div class="phrase-note">💡 ${item.note}</div>`:''}</div>`;
+  });
+  document.getElementById('libContent').innerHTML=html;
+}
+function copyPhrase(idx,key,btn){
+  navigator.clipboard.writeText(libData[key].items[idx].text).then(()=>{btn.textContent='복사됨!';setTimeout(()=>btn.textContent='복사',1500);});
+}
+function showGuide(key,el){
+  document.querySelectorAll('#tab-guide .nav-item').forEach(e=>e.classList.remove('active'));
+  if(el)el.classList.add('active');
+  document.getElementById('guideContent').innerHTML=guideData[key]||'';
+}
+
+showLib('ceo', document.querySelector('#tab-lib .nav-item'));
+showGuide('structure', document.querySelector('#tab-guide .nav-item'));
+
+/* ── 규칙 학습 ── */
+const TYPE_META = {
+  forbidden: { label:'금지어·치환 규칙', cls:'forbidden' },
+  phrase:    { label:'재사용 표현·고정 문구', cls:'phrase' },
+  naming:    { label:'고유명사 표기', cls:'naming' },
+  checklist: { label:'체크리스트 항목', cls:'checklist' },
+};
+
+async function runLearn() {
+  const article = document.getElementById('learnArticle').value.trim();
+  if (!article) { alert('기사문을 먼저 붙여넣어 주세요.'); return; }
+  const note    = document.getElementById('learnNote').value.trim();
+  const scopes  = {
+    forbidden: document.getElementById('chkForbidden').checked,
+    phrase:    document.getElementById('chkPhrase').checked,
+    naming:    document.getElementById('chkNaming').checked,
+    checklist: document.getElementById('chkChecklist').checked,
+  };
+
+  const btn = document.getElementById('learnBtn');
+  btn.disabled = true; btn.textContent = '분석 중...';
+  document.getElementById('learnOutput').innerHTML =
+    '<div class="loading-box"><span>⏳</span> Claude가 기사를 분석하고 규칙 후보를 추출하고 있습니다...</div>';
+
+  try {
+    const res  = await fetch('/api/pr/learn', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ article, note, scopes })
+    });
+    const data = await res.json();
+    if (data.error) {
+      document.getElementById('learnOutput').innerHTML =
+        '<div style="color:#c0392b;padding:1rem;font-size:13px;">오류: ' + escHtml(data.error) + '</div>';
+      return;
+    }
+    renderSuggestions(data.suggestions || [], data.summary || '');
+  } catch(e) {
+    document.getElementById('learnOutput').innerHTML =
+      '<div style="color:#c0392b;padding:1rem;font-size:13px;">네트워크 오류: ' + escHtml(e.message) + '</div>';
+  } finally {
+    btn.disabled = false; btn.textContent = '기사 분석하기 ↗';
+  }
+}
+
+function renderSuggestions(suggestions, summary) {
+  if (!suggestions.length) {
+    document.getElementById('learnOutput').innerHTML =
+      '<div class="gbox good" style="margin:1rem;">✓ 새로 추가할 규칙 후보가 없습니다. 현행 pr_rules.json이 이미 이 기사를 커버합니다.</div>';
+    return;
+  }
+  let html = '';
+  if (summary) html += `<div class="learn-summary">${escHtml(summary)}</div>`;
+  html += `<div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:0.75rem;">추출된 규칙 후보 ${suggestions.length}건 — 항목별로 승인/거절하세요</div>`;
+
+  suggestions.forEach((s, i) => {
+    const meta = TYPE_META[s.type] || { label:s.type, cls:'phrase' };
+    html += `
+    <div class="suggest-card ${meta.cls}" id="scard-${i}">
+      <div class="suggest-type ${meta.cls}">${meta.label}</div>
+      <div class="suggest-body">${escHtml(s.display)}</div>
+      ${s.reason ? `<div class="suggest-reason">💡 ${escHtml(s.reason)}</div>` : ''}
+      <div class="suggest-actions">
+        <button class="btn-accept" id="sacc-${i}" onclick="acceptSuggestion(${i})">✓ 규칙에 추가</button>
+        <button class="btn-reject" onclick="rejectSuggestion(${i})">✕ 건너뜀</button>
+        <span class="saved-badge" id="sbadge-${i}">저장됨!</span>
+      </div>
+    </div>`;
+  });
+  // 전체 승인 버튼
+  html += `<div style="margin-top:1rem;display:flex;gap:8px;">
+    <button class="btn-primary" style="width:auto;padding:8px 20px;" onclick="acceptAll()">전체 승인 및 저장</button>
+  </div>`;
+  document.getElementById('learnOutput').innerHTML = html;
+  // 제안 목록을 전역에 보관
+  window._learnSuggestions = suggestions;
+}
+
+async function acceptSuggestion(i) {
+  const s   = window._learnSuggestions[i];
+  const btn = document.getElementById('sacc-'+i);
+  btn.disabled = true; btn.textContent = '저장 중...';
+  try {
+    const res  = await fetch('/api/pr/rules/update', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ suggestions: [s] })
+    });
+    const data = await res.json();
+    if (data.error) { btn.disabled = false; btn.textContent = '✓ 규칙에 추가'; alert('오류: ' + data.error); return; }
+    document.getElementById('sbadge-'+i).style.display = 'inline';
+    document.getElementById('scard-'+i).style.opacity = '0.5';
+    btn.textContent = '저장됨';
+  } catch(e) { btn.disabled = false; btn.textContent = '✓ 규칙에 추가'; alert('오류: ' + e.message); }
+}
+
+function rejectSuggestion(i) {
+  const card = document.getElementById('scard-'+i);
+  card.style.opacity = '0.35';
+  card.style.pointerEvents = 'none';
+}
+
+async function acceptAll() {
+  const pending = (window._learnSuggestions || []).filter((_, i) => {
+    const badge = document.getElementById('sbadge-'+i);
+    return badge && badge.style.display !== 'inline';
+  });
+  if (!pending.length) { alert('승인할 항목이 없습니다.'); return; }
+  try {
+    const res  = await fetch('/api/pr/rules/update', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ suggestions: pending })
+    });
+    const data = await res.json();
+    if (data.error) { alert('오류: ' + data.error); return; }
+    document.getElementById('learnOutput').innerHTML =
+      `<div class="gbox good" style="margin:1rem;">✓ ${data.saved}건 저장 완료 — pr_rules.json이 업데이트됐습니다.</div>`;
+  } catch(e) { alert('오류: ' + e.message); }
+}
+</script>
+</body>
+</html>

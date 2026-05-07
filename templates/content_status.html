@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GLN 콘텐츠 제작</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #F6F5FF; margin: 0; }
+  .sidebar { width: 220px; min-height: 100vh; background: #130D2A; position: fixed; top: 0; left: 0; z-index: 20; display: flex; flex-direction: column; padding: 20px 14px; }
+  .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px; margin-bottom: 28px; }
+  .logo-mark { width: 28px; height: 28px; background: #7000FC; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .logo-title { font-size: 14px; font-weight: 700; color: #fff; }
+  .logo-sub { font-size: 10px; color: #5E5A71; }
+  .nav-section { margin-bottom: 20px; }
+  .nav-section-label { font-size: 9px; font-weight: 600; color: #5E5A71; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; margin-bottom: 2px; }
+  .nav-item:hover { background: rgba(255,255,255,0.06); }
+  .nav-item.active { background: #7000FC; }
+  .nav-item-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.5; flex-shrink: 0; }
+  .nav-item.active .nav-item-icon { opacity: 1; }
+  .nav-item-text { font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
+  .nav-item.active .nav-item-text { color: #fff; }
+  .nav-divider { border: none; border-top: 0.5px solid rgba(255,255,255,0.07); margin: 8px 0; }
+  .sidebar-bottom { margin-top: auto; }
+  .sidebar-info { background: rgba(112,0,252,0.15); border-radius: 10px; padding: 10px 12px; border: 0.5px solid rgba(112,0,252,0.3); }
+  .sidebar-info-text { font-size: 10px; color: #AAA7B8; line-height: 1.7; margin: 0; }
+  .main-wrap { margin-left: 220px; min-height: 100vh; }
+  .topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .topbar-left h1 { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0; }
+  .topbar-left p { font-size: 11px; color: #918DA0; margin: 2px 0 0; }
+  .btn { border-radius: 10px; padding: 8px 14px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-official { background: #7000FC; color: #fff; }
+  .btn-official:hover { background: #5A00CC; }
+  .btn-gorani { background: #F97316; color: #fff; }
+  .btn-gorani:hover { background: #EA6C0A; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .status-toast { display: none; font-size: 11px; padding: 5px 10px; background: #F0EAFF; color: #7000FC; border-radius: 8px; font-weight: 500; }
+  .content { padding: 20px 24px 40px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
+  .kpi-card { background: #fff; border-radius: 14px; padding: 14px 16px; border: 0.5px solid #E4E1EE; }
+  .kpi-label { font-size: 10px; color: #918DA0; margin-bottom: 4px; }
+  .kpi-value { font-size: 22px; font-weight: 700; color: #130D2A; line-height: 1; }
+  .kpi-sub { font-size: 10px; color: #AAA7B8; margin-top: 4px; }
+  /* 채널 탭 */
+  .channel-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .ch-tab { padding: 7px 18px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; border: 1.5px solid transparent; }
+  .ch-tab-all { background: #F6F5FF; color: #5E5A71; border-color: #DAD9EA; }
+  .ch-tab-all.active { background: #130D2A; color: #fff; border-color: #130D2A; }
+  .ch-tab-official { background: #F5F3FF; color: #7000FC; border-color: #DDD6FE; }
+  .ch-tab-official.active { background: #7000FC; color: #fff; border-color: #7000FC; }
+  .ch-tab-gorani { background: #FFF7ED; color: #F97316; border-color: #FED7AA; }
+  .ch-tab-gorani.active { background: #F97316; color: #fff; border-color: #F97316; }
+  .ch-count { display: inline-block; margin-left: 6px; font-size: 10px; opacity: 0.8; }
+  /* 날짜 필터 */
+  .date-filter-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .date-filter-label { font-size: 11px; color: #918DA0; font-weight: 500; }
+  .date-input-c { border: 0.5px solid #DAD9EA; border-radius: 8px; padding: 5px 10px; font-size: 11px; color: #130D2A; background: #fff; outline: none; font-family: inherit; }
+  .date-input-c:focus { border-color: #7000FC; }
+  .date-sep-c { font-size: 11px; color: #AAA7B8; }
+  .date-apply-btn-c { background: #7000FC; color: #fff; border: none; border-radius: 8px; padding: 5px 14px; font-size: 11px; font-weight: 600; cursor: pointer; }
+  .date-apply-btn-c:hover { background: #5A00CC; }
+  .date-preset-c { font-size: 11px; padding: 4px 10px; border-radius: 8px; background: #F6F5FF; color: #5E5A71; border: 0.5px solid #DAD9EA; cursor: pointer; }
+  .date-preset-c:hover { background: #EDE9FE; color: #7000FC; }
+  /* 등급 필터 */
+  .filter-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .filter-chip { font-size: 11px; padding: 5px 14px; border-radius: 99px; border: 0.5px solid #DAD9EA; color: #5E5A71; background: #fff; cursor: pointer; text-decoration: none; }
+  .filter-chip.active { background: #7000FC; color: #fff; border-color: #7000FC; }
+  .filter-chip.green { background: #F0FDF4; color: #059669; border-color: #BBF7D0; }
+  .filter-chip.green.active { background: #059669; color: #fff; border-color: #059669; }
+  .filter-chip.yellow { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+  .filter-chip.yellow.active { background: #D97706; color: #fff; border-color: #D97706; }
+  .filter-chip.red { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+  .filter-chip.red.active { background: #DC2626; color: #fff; border-color: #DC2626; }
+  /* 목록 */
+  .drafts-wrap { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; }
+  .drafts-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 0.5px solid #F0EDF7; }
+  .drafts-header span { font-size: 11px; color: #918DA0; }
+  .draft-item { border-bottom: 0.5px solid #F6F5FF; padding: 14px 16px; cursor: pointer; }
+  .draft-item:last-child { border-bottom: none; }
+  .draft-item:hover { background: #FDFCFF; }
+  .draft-top { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+  .draft-topic { font-size: 13px; font-weight: 600; color: #130D2A; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+  .grade-green  { background: #F0FDF4; color: #059669; }
+  .grade-yellow { background: #FFFBEB; color: #D97706; }
+  .grade-red    { background: #FEF2F2; color: #DC2626; }
+  .grade-pending{ background: #F6F5FF; color: #918DA0; }
+  .ch-badge-official { background: #F5F3FF; color: #7000FC; }
+  .ch-badge-gorani   { background: #FFF7ED; color: #F97316; }
+  .fmt-badge { background: #F3F4F6; color: #6B7280; }
+  .country-badge { background: #F0FFF4; color: #166534; border: 0.5px solid #BBF7D0; }
+  .source-auto   { background: #F3F4F6; color: #6B7280; }
+  .source-manual { background: #F5F3FF; color: #7000FC; border: 0.5px solid #DDD6FE; }
+  .draft-preview { font-size: 11px; color: #5E5A71; margin-bottom: 6px; line-height: 1.5; }
+  .draft-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .draft-meta-item { font-size: 10px; color: #AAA7B8; }
+  .draft-meta-dot { font-size: 10px; color: #DAD9EA; }
+  .verify-tag { font-size: 10px; color: #D97706; font-weight: 500; }
+  .empty-state { padding: 60px 20px; text-align: center; }
+  .empty-state p { font-size: 13px; color: #AAA7B8; margin: 4px 0; }
+  .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 16px; }
+  .page-btn { width: 30px; height: 30px; border-radius: 8px; border: 0.5px solid #E4E1EE; background: #fff; font-size: 12px; color: #5E5A71; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+  .page-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 700; }
+  .page-btn.disabled { opacity: 0.3; pointer-events: none; }
+  /* 모달 */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(19,13,42,0.5); z-index: 50; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 16px; }
+  .modal-box { background: #fff; border-radius: 16px; padding: 28px; width: 740px; max-width: 96vw; position: relative; }
+  .modal-close { position: absolute; top: 16px; right: 16px; background: #F6F5FF; border: none; border-radius: 8px; width: 28px; height: 28px; cursor: pointer; font-size: 14px; color: #5E5A71; display: flex; align-items: center; justify-content: center; }
+  .modal-title { font-size: 16px; font-weight: 700; color: #130D2A; margin: 0 0 4px; padding-right: 36px; }
+  .modal-sub { font-size: 11px; color: #918DA0; margin: 0 0 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .modal-section { margin-bottom: 16px; }
+  .modal-section-label { font-size: 10px; font-weight: 600; color: #918DA0; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; }
+  .modal-pre { background: #F6F5FF; border-radius: 8px; padding: 12px 14px; font-size: 12px; color: #130D2A; line-height: 1.7; white-space: pre-wrap; word-break: break-all; font-family: inherit; border: 0.5px solid #E4E1EE; }
+  .modal-pre.verify { background: #FFFBEB; border-color: #FDE68A; color: #92400E; }
+  .issue-tag { display: inline-block; margin: 2px; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; }
+  .issue-hard { background: #FEF2F2; color: #DC2626; }
+  .issue-soft { background: #FFFBEB; color: #D97706; }
+  .issue-unverified { background: #EFF6FF; color: #1D4ED8; }
+  .issue-tone { background: #FFF7ED; color: #F97316; }
+  .issue-ad { background: #FFF7ED; color: #F97316; }
+  /* 발행 상태 배지 */
+  .apv-badge-published   { background: #F0FDF4; color: #059669; border: 0.5px solid #BBF7D0; }
+  .apv-badge-unpublished { background: #F6F5FF; color: #918DA0; border: 0.5px solid #DAD9EA; }
+  /* 액션 버튼 */
+  .btn-publish   { background: #059669; color: #fff; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-publish:hover   { background: #047857; }
+  .btn-unpublish { background: #fff; color: #059669; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid #BBF7D0; }
+  .btn-unpublish:hover { background: #F0FDF4; }
+  .btn-email { background: #F5F3FF; color: #7000FC; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid #DDD6FE; }
+  .btn-email:hover { background: #EDE9FE; }
+  .btn-del  { background: #fff; color: #AAA7B8; border-radius: 8px; padding: 7px 12px; font-size: 12px; cursor: pointer; border: 1px solid #E4E1EE; }
+  .btn-del:hover  { background: #FEF2F2; color: #DC2626; }
+  .btn-genimg { background: #0EA5E9; color: #fff; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-genimg:hover { background: #0284C7; }
+  .btn-genimg:disabled { background: #BAE6FD; cursor: default; }
+  /* 이미지 갤러리 */
+  .img-gallery { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .img-thumb { width: 120px; height: 120px; object-fit: cover; border-radius: 8px; border: 0.5px solid #E4E1EE; cursor: pointer; transition: transform 0.15s; }
+  .img-thumb:hover { transform: scale(1.04); }
+  .img-thumb-cartoon { width: 140px; height: 140px; }
+  .img-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; }
+  .img-lightbox.active { display: flex; }
+  .img-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 12px; }
+  .img-lightbox-close { position: fixed; top: 20px; right: 24px; color: #fff; font-size: 28px; cursor: pointer; z-index: 101; }
+  .modal-action-bar { display: flex; gap: 8px; align-items: center; padding: 16px 0 0; border-top: 0.5px solid #F0EDF7; margin-top: 8px; flex-wrap: wrap; }
+  .modal-action-status { flex: 1; font-size: 11px; color: #5E5A71; }
+  /* 발행 패키지 복사 */
+  .pkg-section { margin-bottom: 14px; }
+  .pkg-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .pkg-label { font-size: 10px; font-weight: 600; color: #918DA0; letter-spacing: 0.08em; text-transform: uppercase; }
+  .btn-copy { background: #F6F5FF; color: #7000FC; border: 0.5px solid #DDD6FE; border-radius: 6px; padding: 3px 10px; font-size: 10px; font-weight: 600; cursor: pointer; }
+  .btn-copy:hover { background: #EDE9FE; }
+  .btn-copy.copied { background: #F0FDF4; color: #059669; border-color: #BBF7D0; }
+  /* 체크리스트 */
+  .checklist { background: #F6F5FF; border-radius: 10px; padding: 12px 14px; margin-top: 12px; border: 0.5px solid #E4E1EE; }
+  .checklist-title { font-size: 11px; font-weight: 700; color: #130D2A; margin-bottom: 8px; }
+  .checklist label { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #374151; padding: 3px 0; cursor: pointer; }
+  .checklist input[type=checkbox] { accent-color: #7000FC; width: 13px; height: 13px; flex-shrink: 0; }
+  @media (max-width: 768px) {
+    .sidebar { width: 60px; padding: 16px 8px; }
+    .logo-title, .nav-item-text, .sidebar-info, .nav-section-label, .logo-sub { display: none; }
+    .nav-item { justify-content: center; padding: 10px; }
+    .main-wrap { margin-left: 60px; }
+    .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+    .content { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div style="padding:0 2px;margin-bottom:20px">
+    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
+    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
+    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">메뉴</div>
+    <a href="/insights" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-item-text">인사이트</span></a>
+    <a href="/" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-item-text">GLN 모니터링</span></a>
+    <a href="/content" class="nav-item active"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-item-text">콘텐츠</span></a>
+    <a href="/pr" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-item-text">보도자료</span></a>
+    <a href="/reports" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-item-text">보고서 아카이브</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-info"><p class="sidebar-info-text">메인채널 · 서브채널<br>자동 생성 + Guard 검수</p></div>
+  </div>
+</div>
+
+<div class="main-wrap">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>콘텐츠 제작</h1>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <a href="/content/create" class="btn btn-official" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        콘텐츠 생성
+      </a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- 채널 카드 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <a href="/content?channel=official" style="text-decoration:none;background:#fff;border:{% if filter_channel == 'official' %}2px solid #7000FC{% else %}0.5px solid #E4E1EE{% endif %};border-radius:16px;padding:20px 20px 0;display:flex;align-items:flex-end;justify-content:space-between;overflow:hidden;min-height:110px;cursor:pointer;transition:box-shadow 0.15s;{% if filter_channel == 'official' %}box-shadow:0 2px 12px rgba(112,0,252,0.12);{% endif %}">
+        <div style="padding-bottom:20px;">
+          <div style="font-size:15px;font-weight:800;color:{% if filter_channel == 'official' %}#7000FC{% else %}#130D2A{% endif %};margin-bottom:4px;">메인채널</div>
+          <div style="font-size:32px;font-weight:900;color:#130D2A;line-height:1;">{{ channel_counts.official }}</div>
+        </div>
+        <img src="/static/img/메인채널.jpg" alt="메인채널" style="height:90px;object-fit:contain;object-position:bottom;">
+      </a>
+      <a href="/content?channel=gorani" style="text-decoration:none;background:#fff;border:{% if filter_channel == 'gorani' %}2px solid #F97316{% else %}0.5px solid #E4E1EE{% endif %};border-radius:16px;padding:20px 20px 0;display:flex;align-items:flex-end;justify-content:space-between;overflow:hidden;min-height:110px;cursor:pointer;transition:box-shadow 0.15s;{% if filter_channel == 'gorani' %}box-shadow:0 2px 12px rgba(249,115,22,0.12);{% endif %}">
+        <div style="padding-bottom:20px;">
+          <div style="font-size:15px;font-weight:800;color:{% if filter_channel == 'gorani' %}#F97316{% else %}#130D2A{% endif %};margin-bottom:4px;">서브채널</div>
+          <div style="font-size:32px;font-weight:900;color:#130D2A;line-height:1;">{{ channel_counts.gorani }}</div>
+        </div>
+        <img src="/static/img/서브채널.jpg" alt="서브채널" style="height:90px;object-fit:contain;object-position:bottom;">
+      </a>
+    </div>
+
+
+    <!-- 날짜 필터 -->
+    <div class="date-filter-row">
+      <span class="date-filter-label">생성일</span>
+      <input type="date" id="c-date-from" class="date-input-c" value="{{ filter_date_from }}">
+      <span class="date-sep-c">~</span>
+      <input type="date" id="c-date-to" class="date-input-c" value="{{ filter_date_to }}">
+      <button class="date-apply-btn-c" onclick="applyContentDate()">조회</button>
+      <button class="date-preset-c" onclick="setContentRange(0,0)">오늘</button>
+      <button class="date-preset-c" onclick="setContentRange(6,0)">7일</button>
+      <button class="date-preset-c" onclick="setContentRange(29,0)">30일</button>
+      <button class="date-preset-c" onclick="setContentRange(9999,0)">전체</button>
+    </div>
+
+
+    <!-- 포맷 필터 (플랫폼 기준 통일) -->
+    <div class="filter-row" style="margin-bottom:12px;">
+      <a href="/content?channel={{ filter_channel }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}"
+         class="filter-chip {% if not filter_format %}active{% endif %}">전체</a>
+      <a href="/content?channel={{ filter_channel }}&format=blog&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}"
+         class="filter-chip {% if filter_format == 'blog' %}active{% endif %}">블로그</a>
+      <a href="/content?channel={{ filter_channel }}&format=instagram&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}"
+         class="filter-chip {% if filter_format == 'instagram' %}active{% endif %}">인스타그램</a>
+      <a href="/content?channel={{ filter_channel }}&format=youtube&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}"
+         class="filter-chip {% if filter_format == 'youtube' %}active{% endif %}">유튜브</a>
+      <a href="/content?channel={{ filter_channel }}&format=threads&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}"
+         class="filter-chip {% if filter_format == 'threads' %}active{% endif %}">스레드</a>
+    </div>
+
+    <!-- 목록 -->
+    <div class="drafts-wrap">
+      <div class="drafts-header">
+        <span>총 <strong style="color:#130D2A">{{ total }}</strong>건</span>
+      </div>
+
+      {% if drafts %}
+        {% for d in drafts %}
+        <div class="draft-item" onclick="showDetail({{ d.id }})">
+          <div class="draft-top">
+            <div class="draft-topic">{{ d.topic }}</div>
+            <!-- 채널 배지 (전체 탭일 때만) -->
+            {% if not filter_channel %}
+              {% if d.channel == 'gorani' %}
+                <span class="badge ch-badge-gorani">서브</span>
+              {% else %}
+                <span class="badge ch-badge-official">메인</span>
+              {% endif %}
+            {% endif %}
+            <!-- 포맷 배지 (플랫폼 레이블) -->
+            {% if d.format %}
+              {% set fmt_label = {'blog':'블로그','instagram_card':'인스타그램','youtube_shorts':'유튜브','reels':'인스타그램','threads':'스레드','cartoon':'툰'}.get(d.format, d.format) %}
+              <span class="badge fmt-badge">{{ fmt_label }}</span>
+            {% endif %}
+            <!-- 국가 배지 -->
+            {% if d.country %}
+              <span class="badge country-badge">{{ country_label.get(d.country, d.country) }}</span>
+            {% endif %}
+            <!-- 소재 출처 배지 -->
+            {% if d.source_type == 'manual' %}
+              <span class="badge source-manual">직접입력</span>
+            {% else %}
+              <span class="badge source-auto">자동선택</span>
+            {% endif %}
+          </div>
+          {% if d.seo_titles %}
+          <div class="draft-preview">{{ d.seo_titles[:100] }}{% if d.seo_titles|length > 100 %}...{% endif %}</div>
+          {% elif d.body %}
+          <div class="draft-preview">{{ d.body[:100] }}{% if d.body|length > 100 %}...{% endif %}</div>
+          {% endif %}
+          <div class="draft-meta">
+            <span class="draft-meta-item">{{ d.created_at[:16] }}</span>
+            {% if d.platform %}
+            <span class="draft-meta-dot">·</span>
+            <span class="draft-meta-item">{{ d.platform }}</span>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-state">
+          <p style="font-size:24px;margin-bottom:8px">✍️</p>
+          <p style="font-weight:600;color:#5E5A71">생성된 콘텐츠 초안이 없습니다</p>
+          <p>상단 버튼으로 채널별 파이프라인을 실행하세요</p>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="pagination">
+      <a href="?channel={{ filter_channel }}&format={{ filter_format }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}&page={{ page - 1 }}"
+         class="page-btn {% if page <= 1 %}disabled{% endif %}">‹</a>
+      {% for p in range(1, total_pages + 1) %}
+        {% if p >= page - 2 and p <= page + 2 %}
+        <a href="?channel={{ filter_channel }}&format={{ filter_format }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}&page={{ p }}"
+           class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+        {% endif %}
+      {% endfor %}
+      <a href="?channel={{ filter_channel }}&format={{ filter_format }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}&page={{ page + 1 }}"
+         class="page-btn {% if page >= total_pages %}disabled{% endif %}">›</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- 이미지 라이트박스 -->
+<div class="img-lightbox" id="imgLightbox" onclick="closeLightbox()">
+  <span class="img-lightbox-close" onclick="closeLightbox()">✕</span>
+  <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- 상세 모달 -->
+<div class="modal-overlay" id="detailModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modalTitle">초안 상세</div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div id="modalContent"><div style="text-align:center;padding:40px;color:#AAA7B8;font-size:13px">불러오는 중...</div></div>
+  </div>
+</div>
+
+<script>
+function _fmtDate(d) { return d.toISOString().slice(0, 10); }
+
+function setContentRange(fromDaysAgo, toDaysAgo) {
+  const today = new Date();
+  const from  = new Date(today);
+  if (fromDaysAgo < 9000) from.setDate(today.getDate() - fromDaysAgo);
+  else from.setFullYear(2020, 0, 1); // 전체: very old date
+  const to = new Date(today); to.setDate(today.getDate() - toDaysAgo);
+  document.getElementById('c-date-from').value = _fmtDate(from);
+  document.getElementById('c-date-to').value   = _fmtDate(to);
+  applyContentDate();
+}
+
+function applyContentDate() {
+  const from    = document.getElementById('c-date-from').value;
+  const to      = document.getElementById('c-date-to').value;
+  const params  = new URLSearchParams(window.location.search);
+  if (from) params.set('date_from', from); else params.delete('date_from');
+  if (to)   params.set('date_to',   to);   else params.delete('date_to');
+  params.delete('page');
+  window.location.href = '/content?' + params.toString();
+}
+
+const CH_LABEL = {official: '메인채널', gorani: '서브채널'};
+const CH_COLOR = {official: '#7000FC', gorani: '#F97316'};
+const FMT_LABEL = {
+  blog: '네이버 블로그', instagram_card: '인스타 카드뉴스', youtube_shorts: '유튜브 쇼츠',
+  reels: '릴스', threads: '스레드', cartoon: '카툰'
+};
+const CHECKLIST = {
+  blog:           ['검증 항목 확인', '대표 이미지 준비', '카테고리 선택', '예약 발행 설정'],
+  instagram_card: ['카드 이미지 제작 (Canva 등)', '캡션 붙여넣기', '해시태그 확인', '위치 태그'],
+  youtube_shorts: ['영상 촬영/편집', '자막 추가', '썸네일 제작', '제목·설명 복사 후 입력'],
+  reels:          ['영상 촬영 (장면 구성 참고)', '자막 삽입', '캡션·해시태그 입력'],
+  threads:        ['추천 버전 복사', '링크 첨부 여부 확인', '발행 시간대 확인'],
+  cartoon:        ['일러스트 제작 (컷 구성 참고)', '대사 검토', '캡션 작성'],
+};
+
+
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function pkgSection(label, text, extraClass) {
+  if (!text || text === 'null' || text.trim() === '' || text === 'None' || text === '없음') return '';
+  const id = 'copy_' + Math.random().toString(36).slice(2);
+  return `
+    <div class="pkg-section">
+      <div class="pkg-label-row">
+        <span class="pkg-label">${label}</span>
+        <button class="btn-copy" id="${id}" onclick="copyText(${JSON.stringify(text)}, '${id}')">복사</button>
+      </div>
+      <pre class="modal-pre${extraClass ? ' ' + extraClass : ''}">${escHtml(text)}</pre>
+    </div>`;
+}
+
+async function copyText(text, btnId) {
+  try {
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById(btnId);
+    if (btn) {
+      btn.textContent = '✓ 복사됨';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = '복사'; btn.classList.remove('copied'); }, 2000);
+    }
+  } catch(e) {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+}
+
+async function showDetail(id) {
+  const modal = document.getElementById('detailModal');
+  modal.style.display = 'flex';
+  document.getElementById('modalContent').innerHTML =
+    '<div style="text-align:center;padding:40px;color:#AAA7B8;font-size:13px">불러오는 중...</div>';
+
+  const res = await fetch(`/api/content/${id}`);
+  const d   = await res.json();
+
+  const chColor  = CH_COLOR[d.channel]  || '#7000FC';
+  const chLabel  = CH_LABEL[d.channel]  || d.channel;
+  const fmtLabel = FMT_LABEL[d.format]  || d.format || '';
+  const gradeMap = {green:'Green 승인가능', yellow:'Yellow 검토필요', red:'Red 수정필요', pending:'Pending'};
+
+  document.getElementById('modalTitle').textContent = d.topic || '(제목 없음)';
+  document.getElementById('modalSub').innerHTML = `
+    <span style="background:${chColor};color:#fff;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700">${chLabel}</span>
+    <span style="background:#F3F4F6;color:#6B7280;padding:2px 8px;border-radius:6px;font-size:10px">${fmtLabel}</span>
+    <span>Guard: ${gradeMap[d.guard_grade] || d.guard_grade || '-'}</span>
+    <span>· ${(d.created_at || '').slice(0,16)}</span>
+    ${d.platform ? `<span>· ${d.platform}</span>` : ''}
+  `;
+
+  // Guard 이슈
+  let issuesHtml = '';
+  try {
+    const issues = JSON.parse(d.guard_issues || '[]');
+    const clsMap = {hard_block:'issue-hard', soft_warn:'issue-soft', unverified:'issue-unverified',
+                    tone_warn:'issue-tone', ad_direct:'issue-ad'};
+    issues.forEach(i => {
+      const cls   = clsMap[i.type] || 'issue-soft';
+      const label = i.word ? `[${i.type}] ${i.word}` : `[${i.type}] ${i.count || '?'}개 항목`;
+      issuesHtml += `<span class="issue-tag ${cls}">${label}</span>`;
+    });
+  } catch(e) {}
+
+  // 포맷별 발행 패키지
+  const fmt = d.format;
+  let pkgHtml = '';
+  if (!fmt || fmt === 'blog') {
+    pkgHtml =
+      pkgSection('SEO 제목', d.seo_titles) +
+      pkgSection('본문 전체', d.body) +
+      pkgSection('검증 필요 항목', d.verify_list, 'verify');
+  } else if (fmt === 'instagram_card') {
+    pkgHtml =
+      pkgSection('슬라이드 구성', d.body) +
+      pkgSection('캡션 / 해시태그', d.seo_titles);
+  } else if (fmt === 'youtube_shorts') {
+    pkgHtml =
+      pkgSection('쇼츠 스크립트', d.body) +
+      pkgSection('제목', d.seo_titles);
+  } else if (fmt === 'reels') {
+    pkgHtml =
+      pkgSection('릴스 컨셉', d.seo_titles) +
+      pkgSection('장면 구성', d.body);
+  } else if (fmt === 'threads') {
+    pkgHtml =
+      pkgSection('스레드 포스트 (3종)', d.body) +
+      pkgSection('추천 버전', d.seo_titles);
+  } else if (fmt === 'cartoon') {
+    pkgHtml =
+      pkgSection('카툰 컨셉', d.seo_titles) +
+      pkgSection('컷 구성', d.body);
+  } else {
+    pkgHtml = pkgSection('콘텐츠', d.body);
+  }
+
+  // 업로드 체크리스트
+  const items = CHECKLIST[fmt] || ['콘텐츠 검토', '플랫폼에 업로드'];
+  const clItems = items.map((item, i) =>
+    `<label><input type="checkbox" id="cl_${id}_${i}"> ${item}</label>`
+  ).join('');
+
+  // 발행 상태
+  const isPublished = d.approval_status === 'published';
+  const statusHtml  = isPublished
+    ? `<span style="color:#059669;font-size:11px">✓ 발행완료 · ${(d.approved_at||'').slice(0,16)}</span>`
+    : `<span style="color:#918DA0;font-size:11px">미발행</span>`;
+
+  // 이미지 갤러리 (image_paths JSON 파싱)
+  let imgGalleryHtml = '';
+  const imgFmts = ['instagram_card', 'cartoon'];
+  if (imgFmts.includes(fmt)) {
+    let imgPaths = [];
+    try { imgPaths = JSON.parse(d.image_paths || '[]'); } catch(e) {}
+    const isCartoon = (fmt === 'cartoon');
+    const thumbCls  = isCartoon ? 'img-thumb img-thumb-cartoon' : 'img-thumb';
+    const galleryInner = imgPaths.length
+      ? imgPaths.map(p => `<img class="${thumbCls}" src="/static/${p}" alt="생성 이미지" onclick="openLightbox('/static/${p}')">`).join('')
+      : `<span style="font-size:11px;color:#AAA7B8">아직 생성된 이미지가 없습니다.</span>`;
+    imgGalleryHtml = `
+      <div class="modal-section">
+        <div class="modal-section-label">${isCartoon ? '웹툰 컷 이미지' : '인스타그램 슬라이드 이미지'}</div>
+        <div class="img-gallery" id="imgGallery_${d.id}">${galleryInner}</div>
+      </div>`;
+  }
+
+  document.getElementById('modalContent').innerHTML = `
+    ${issuesHtml ? `<div class="modal-section"><div class="modal-section-label">Guard 이슈</div><div style="margin-top:4px">${issuesHtml}</div></div>` : ''}
+    ${pkgHtml || '<div style="color:#AAA7B8;font-size:12px;padding:8px 0">콘텐츠 데이터 없음</div>'}
+    ${imgGalleryHtml}
+    <div class="checklist">
+      <div class="checklist-title">📋 업로드 체크리스트</div>
+      ${clItems}
+    </div>
+    <div class="modal-action-bar">
+      <div class="modal-action-status" id="pubStatus_${d.id}">${statusHtml}</div>
+      ${imgFmts.includes(fmt) ? `<button class="btn-genimg" id="btnGenImg_${d.id}" onclick="generateImages(${d.id},event)">🎨 이미지 생성</button>` : ''}
+      <button class="btn-email" onclick="emailContent(${d.id},event)" title="발행 패키지 이메일 발송">📧 이메일</button>
+      ${isPublished
+        ? `<button class="btn-unpublish" onclick="unpublishContent(${d.id},event)">발행 취소</button>`
+        : `<button class="btn-publish"   onclick="publishContent(${d.id},event)">✓ 발행완료</button>`
+      }
+      <button class="btn-del" onclick="deleteContent(${d.id},event)" title="삭제">🗑</button>
+    </div>
+  `;
+  document.getElementById('detailModal')._currentId  = d.id;
+  document.getElementById('detailModal')._currentFmt = d.format;
+}
+
+async function publishContent(id, e) {
+  e.stopPropagation();
+  const res  = await fetch(`/api/content/${id}/publish`, {method:'POST'});
+  const data = await res.json();
+  document.getElementById(`pubStatus_${id}`).innerHTML =
+    `<span style="color:#059669;font-size:11px">✓ 발행완료 · ${data.published_at || ''}</span>`;
+  // 목록 배지 업데이트
+  _updateListBadge(id, true);
+  // 버튼 교체
+  const bar = document.getElementById(`pubStatus_${id}`).closest('.modal-action-bar');
+  const old = bar.querySelector('.btn-publish');
+  if (old) {
+    const nb = document.createElement('button');
+    nb.className = 'btn-unpublish'; nb.textContent = '발행 취소';
+    nb.onclick = (ev) => unpublishContent(id, ev);
+    old.replaceWith(nb);
+  }
+}
+
+async function unpublishContent(id, e) {
+  e.stopPropagation();
+  await fetch(`/api/content/${id}/unpublish`, {method:'POST'});
+  document.getElementById(`pubStatus_${id}`).innerHTML =
+    `<span style="color:#918DA0;font-size:11px">미발행</span>`;
+  _updateListBadge(id, false);
+  const bar = document.getElementById(`pubStatus_${id}`).closest('.modal-action-bar');
+  const old = bar.querySelector('.btn-unpublish');
+  if (old) {
+    const nb = document.createElement('button');
+    nb.className = 'btn-publish'; nb.textContent = '✓ 발행완료';
+    nb.onclick = (ev) => publishContent(id, ev);
+    old.replaceWith(nb);
+  }
+}
+
+async function emailContent(id, e) {
+  e.stopPropagation();
+  const btn = e.currentTarget;
+  btn.disabled = true; btn.textContent = '발송 중...';
+  try {
+    const res  = await fetch(`/api/content/${id}/email`, {method:'POST'});
+    const data = await res.json();
+    btn.textContent = data.status === '발송 완료' ? '✓ 발송됨' : '콘솔 출력';
+  } catch(err) {
+    btn.textContent = '오류';
+  }
+  setTimeout(() => { btn.disabled = false; btn.textContent = '📧 이메일'; }, 3000);
+}
+
+async function deleteContent(id, e) {
+  e.stopPropagation();
+  if (!confirm('이 초안을 삭제하시겠습니까?')) return;
+  await fetch(`/api/content/${id}`, {method:'DELETE'});
+  closeModal();
+  location.reload();
+}
+
+async function generateImages(id, e) {
+  e.stopPropagation();
+  const btn = document.getElementById(`btnGenImg_${id}`);
+  if (!btn) return;
+  btn.disabled = true;
+  btn.textContent = '생성 중... (최대 1~2분)';
+  try {
+    const res  = await fetch(`/api/content/${id}/generate-images`, {method: 'POST'});
+    const data = await res.json();
+    if (data.error) {
+      alert('이미지 생성 실패: ' + data.error);
+      btn.disabled = false;
+      btn.textContent = '🎨 이미지 생성';
+      return;
+    }
+    // 갤러리 업데이트
+    const gallery = document.getElementById(`imgGallery_${id}`);
+    if (gallery && data.paths && data.paths.length) {
+      const fmt = document.getElementById('detailModal')._currentFmt;
+      const isCartoon = (fmt === 'cartoon');
+      const thumbCls  = isCartoon ? 'img-thumb img-thumb-cartoon' : 'img-thumb';
+      gallery.innerHTML = data.paths.map(p =>
+        `<img class="${thumbCls}" src="/static/${p}?t=${Date.now()}" alt="생성 이미지" onclick="openLightbox('/static/${p}')">`
+      ).join('');
+    }
+    btn.textContent = `✓ ${data.count}장 생성 완료`;
+    setTimeout(() => { btn.disabled = false; btn.textContent = '🎨 이미지 재생성'; }, 3000);
+  } catch(err) {
+    alert('오류 발생: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = '🎨 이미지 생성';
+  }
+}
+
+function openLightbox(src) {
+  const lb = document.getElementById('imgLightbox');
+  document.getElementById('lightboxImg').src = src;
+  lb.classList.add('active');
+}
+
+function closeLightbox() {
+  document.getElementById('imgLightbox').classList.remove('active');
+}
+
+function _updateListBadge(id, published) {
+  document.querySelectorAll('.draft-item').forEach(el => {
+    if (el.getAttribute('onclick')?.includes(`(${id})`)) {
+      const old = el.querySelector('.apv-badge-published,.apv-badge-unpublished');
+      if (old) old.remove();
+      if (published) {
+        const b = document.createElement('span');
+        b.className = 'badge apv-badge-published'; b.textContent = '✓ 발행완료';
+        el.querySelector('.draft-top').appendChild(b);
+      }
+    }
+  });
+}
+
+function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
+</script>
+</body>
+</html>

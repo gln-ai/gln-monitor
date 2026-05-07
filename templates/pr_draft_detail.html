@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>보도자료 초안 상세</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #F6F5FF; margin: 0; }
+.sidebar { width: 220px; min-height: 100vh; background: #130D2A; position: fixed; top: 0; left: 0; z-index: 20; display: flex; flex-direction: column; padding: 20px 14px; }
+.nav-section { margin-bottom: 20px; }
+.nav-section-label { font-size: 9px; font-weight: 600; color: #5E5A71; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; margin-bottom: 2px; transition: background 0.15s; }
+.nav-link:hover { background: rgba(255,255,255,0.06); }
+.nav-link.active { background: #7000FC; }
+.nav-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.5; flex-shrink: 0; }
+.nav-link.active .nav-icon { opacity: 1; }
+.nav-text { font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
+.nav-link.active .nav-text { color: #fff; }
+.sidebar-bottom { margin-top: auto; }
+.sidebar-info { background: rgba(112,0,252,0.15); border-radius: 10px; padding: 10px 12px; border: 0.5px solid rgba(112,0,252,0.3); }
+.sidebar-info-text { font-size: 10px; color: #AAA7B8; line-height: 1.7; margin: 0; }
+.main-wrap { margin-left: 220px; min-height: 100vh; }
+.topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 10; }
+.back-btn { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #5E5A71; text-decoration: none; padding: 6px 12px; border: 0.5px solid #DAD9EA; border-radius: 9px; background: #fff; transition: background 0.1s; flex-shrink: 0; }
+.back-btn:hover { background: #F6F5FF; color: #130D2A; }
+.topbar-title { font-size: 15px; font-weight: 700; color: #130D2A; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.content { padding: 20px 24px 60px; max-width: 860px; }
+.badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 9px; font-weight: 500; }
+.badge-pending { background: #F0EAFF; color: #7000FC; }
+.badge-approved { background: #F0FDF4; color: #059669; }
+.badge-rejected { background: #FEF2F2; color: #DC2626; }
+.badge-verify { background: #FFFBEB; color: #D97706; }
+.meta-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.meta-date { font-size: 11px; color: #AAA7B8; }
+.section-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; padding: 20px 24px; margin-bottom: 12px; }
+.section-label { font-size: 10px; font-weight: 600; color: #918DA0; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+.section-headline { font-size: 18px; font-weight: 800; color: #130D2A; line-height: 1.4; margin-bottom: 4px; }
+.section-sub { font-size: 14px; color: #5E5A71; line-height: 1.5; }
+.body-text { font-size: 13px; line-height: 1.85; color: #130D2A; white-space: pre-wrap; }
+.verify-box { background: #FFFBEB; border: 0.5px solid #FDE68A; border-radius: 10px; padding: 14px 16px; font-size: 12px; line-height: 1.8; color: #92400E; white-space: pre-wrap; }
+.action-bar { display: flex; gap: 8px; margin-top: 20px; }
+.btn { padding: 8px 20px; font-size: 13px; font-weight: 600; border-radius: 10px; cursor: pointer; border: none; }
+.btn-approve { background: #7000FC; color: #fff; }
+.btn-approve:hover { background: #5A00CC; }
+.btn-delete { background: #FEF2F2; color: #DC2626; border: 0.5px solid #FECACA; }
+.btn-delete:hover { background: #FEE2E2; }
+.btn-copy { background: #F6F5FF; color: #5E5A71; border: 0.5px solid #DAD9EA; }
+.btn-copy:hover { background: #EDE9FE; color: #7000FC; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div style="padding:0 2px;margin-bottom:20px">
+    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
+    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
+    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-section-label">메뉴</div>
+    <a href="/insights" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-text">인사이트</span></a>
+    <a href="/" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-text">GLN 모니터링</span></a>
+    <a href="/content" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-text">콘텐츠</span></a>
+    <a href="/pr" class="nav-link active"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-text">보도자료</span></a>
+    <a href="/reports" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-text">보고서 아카이브</span></a>
+  </div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-info">
+      <p class="sidebar-info-text">보도자료 초안 상세</p>
+    </div>
+  </div>
+</div>
+
+<div class="main-wrap">
+  <div class="topbar">
+    <a href="/pr/drafts" class="back-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      초안 목록
+    </a>
+    <div class="topbar-title">보도자료 초안 #{{ draft.id }}</div>
+  </div>
+
+  <div class="content">
+    <div class="meta-bar">
+      {% if draft.approval_status == 'approved' %}
+        <span class="badge badge-approved">승인완료</span>
+      {% elif draft.approval_status == 'rejected' %}
+        <span class="badge badge-rejected">반려</span>
+      {% else %}
+        <span class="badge badge-pending">검토중</span>
+      {% endif %}
+      {% if draft.verify_list and draft.verify_list != '없음' and draft.verify_list|length > 2 %}
+        <span class="badge badge-verify">검증필요</span>
+      {% endif %}
+      <span class="meta-date">{{ draft.created_at[:16] if draft.created_at else '' }}</span>
+    </div>
+
+    <!-- 헤드라인 -->
+    <div class="section-card">
+      <div class="section-label">헤드라인</div>
+      <div class="section-headline">{{ draft.headline }}</div>
+      {% if draft.subheadline %}
+      <div style="margin-top:10px;padding-top:10px;border-top:0.5px solid #F0EDF7;">
+        <div class="section-label">부제</div>
+        <div class="section-sub">{{ draft.subheadline }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- 본문 -->
+    {% if draft.body %}
+    <div class="section-card">
+      <div class="section-label">보도자료 본문</div>
+      <div class="body-text">{{ draft.body }}</div>
+    </div>
+    {% endif %}
+
+    <!-- 핵심 메시지 -->
+    {% if draft.key_messages %}
+    <div class="section-card">
+      <div class="section-label">핵심 메시지</div>
+      <div class="body-text">{{ draft.key_messages }}</div>
+    </div>
+    {% endif %}
+
+    <!-- 검증 필요 -->
+    {% if draft.verify_list and draft.verify_list != '없음' %}
+    <div class="section-card">
+      <div class="section-label">검증 필요 항목</div>
+      <div class="verify-box">{{ draft.verify_list }}</div>
+    </div>
+    {% endif %}
+
+    <!-- 액션 -->
+    <div class="action-bar">
+      <button class="btn btn-copy" onclick="copyBody()">본문 복사</button>
+      {% if draft.approval_status != 'approved' %}
+      <button class="btn btn-approve" onclick="approveDraft({{ draft.id }})">승인</button>
+      {% endif %}
+      <button class="btn btn-delete" onclick="deleteDraft({{ draft.id }})">삭제</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyBody() {
+  const text = {{ draft.body | tojson }};
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '복사됨!';
+    setTimeout(() => btn.textContent = '본문 복사', 2000);
+  });
+}
+
+async function approveDraft(id) {
+  const res = await fetch('/api/pr/drafts/' + id + '/approve', { method: 'POST' });
+  if (res.ok) location.reload();
+}
+
+async function deleteDraft(id) {
+  if (!confirm('이 초안을 삭제할까요?')) return;
+  const res = await fetch('/api/pr/drafts/' + id, { method: 'DELETE' });
+  if (res.ok) window.location.href = '/pr/drafts';
+}
+</script>
+</body>
+</html>
