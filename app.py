@@ -1,6 +1,6 @@
 """
 GLN 네이버 카페 모니터링 웹앱
-실행: python app.py
+실행: python app.py  또는  gunicorn app:app
 대시보드: http://localhost:5001
 """
 import os
@@ -16,7 +16,7 @@ import config  # noqa: F401 (side-effect: .env load, sys.path update)
 
 from flask import Flask
 
-from db import init_db, get_db
+from db import init_db
 from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp
 from services.naver import collect_all
 from services.email_svc import send_daily_report
@@ -31,23 +31,21 @@ app.register_blueprint(pr_bp)
 app.register_blueprint(reports_bp)
 app.register_blueprint(keywords_bp)
 
+# ── DB 초기화 + 스케줄러 (gunicorn/직접 실행 모두 동작) ───────────────────────
 from apscheduler.schedulers.background import BackgroundScheduler
 
+init_db()
 
-def start_scheduler():
-    scheduler = BackgroundScheduler(timezone="Asia/Seoul")
-    scheduler.add_job(collect_all,          "interval", hours=1, id="collect")
-    scheduler.add_job(send_daily_report,    "cron", hour=8,  minute=0,  id="daily_report")
-    scheduler.add_job(run_content_pipeline, "cron", hour=9,  minute=0,  id="content_pipeline")
-    scheduler.add_job(send_sla_reminder,    "interval", hours=2, id="sla_reminder")
-    scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
-    scheduler.start()
-    print("[스케줄러] 수집 1h / 리포트 08:00 / 콘텐츠 09:00 / SLA 2h / 스파이크 1h")
-
+_scheduler = BackgroundScheduler(timezone="Asia/Seoul")
+_scheduler.add_job(collect_all,          "interval", hours=1,  id="collect")
+_scheduler.add_job(send_daily_report,    "cron", hour=8,  minute=0, id="daily_report")
+_scheduler.add_job(run_content_pipeline, "cron", hour=9,  minute=0, id="content_pipeline")
+_scheduler.add_job(send_sla_reminder,    "interval", hours=2, id="sla_reminder")
+_scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
+_scheduler.start()
+print("[스케줄러] 수집 1h / 리포트 08:00 / 콘텐츠 09:00 / SLA 2h / 스파이크 1h")
 
 if __name__ == "__main__":
-    init_db()
-    start_scheduler()
     print("\n✅ GLN 모니터링 시작!")
     print("📊 대시보드: http://localhost:5001\n")
     collect_all()
