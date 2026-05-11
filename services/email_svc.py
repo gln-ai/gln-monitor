@@ -63,7 +63,11 @@ def send_urgent_alert(title: str, analysis: dict,
     link_btn = (
         f'<a href="{detail_url}" style="display:inline-block;margin-top:16px;'
         f'padding:8px 16px;background:#1D4ED8;color:#fff;text-decoration:none;'
-        f'border-radius:6px;font-size:13px">상세보기 →</a>'
+        f'border-radius:6px;font-size:13px;margin-right:8px">상세보기 →</a>'
+        + (f'<a href="{link}" style="display:inline-block;margin-top:16px;'
+           f'padding:8px 16px;background:#F3F4F6;color:#374151;text-decoration:none;'
+           f'border-radius:6px;font-size:13px;border:1px solid #E5E7EB">원문 바로가기 ↗</a>'
+           if link else "")
     )
     html = f"""
     <div style="font-family:sans-serif;max-width:600px;margin:auto;padding:20px">
