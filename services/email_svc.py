@@ -1,43 +1,33 @@
 """
-services/email_svc.py — 이메일 발송 서비스
+services/email_svc.py — 이메일 발송 서비스 (Resend API)
 """
 import os
-import smtplib
 from datetime import datetime
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 from config import KST
 from db import get_db
 
 
 def send_email(to: str, subject: str, html_body: str):
-    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_user = os.getenv("SMTP_USER")
-    smtp_pass = os.getenv("SMTP_PASS")
-    from_addr = os.getenv("REPORT_FROM", smtp_user)
+    api_key  = os.getenv("RESEND_API_KEY", "")
+    from_addr = os.getenv("REPORT_FROM", "GLN 모니터링 <onboarding@resend.dev>")
 
-    if not smtp_user or not smtp_pass:
-        print("[이메일] SMTP 설정 없음 — 스킵")
+    if not api_key:
+        print("[이메일] RESEND_API_KEY 없음 — 스킵")
         return
 
     recipients = [r.strip() for r in to.split(",") if r.strip()]
+    print(f"[이메일] Resend 발송: {subject} → {recipients}", flush=True)
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"]    = from_addr
-    msg["To"]      = ", ".join(recipients)
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
-
-    print(f"[이메일] SMTP 연결 시도: {smtp_host}:{smtp_port} / user={smtp_user} / to={recipients}", flush=True)
     try:
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=30) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(from_addr, recipients, msg.as_string())
+        import resend
+        resend.api_key = api_key
+        resend.Emails.send({
+            "from": from_addr,
+            "to":   recipients,
+            "subject": subject,
+            "html": html_body,
+        })
         print(f"[이메일 발송] {subject} → {', '.join(recipients)}", flush=True)
     except Exception as e:
         import traceback
