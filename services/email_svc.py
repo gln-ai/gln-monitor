@@ -1,33 +1,50 @@
 """
-services/email_svc.py — 이메일 발송 서비스 (Resend API)
+services/email_svc.py — 이메일 발송 서비스 (Gmail API OAuth2)
 """
+import base64
 import os
 from datetime import datetime
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from config import KST
 from db import get_db
 
 
 def send_email(to: str, subject: str, html_body: str):
-    api_key  = os.getenv("RESEND_API_KEY", "")
-    from_addr = os.getenv("REPORT_FROM", "GLN 모니터링 <onboarding@resend.dev>")
+    from google.oauth2.credentials import Credentials
+    from googleapiclient.discovery import build
 
-    if not api_key:
-        print("[이메일] RESEND_API_KEY 없음 — 스킵")
+    client_id     = os.getenv("GMAIL_CLIENT_ID", "")
+    client_secret = os.getenv("GMAIL_CLIENT_SECRET", "")
+    refresh_token = os.getenv("GMAIL_REFRESH_TOKEN", "")
+    from_addr     = os.getenv("REPORT_FROM", "glninternational.ai@gmail.com")
+
+    if not (client_id and client_secret and refresh_token):
+        print("[이메일] Gmail OAuth2 설정 없음 — 스킵")
         return
 
     recipients = [r.strip() for r in to.split(",") if r.strip()]
-    print(f"[이메일] Resend 발송: {subject} → {recipients}", flush=True)
 
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"]    = from_addr
+    msg["To"]      = ", ".join(recipients)
+    msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+    print(f"[이메일] Gmail API 발송: {subject} → {recipients}", flush=True)
     try:
-        import resend
-        resend.api_key = api_key
-        resend.Emails.send({
-            "from": from_addr,
-            "to":   recipients,
-            "subject": subject,
-            "html": html_body,
-        })
+        creds = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            client_id=client_id,
+            client_secret=client_secret,
+            token_uri="https://oauth2.googleapis.com/token",
+            scopes=["https://www.googleapis.com/auth/gmail.send"],
+        )
+        service = build("gmail", "v1", credentials=creds, cache_discovery=False)
+        raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+        service.users().messages().send(userId="me", body={"raw": raw}).execute()
         print(f"[이메일 발송] {subject} → {', '.join(recipients)}", flush=True)
     except Exception as e:
         import traceback
