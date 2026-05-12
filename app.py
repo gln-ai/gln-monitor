@@ -23,6 +23,7 @@ from services.email_svc import send_daily_report
 from services.pipeline import run_content_pipeline
 from services.sla_reminder import send_sla_reminder
 from services.spike_detector import send_spike_alert
+from services.weekly_report import send_weekly_report
 
 app = Flask(__name__)
 app.register_blueprint(monitor_bp)
@@ -42,8 +43,9 @@ _scheduler.add_job(send_daily_report,    "cron", hour=8,  minute=0, id="daily_re
 _scheduler.add_job(run_content_pipeline, "cron", hour=9,  minute=0, id="content_pipeline")
 _scheduler.add_job(send_sla_reminder,    "cron", hour=17, minute=0, id="sla_reminder")
 _scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
+_scheduler.add_job(send_weekly_report,   "cron", day_of_week="mon", hour=9, minute=0, id="weekly_report")
 _scheduler.start()
-print("[스케줄러] 수집 1h / 리포트 08:00 / 콘텐츠 09:00 / SLA 2h / 스파이크 1h")
+print("[스케줄러] 수집 1h / 일일리포트 08:00 / 주간리포트 월09:00 / 콘텐츠 09:00 / SLA 17:00 / 스파이크 1h")
 
 if __name__ == "__main__":
     print("\n✅ GLN 모니터링 시작!")
