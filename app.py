@@ -14,7 +14,7 @@ if MONITOR_DIR not in sys.path:
 # config를 먼저 import → .env 로드 + shared/ 경로를 sys.path에 추가
 import config  # noqa: F401 (side-effect: .env load, sys.path update)
 
-from flask import Flask, request, jsonify
+from flask import Flask
 
 from db import init_db
 from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp
@@ -44,23 +44,6 @@ _scheduler.add_job(send_sla_reminder,    "cron", hour=17, minute=0, id="sla_remi
 _scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
 _scheduler.start()
 print("[스케줄러] 수집 1h / 리포트 08:00 / 콘텐츠 09:00 / SLA 2h / 스파이크 1h")
-
-# ── 임시 DB 업로드 엔드포인트 ────────────────────────────────────────────────
-import shutil
-from config import DB_PATH as _DB_PATH
-
-@app.route("/admin/sync-db", methods=["POST"])
-def admin_sync_db():
-    secret = os.getenv("DB_SYNC_KEY", "")
-    if not secret or request.headers.get("X-Sync-Key") != secret:
-        return jsonify({"ok": False, "error": "unauthorized"}), 401
-    f = request.files.get("db")
-    if not f:
-        return jsonify({"ok": False, "error": "no file"}), 400
-    tmp = _DB_PATH + ".upload"
-    f.save(tmp)
-    shutil.move(tmp, _DB_PATH)
-    return jsonify({"ok": True, "path": _DB_PATH})
 
 if __name__ == "__main__":
     print("\n✅ GLN 모니터링 시작!")
