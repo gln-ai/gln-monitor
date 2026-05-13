@@ -1,0 +1,183 @@
+{
+  "report_type": "weekly",
+  "period_start": "2026-03-30 00:00",
+  "period_end": "2026-04-06 09:05",
+  "generated_at": "2026-04-06T09:05:00.115874+09:00",
+  "total": 251,
+  "urgent": 45,
+  "unprocessed": 212,
+  "sla_overdue": 0,
+  "avg_importance_score": 4.82,
+  "health_score": 78.0,
+  "sentiment": {
+    "negative": 15,
+    "neutral": 67,
+    "positive": 169
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 144
+    },
+    {
+      "category": "후기",
+      "count": 58
+    },
+    {
+      "category": "문의",
+      "count": 39
+    },
+    {
+      "category": "기타",
+      "count": 6
+    },
+    {
+      "category": "불만",
+      "count": 4
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "블로그/GLN",
+      "count": 104
+    },
+    {
+      "keyword": "카페/GLN",
+      "count": 101
+    },
+    {
+      "keyword": "뉴스/GLN",
+      "count": 38
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 3
+    },
+    {
+      "keyword": "카페/GLN ATM",
+      "count": 2
+    },
+    {
+      "keyword": "블로그/퍼플GLN",
+      "count": 1
+    },
+    {
+      "keyword": "블로그/GLN 출금",
+      "count": 1
+    },
+    {
+      "keyword": "블로그/GLN ATM",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "태국 파타야 마사지 샵 추천 킨 스파&amp;마사지 커플마사지... ",
+      "cafe_name": "함쩡 블로그",
+      "created_at": "2026-03-31 16:50:07",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "카드사, '코인 결제' 시동 걸었다! 비트코인 투자자가... ",
+      "cafe_name": "teanbook704님의 블로그",
+      "created_at": "2026-04-01 00:35:24",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "[60대 부모님과 푸켓여행] 3. 와우패스환전 태국바트... ",
+      "cafe_name": "은디로운 생활",
+      "created_at": "2026-04-01 09:35:24",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "Bank of Korea launches QR payment link in Indonesia",
+      "cafe_name": "https://www.koreatimes.co.kr/p",
+      "created_at": "2026-04-01 15:35:25",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "세부 과일 배달 주문방법::미미프루츠  가격 및 계좌이체... ",
+      "cafe_name": "soob in, soob out",
+      "created_at": "2026-04-02 08:47:12",
+      "importance_score": 8,
+      "sentiment": "neutral"
+    },
+    {
+      "title": "금융결제원, '국가 간 QR결제' 표준 세운다… 인도네시아와 양방향 서비...",
+      "cafe_name": "https://news.einfomax.co.kr/ne",
+      "created_at": "2026-04-03 10:05:56",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "치앙마이 1.9~2일차",
+      "cafe_name": "(๑╹ω╹๑ )",
+      "created_at": "2026-03-31 02:16:28",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "방콕4일차(쏨분씨푸드/룸피니공원/세레네마사지)",
+      "cafe_name": "수수한 기록",
+      "created_at": "2026-03-31 13:19:20",
+      "importance_score": 7,
+      "sentiment": "neutral"
+    },
+    {
+      "title": "트래블카드 어제발급 내일출국",
+      "cafe_name": "네일동 : 일본여행카페",
+      "created_at": "2026-04-01 15:35:23",
+      "importance_score": 7,
+      "sentiment": "negative"
+    },
+    {
+      "title": "발리·자카르타서 환전 없이 국내 금융앱으로 'QR결제'",
+      "cafe_name": "https://www.slist.kr/news/arti",
+      "created_at": "2026-04-01 15:35:25",
+      "importance_score": 7,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 8
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 8
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "red",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 9
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 8
+    },
+    {
+      "channel": "official",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 1
+    }
+  ]
+}

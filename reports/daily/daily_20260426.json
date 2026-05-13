@@ -1,0 +1,159 @@
+{
+  "report_type": "daily",
+  "period_start": "2026-04-26 00:00",
+  "period_end": "2026-04-26 23:55",
+  "generated_at": "2026-04-26T23:55:01.515376+09:00",
+  "total": 99,
+  "urgent": 76,
+  "unprocessed": 99,
+  "sla_overdue": 2,
+  "avg_importance_score": 6.86,
+  "health_score": 95.4,
+  "sentiment": {
+    "negative": 1,
+    "neutral": 6,
+    "positive": 92
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 90
+    },
+    {
+      "category": "후기",
+      "count": 8
+    },
+    {
+      "category": "문의",
+      "count": 1
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "뉴스/GLN",
+      "count": 66
+    },
+    {
+      "keyword": "블로그/GLN",
+      "count": 18
+    },
+    {
+      "keyword": "카페/GLN",
+      "count": 8
+    },
+    {
+      "keyword": "뉴스/GLN 해외결제",
+      "count": 3
+    },
+    {
+      "keyword": "뉴스/GLN 결제",
+      "count": 2
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 1
+    },
+    {
+      "keyword": "뉴스/퍼플GLN",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "하나은행, 한국-베트남 경제협력 기반 확대",
+      "cafe_name": "http://www.metroseoul.co.kr/ar",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 베트남 국영은행과 인프라 금융 맞손…QR 결제 서비스 론칭",
+      "cafe_name": "https://biz.sbs.co.kr/article_",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행·BIDV·KIND, 해외 인프라 사업 협력을 위한 3자 간 업무 협약",
+      "cafe_name": "http://www.fnnews.com/news/202",
+      "created_at": "2026-04-26 12:20:46",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 베트남 인프라·결제 시장 본격 공략…BIDV·KIND와 3자 MOU",
+      "cafe_name": "https://www.betanews.net/artic",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "이호성 하나은행장 &quot;베트남 금융 생태계 내 접근-연결성 강화&quot;",
+      "cafe_name": "http://www.choicenews.co.kr/ne",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "&quot;국경 지우는 결제·기회 여는 금융&quot;…하나은행, 베트남 인프라·디지털...",
+      "cafe_name": "https://www.thefairnews.co.kr/",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 베트남 협력 확대…인프라 금융·QR결제 동시 공략",
+      "cafe_name": "https://www.digitaltoday.co.kr",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "[금융로드] 하나은행, 베트남 인프라·QR결제 '투트랙 공략'…&quot;성장 잠재...",
+      "cafe_name": "http://www.newsroad.co.kr/news",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, BIDV·KIND와 '베트남·해외 인프라 사업' 협력 위한 업무협약",
+      "cafe_name": "https://www.fetv.co.kr/news/ar",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, K-금융 영토 확장…베트남서 환전 없이 QR결제",
+      "cafe_name": "https://www.ddaily.co.kr/page/",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 1
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "report_type": "daily",
+  "period_start": "2026-05-03 00:00",
+  "period_end": "2026-05-03 23:55",
+  "generated_at": "2026-05-03T23:55:00.018399+09:00",
+  "total": 45,
+  "urgent": 16,
+  "unprocessed": 45,
+  "sla_overdue": 2,
+  "avg_importance_score": 5.49,
+  "health_score": 82.2,
+  "sentiment": {
+    "negative": 2,
+    "neutral": 10,
+    "positive": 33
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 30
+    },
+    {
+      "category": "문의",
+      "count": 7
+    },
+    {
+      "category": "후기",
+      "count": 6
+    },
+    {
+      "category": "불만",
+      "count": 2
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "뉴스/GLN",
+      "count": 19
+    },
+    {
+      "keyword": "블로그/GLN",
+      "count": 16
+    },
+    {
+      "keyword": "카페/GLN",
+      "count": 10
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "태국 코사무이 여행 가볼만한곳 보풋 피셔맨스 빌리지 야시장",
+      "cafe_name": "에피의 날마다 좋은하루",
+      "created_at": "2026-05-03 11:20:44",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "1월 방콕 가족 여행 (1) 돈므앙 공항에서 시내 이동, 티츄카... ",
+      "cafe_name": "All My Days Away",
+      "created_at": "2026-05-03 13:20:44",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "채병득 금결원장 &quot;금융권 AX 얼라이언스 조속히 구성…국가간 QR결제 확...",
+      "cafe_name": "https://www.news1.kr/economy/t",
+      "created_at": "2026-05-03 16:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "채병득 금결원장 &quot;금융권 AI 대전환 적극 지원…AI 전담조직 신설&quot;",
+      "cafe_name": "https://news.einfomax.co.kr/ne",
+      "created_at": "2026-05-03 16:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "채병득 금결원장 &quot;인도·베트남 올해 QR결제 시작…싱가포르·태국 등 생...",
+      "cafe_name": "https://view.asiae.co.kr/artic",
+      "created_at": "2026-05-03 16:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "금결원, 금융권 'AX' 허브로?···협의체 구성 나선다",
+      "cafe_name": "http://www.fnnews.com/news/202",
+      "created_at": "2026-05-03 16:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "&quot;한국 QR로 인니 결제&quot;…국가간 앱 결제 시대 열렸다 [ADB총회]",
+      "cafe_name": "https://www.dailian.co.kr/news",
+      "created_at": "2026-05-03 16:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "AI가 쇼핑해주는 시대 온다…금결원, AI 결제 기술검증 나서",
+      "cafe_name": "https://www.yna.co.kr/view/AKR",
+      "created_at": "2026-05-03 16:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "채병득 금융결제원장 &quot;태국ㆍ싱가포르에도 'K-QR결제 네트워크' 구축&quot;",
+      "cafe_name": "https://www.etoday.co.kr/news/",
+      "created_at": "2026-05-03 16:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "한국 경제, 인프라 전환이 시작됐다",
+      "cafe_name": "테오의 기록실",
+      "created_at": "2026-05-03 18:20:44",
+      "importance_score": 7,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 1
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "report_type": "monthly",
+  "period_start": "2026-04-01 00:00",
+  "period_end": "2026-04-30 23:59",
+  "generated_at": "2026-05-01T09:10:00.053716+09:00",
+  "total": 1259,
+  "urgent": 343,
+  "unprocessed": 1208,
+  "sla_overdue": 3,
+  "avg_importance_score": 5.25,
+  "health_score": 78.7,
+  "sentiment": {
+    "negative": 81,
+    "neutral": 311,
+    "positive": 867
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 800
+    },
+    {
+      "category": "후기",
+      "count": 269
+    },
+    {
+      "category": "문의",
+      "count": 137
+    },
+    {
+      "category": "기타",
+      "count": 30
+    },
+    {
+      "category": "불만",
+      "count": 23
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "블로그/GLN",
+      "count": 476
+    },
+    {
+      "keyword": "카페/GLN",
+      "count": 447
+    },
+    {
+      "keyword": "뉴스/GLN",
+      "count": 297
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 12
+    },
+    {
+      "keyword": "블로그/GLN ATM",
+      "count": 7
+    },
+    {
+      "keyword": "블로그/GLN 출금",
+      "count": 4
+    },
+    {
+      "keyword": "블로그/GLN 결제",
+      "count": 4
+    },
+    {
+      "keyword": "카페/GLN ATM",
+      "count": 3
+    },
+    {
+      "keyword": "뉴스/GLN 해외결제",
+      "count": 3
+    },
+    {
+      "keyword": "뉴스/GLN 결제",
+      "count": 2
+    },
+    {
+      "keyword": "카페/퍼플GLN",
+      "count": 1
+    },
+    {
+      "keyword": "카페/GLN 출금",
+      "count": 1
+    },
+    {
+      "keyword": "블로그/퍼플GLN",
+      "count": 1
+    },
+    {
+      "keyword": "뉴스/퍼플GLN",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "컬쳐캐쉬 GLN 전환 문의요~!!급급",
+      "cafe_name": "신용카드 박물관",
+      "created_at": "2026-04-07 15:35:23",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "최근 관광객 대상 사기 유형별 정리",
+      "cafe_name": "나트랑 도깨비 - 베트남 나트랑 자유여...",
+      "created_at": "2026-04-08 21:35:23",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "아니, 50세 넘었다고 GLN 충전도 마음대로 안 되나요? 너무 서럽네요 ㅎ",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-04-09 11:35:23",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "방콕 수완나품 공항 입국심사 큐알 노숙 태국 이심 공항버스... ",
+      "cafe_name": "여집 : 여행자의 집",
+      "created_at": "2026-04-24 17:20:44",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 한국-베트남 경제협력 기반 확대",
+      "cafe_name": "http://www.metroseoul.co.kr/ar",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 베트남 국영은행과 인프라 금융 맞손…QR 결제 서비스 론칭",
+      "cafe_name": "https://biz.sbs.co.kr/article_",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행·BIDV·KIND, 해외 인프라 사업 협력을 위한 3자 간 업무 협약",
+      "cafe_name": "http://www.fnnews.com/news/202",
+      "created_at": "2026-04-26 12:20:46",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "매장에서 결제 실수가 있었던것 같아요",
+      "cafe_name": "푸꾸옥 고스트 - 베트남푸꾸옥 자유여...",
+      "created_at": "2026-04-27 18:20:43",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "트래블 카드만 믿고 오시면 불편해요~~",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-04-30 00:20:43",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "카드사, '코인 결제' 시동 걸었다! 비트코인 투자자가... ",
+      "cafe_name": "teanbook704님의 블로그",
+      "created_at": "2026-04-01 00:35:24",
+      "importance_score": 8,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 24
+    },
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "red",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 25
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "red",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 27
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 27
+    },
+    {
+      "channel": "official",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 1
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "report_type": "weekly",
+  "period_start": "2026-04-06 00:00",
+  "period_end": "2026-04-13 09:05",
+  "generated_at": "2026-04-13T09:05:00.139979+09:00",
+  "total": 340,
+  "urgent": 127,
+  "unprocessed": 314,
+  "sla_overdue": 98,
+  "avg_importance_score": 5.55,
+  "health_score": 81.4,
+  "sentiment": {
+    "negative": 15,
+    "neutral": 79,
+    "positive": 242
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 228
+    },
+    {
+      "category": "후기",
+      "count": 60
+    },
+    {
+      "category": "문의",
+      "count": 35
+    },
+    {
+      "category": "기타",
+      "count": 10
+    },
+    {
+      "category": "불만",
+      "count": 3
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "뉴스/GLN",
+      "count": 122
+    },
+    {
+      "keyword": "블로그/GLN",
+      "count": 112
+    },
+    {
+      "keyword": "카페/GLN",
+      "count": 98
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 4
+    },
+    {
+      "keyword": "블로그/GLN 결제",
+      "count": 2
+    },
+    {
+      "keyword": "카페/퍼플GLN",
+      "count": 1
+    },
+    {
+      "keyword": "카페/GLN 출금",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "컬쳐캐쉬 GLN 전환 문의요~!!급급",
+      "cafe_name": "신용카드 박물관",
+      "created_at": "2026-04-07 15:35:23",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "최근 관광객 대상 사기 유형별 정리",
+      "cafe_name": "나트랑 도깨비 - 베트남 나트랑 자유여...",
+      "created_at": "2026-04-08 21:35:23",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "아니, 50세 넘었다고 GLN 충전도 마음대로 안 되나요? 너무 서럽네요 ㅎ",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-04-09 11:35:23",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "하나금융그룹, 생활 금융 플랫폼 『하나머니』 하나손보·핀크·GLN 합류...",
+      "cafe_name": "https://www.geconomy.co.kr/new",
+      "created_at": "2026-04-06 09:05:56",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "'하나머니'에 손보·핀크·GLN 합류…&quot;생활 금융 플랫폼 확장&quot;",
+      "cafe_name": "https://www.ajunews.com/view/2",
+      "created_at": "2026-04-06 09:05:56",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나금융그룹, '하나머니'에 손보·핀크·GLN 합류 참여사 9곳으로 확대...",
+      "cafe_name": "https://www.public25.com/news/",
+      "created_at": "2026-04-06 09:05:56",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나금융, '하나머니' 앱에 하나손보·핀크·GLN 합류",
+      "cafe_name": "https://view.asiae.co.kr/artic",
+      "created_at": "2026-04-06 10:05:56",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나금융그룹 '하나머니' 참여사 확대···보험·핀테크 결합",
+      "cafe_name": "http://www.finomy.com/news/art",
+      "created_at": "2026-04-06 10:05:56",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나금융 '하나머니' 플랫폼에 3개사 합류...'원스톱' 금융 서비스 제공",
+      "cafe_name": "https://www.asiaa.co.kr/news/a",
+      "created_at": "2026-04-06 10:05:56",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나금융, 하나머니에 3개사 추가…보험·해외결제 확대",
+      "cafe_name": "https://www.thepowernews.co.kr",
+      "created_at": "2026-04-06 10:56:24",
+      "importance_score": 8,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 6
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 6
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 6
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 6
+    }
+  ]
+}

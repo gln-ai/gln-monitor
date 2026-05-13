@@ -1,0 +1,155 @@
+{
+  "report_type": "daily",
+  "period_start": "2026-04-27 00:00",
+  "period_end": "2026-04-27 23:55",
+  "generated_at": "2026-04-27T23:55:01.987369+09:00",
+  "total": 85,
+  "urgent": 31,
+  "unprocessed": 85,
+  "sla_overdue": 5,
+  "avg_importance_score": 5.87,
+  "health_score": 88.0,
+  "sentiment": {
+    "negative": 3,
+    "neutral": 12,
+    "positive": 70
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 71
+    },
+    {
+      "category": "후기",
+      "count": 8
+    },
+    {
+      "category": "문의",
+      "count": 4
+    },
+    {
+      "category": "불만",
+      "count": 2
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "뉴스/GLN",
+      "count": 53
+    },
+    {
+      "keyword": "블로그/GLN",
+      "count": 18
+    },
+    {
+      "keyword": "카페/GLN",
+      "count": 12
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 1
+    },
+    {
+      "keyword": "블로그/GLN ATM",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "매장에서 결제 실수가 있었던것 같아요",
+      "cafe_name": "푸꾸옥 고스트 - 베트남푸꾸옥 자유여...",
+      "created_at": "2026-04-27 18:20:43",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "내일 출국입니다...",
+      "cafe_name": "태사랑- 태국,방콕,치앙마이,파타야,푸...",
+      "created_at": "2026-04-27 02:20:43",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "하나은행, 베트남 공략 속도낸다…인프라 금융·QR결제 '투트랙 전략'",
+      "cafe_name": "https://www.lcnews.co.kr/news/",
+      "created_at": "2026-04-27 07:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 베트남 인프라 협력·QR결제 동시 확대…복합 금융 전략 본격...",
+      "cafe_name": "https://www.financialpost.co.k",
+      "created_at": "2026-04-27 08:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 베트남과 경제협력 확대…'인프라 금융·디지털 결제' 시장 공...",
+      "cafe_name": "http://www.economytalk.kr/news",
+      "created_at": "2026-04-27 13:20:46",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "[금융권]국내 은행들, 초고령화·글로벌 시장 동시 공략 ... AI 기반 시니...",
+      "cafe_name": "https://www.newstnt.com/news/a",
+      "created_at": "2026-04-27 14:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 베트남서 '인프라·디지털 결제' 투트랙 공략…경제협력 기반...",
+      "cafe_name": "http://www.dailypop.kr/news/ar",
+      "created_at": "2026-04-27 15:20:46",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "연달아 숙소취소",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-04-27 19:20:43",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "하나은행, 베트남 인프라 금융·QR 결제 동시 확대",
+      "cafe_name": "https://www.nbntv.kr/news/arti",
+      "created_at": "2026-04-27 01:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "&quot;베트남 금융생태계 사업확장 강화&quot; 하나은행, 인프라·결제 시장 동시...",
+      "cafe_name": "https://www.catchnews.kr/news/",
+      "created_at": "2026-04-27 08:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 1
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "report_type": "daily",
+  "period_start": "2026-05-11 00:00",
+  "period_end": "2026-05-11 23:55",
+  "generated_at": "2026-05-11T23:55:00.134078+09:00",
+  "total": 49,
+  "urgent": 10,
+  "unprocessed": 33,
+  "sla_overdue": 0,
+  "avg_importance_score": 5.12,
+  "health_score": 62.0,
+  "sentiment": {
+    "negative": 9,
+    "neutral": 16,
+    "positive": 24
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 27
+    },
+    {
+      "category": "후기",
+      "count": 13
+    },
+    {
+      "category": "불만",
+      "count": 4
+    },
+    {
+      "category": "문의",
+      "count": 4
+    },
+    {
+      "category": "기타",
+      "count": 1
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "블로그/GLN",
+      "count": 23
+    },
+    {
+      "keyword": "카페/GLN",
+      "count": 21
+    },
+    {
+      "keyword": "뉴스/GLN",
+      "count": 4
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "셀프빨래방 실패후기...",
+      "cafe_name": "나트랑 도깨비 - 베트남 나트랑 자유여...",
+      "created_at": "2026-05-11 09:50:51",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "Gln 사용안됨 도와주세요(지금 현지)",
+      "cafe_name": "나트랑 도깨비 - 베트남 나트랑 자유여...",
+      "created_at": "2026-05-11 11:50:51",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "GLN결제 계속 실패합니다. 이유가 뭘까요?",
+      "cafe_name": "나트랑 도깨비 - 베트남 나트랑 자유여...",
+      "created_at": "2026-05-11 12:50:51",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "하나은행 낙하산 집합소 인가...'무늬만 핀테크' 지엘엔 6년째 적자",
+      "cafe_name": "https://www.insightkorea.co.kr",
+      "created_at": "2026-05-11 18:50:53",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "바쁘다 바빠 치앙마이 4박 5일 여행일기 5탄",
+      "cafe_name": "기록하는 감자",
+      "created_at": "2026-05-11 17:25:45",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "하나은행 외환결제 선점 카드 '지엔엘', 부진에 빠진 이유는?",
+      "cafe_name": "https://www.insightkorea.co.kr",
+      "created_at": "2026-05-11 17:50:53",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "연봉 1억 줘도 못 살렸다…지엘엔, '무늬만 핀테크' 6년째 적자",
+      "cafe_name": "https://www.insightkorea.co.kr",
+      "created_at": "2026-05-11 19:50:53",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "지엘엔, 인건비 부담에 6년째 적자…'무늬만 핀테크'",
+      "cafe_name": "https://www.insightkorea.co.kr",
+      "created_at": "2026-05-11 20:50:53",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "베트남 환전 팁 피크타임 GLN QR결제 방법 다낭 나트랑... ",
+      "cafe_name": "또이빈의 내일도 여행중",
+      "created_at": "2026-05-11 09:50:52",
+      "importance_score": 7,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": []
+}

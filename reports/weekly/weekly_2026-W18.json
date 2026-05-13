@@ -1,0 +1,177 @@
+{
+  "report_type": "weekly",
+  "period_start": "2026-04-27 00:00",
+  "period_end": "2026-05-04 09:05",
+  "generated_at": "2026-05-04T09:05:00.147380+09:00",
+  "total": 330,
+  "urgent": 76,
+  "unprocessed": 330,
+  "sla_overdue": 25,
+  "avg_importance_score": 5.16,
+  "health_score": 76.7,
+  "sentiment": {
+    "negative": 24,
+    "neutral": 88,
+    "positive": 218
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 217
+    },
+    {
+      "category": "후기",
+      "count": 62
+    },
+    {
+      "category": "문의",
+      "count": 34
+    },
+    {
+      "category": "불만",
+      "count": 10
+    },
+    {
+      "category": "기타",
+      "count": 7
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "블로그/GLN",
+      "count": 124
+    },
+    {
+      "keyword": "카페/GLN",
+      "count": 111
+    },
+    {
+      "keyword": "뉴스/GLN",
+      "count": 83
+    },
+    {
+      "keyword": "블로그/GLN ATM",
+      "count": 5
+    },
+    {
+      "keyword": "블로그/GLN 출금",
+      "count": 3
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 2
+    },
+    {
+      "keyword": "카페/퍼플GLN",
+      "count": 1
+    },
+    {
+      "keyword": "카페/GLN 출금",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "매장에서 결제 실수가 있었던것 같아요",
+      "cafe_name": "푸꾸옥 고스트 - 베트남푸꾸옥 자유여...",
+      "created_at": "2026-04-27 18:20:43",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "트래블 카드만 믿고 오시면 불편해요~~",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-04-30 00:20:43",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "태국 코사무이 여행 가볼만한곳 보풋 피셔맨스 빌리지 야시장",
+      "cafe_name": "에피의 날마다 좋은하루",
+      "created_at": "2026-05-03 11:20:44",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 베트남과 경제협력 확대…'인프라 금융·디지털 결제' 시장 공...",
+      "cafe_name": "http://www.economytalk.kr/news",
+      "created_at": "2026-04-27 13:20:46",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "[금융권]국내 은행들, 초고령화·글로벌 시장 동시 공략 ... AI 기반 시니...",
+      "cafe_name": "https://www.newstnt.com/news/a",
+      "created_at": "2026-04-27 14:20:45",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 베트남서 '인프라·디지털 결제' 투트랙 공략…경제협력 기반...",
+      "cafe_name": "http://www.dailypop.kr/news/ar",
+      "created_at": "2026-04-27 15:20:46",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "연달아 숙소취소",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-04-27 19:20:43",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "월한 QR 결제 서비스 개시, 한국 앱으로 베트남 결제 가능 - 베트남국가결제사(NAPAS)는 최근 한국의 하나금...",
+      "cafe_name": "Vietnam See (베트남 비즈니스,여행,생...",
+      "created_at": "2026-04-28 09:20:43",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "GLN '국가 간 QR 결제 서비스'",
+      "cafe_name": "마마웨딩달콤한결혼(일상.결혼준비.부...",
+      "created_at": "2026-04-28 09:20:43",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "[더벨]하나은행, BIDV 지분 앞세워 베트남 사업 확장",
+      "cafe_name": "https://www.thebell.co.kr/free",
+      "created_at": "2026-04-28 11:20:46",
+      "importance_score": 8,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 5
+    },
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "red",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 6
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 6
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 6
+    }
+  ]
+}

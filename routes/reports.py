@@ -7,7 +7,7 @@ import os
 from flask import Blueprint, jsonify, render_template
 
 MONITOR_DIR  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-REPORTS_ROOT = os.path.join(MONITOR_DIR, "reports")
+REPORTS_ROOT = os.getenv("REPORTS_DIR", os.path.join(MONITOR_DIR, "reports"))
 
 reports_bp = Blueprint("reports", __name__)
 

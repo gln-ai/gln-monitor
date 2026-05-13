@@ -1,0 +1,193 @@
+{
+  "report_type": "monthly",
+  "period_start": "2026-03-01 00:00",
+  "period_end": "2026-03-31 23:59",
+  "generated_at": "2026-04-01T09:15:26.336455+09:00",
+  "total": 399,
+  "urgent": 51,
+  "unprocessed": 25,
+  "sla_overdue": 0,
+  "avg_importance_score": 4.93,
+  "health_score": 78.0,
+  "sentiment": {
+    "negative": 18,
+    "neutral": 116,
+    "positive": 265
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 221
+    },
+    {
+      "category": "후기",
+      "count": 102
+    },
+    {
+      "category": "문의",
+      "count": 60
+    },
+    {
+      "category": "불만",
+      "count": 11
+    },
+    {
+      "category": "기타",
+      "count": 5
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "블로그/GLN",
+      "count": 100
+    },
+    {
+      "keyword": "카페/GLN",
+      "count": 99
+    },
+    {
+      "keyword": "뉴스/GLN",
+      "count": 31
+    },
+    {
+      "keyword": "블로그/퍼플GLN",
+      "count": 30
+    },
+    {
+      "keyword": "카페/퍼플GLN",
+      "count": 26
+    },
+    {
+      "keyword": "카페/GLN 해외결제",
+      "count": 24
+    },
+    {
+      "keyword": "블로그/GLN ATM",
+      "count": 24
+    },
+    {
+      "keyword": "카페/GLN ATM",
+      "count": 19
+    },
+    {
+      "keyword": "카페/GLN 출금",
+      "count": 13
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 12
+    },
+    {
+      "keyword": "뉴스/GLN 해외결제",
+      "count": 11
+    },
+    {
+      "keyword": "블로그/GLN 출금",
+      "count": 10
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "현재 마쓰야마인데 트래블월렛 카드 분실, 출금카드가 없는 상황입니다.",
+      "cafe_name": "네일동 : 일본여행카페",
+      "created_at": "2026-03-26 00:53:05",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "치앙마이 코코넛마켓 총정리｜시간·맛집·결제 꿀팁 (아이랑... ",
+      "cafe_name": "어마엄마한 여정",
+      "created_at": "2026-03-26 00:53:05",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "코리안걸 인 방콕",
+      "cafe_name": "⁂",
+      "created_at": "2026-03-26 00:53:05",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "26.03.09.(D+9) 태국 방콕_그룹 웨이트, 왓 포, 왓 아룬... ",
+      "cafe_name": "큫옐옐옐옐 일ㄱl짱'-'b",
+      "created_at": "2026-03-26 00:53:06",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "선데이 마켓, 치앙마이 소품샵,맛집 추천 *GLN 결제 유의*",
+      "cafe_name": "Try Everything : 하고싶은거 다 하면서 살자",
+      "created_at": "2026-03-26 00:53:06",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "태국, 코사무이 GLN 토스로 결제하는 방법, 의외의 사용... ",
+      "cafe_name": "madpoodu의 경제/일상 블로그",
+      "created_at": "2026-03-26 00:53:06",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "나는 지금 치앙마이4",
+      "cafe_name": "SABI;",
+      "created_at": "2026-03-26 00:53:06",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "GLN 인터내셔널, 카카오페이와 태국 ATM QR출금 서비스 개시",
+      "cafe_name": "https://www.nbntv.kr/news/arti",
+      "created_at": "2026-03-26 00:53:06",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "GLN과 카카오페이, 태국 ATM서 QR출금 서비스 시작",
+      "cafe_name": "https://www.cbci.co.kr/news/ar",
+      "created_at": "2026-03-26 00:53:06",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "GLN 인터내셔널, 카카오페이와 태국 ATM 『QR출금 서비스』 개시",
+      "cafe_name": "https://www.fntoday.co.kr/news",
+      "created_at": "2026-03-26 00:53:06",
+      "importance_score": 8,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 3
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 3
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 10
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 2
+    }
+  ]
+}

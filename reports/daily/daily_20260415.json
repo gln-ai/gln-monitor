@@ -1,0 +1,123 @@
+{
+  "report_type": "daily",
+  "period_start": "2026-04-15 00:00",
+  "period_end": "2026-04-15 23:55",
+  "generated_at": "2026-04-15T23:55:00.209646+09:00",
+  "total": 43,
+  "urgent": 7,
+  "unprocessed": 43,
+  "sla_overdue": 3,
+  "avg_importance_score": 4.72,
+  "health_score": 73.0,
+  "sentiment": {
+    "negative": 5,
+    "neutral": 11,
+    "positive": 27
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 20
+    },
+    {
+      "category": "후기",
+      "count": 13
+    },
+    {
+      "category": "문의",
+      "count": 5
+    },
+    {
+      "category": "기타",
+      "count": 3
+    },
+    {
+      "category": "불만",
+      "count": 2
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "블로그/GLN",
+      "count": 22
+    },
+    {
+      "keyword": "카페/GLN",
+      "count": 20
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "후쿠오카 토스카드 현금 인출하신 분 계신가요?",
+      "cafe_name": "네일동 : 일본여행카페",
+      "created_at": "2026-04-15 13:20:43",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "나혼자 4월 태국 치앙마이 (DAY 3 송크란)",
+      "cafe_name": "writer smith",
+      "created_at": "2026-04-15 13:20:45",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "[1/26~2/2] 치앙마이에서 선데이 마켓 만큼은 가야 함 아무튼... ",
+      "cafe_name": ".",
+      "created_at": "2026-04-15 14:20:44",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "치앙마이 주말 마켓_감성 가득 참차마켓 리뷰",
+      "cafe_name": "아는지다의 맛있는 여행",
+      "created_at": "2026-04-15 07:13:43",
+      "importance_score": 7,
+      "sentiment": "negative"
+    },
+    {
+      "title": "[4월 15일] 환전•환율 정보 $100 vs 5만원권 vs 트래블카드 vs GLN_ (김청&amp;김빈&amp;그외 환전소 환전•환율정...",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-04-15 10:13:42",
+      "importance_score": 7,
+      "sentiment": "neutral"
+    },
+    {
+      "title": "여행 알리페이 앱 설치 NO! 카카오/네이버페이로 3초 결제하는 법",
+      "cafe_name": "뽈뽈 쏘다니는 기록지",
+      "created_at": "2026-04-15 18:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 1
+    }
+  ]
+}

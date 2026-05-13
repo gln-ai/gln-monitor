@@ -1,0 +1,128 @@
+{
+  "report_type": "daily",
+  "period_start": "2026-05-06 00:00",
+  "period_end": "2026-05-06 23:55",
+  "generated_at": "2026-05-06T23:55:00.047076+09:00",
+  "total": 41,
+  "urgent": 6,
+  "unprocessed": 41,
+  "sla_overdue": 6,
+  "avg_importance_score": 4.93,
+  "health_score": 64.4,
+  "sentiment": {
+    "negative": 5,
+    "neutral": 16,
+    "positive": 20
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 20
+    },
+    {
+      "category": "후기",
+      "count": 13
+    },
+    {
+      "category": "문의",
+      "count": 6
+    },
+    {
+      "category": "불만",
+      "count": 2
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "카페/GLN",
+      "count": 22
+    },
+    {
+      "keyword": "블로그/GLN",
+      "count": 13
+    },
+    {
+      "keyword": "뉴스/GLN",
+      "count": 2
+    },
+    {
+      "keyword": "카페/GLN 해외결제",
+      "count": 1
+    },
+    {
+      "keyword": "카페/GLN ATM",
+      "count": 1
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 1
+    },
+    {
+      "keyword": "블로그/GLN ATM",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "GLN 왜안될까요 ㅜ ㅜ",
+      "cafe_name": "다낭 도깨비 - 베트남 다낭자유여행 ,...",
+      "created_at": "2026-05-06 23:20:43",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "준비 : GLN 수수료의 함정, 수수료 0.3% 아님 주의 (+결제금액별... ",
+      "cafe_name": "마늘빵 언니의 먹고사는 라이프",
+      "created_at": "2026-05-06 16:20:45",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "하나은행 gln 결제가 안되요 ㅠ",
+      "cafe_name": "다낭 도깨비 - 베트남 다낭자유여행 ,...",
+      "created_at": "2026-05-06 18:20:43",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "[5월 6일] 환전•환율 정보 $100 vs 5만원권 vs 트래블카드 vs GLN_ (김청&amp;김빈&amp;그외 환전소 환전•환율정보...",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-05-06 09:20:43",
+      "importance_score": 7,
+      "sentiment": "neutral"
+    },
+    {
+      "title": "태국 방콕여행 준비 : GLN 수수료의 함정, 수수료 0.3% 아님... ",
+      "cafe_name": "마늘빵 언니의 먹고사는 라이프",
+      "created_at": "2026-05-06 16:20:44",
+      "importance_score": 7,
+      "sentiment": "negative"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "red",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 1
+    }
+  ]
+}

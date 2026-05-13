@@ -1,0 +1,119 @@
+{
+  "report_type": "daily",
+  "period_start": "2026-05-04 00:00",
+  "period_end": "2026-05-04 23:55",
+  "generated_at": "2026-05-04T23:55:00.023594+09:00",
+  "total": 40,
+  "urgent": 8,
+  "unprocessed": 40,
+  "sla_overdue": 8,
+  "avg_importance_score": 4.95,
+  "health_score": 69.0,
+  "sentiment": {
+    "negative": 4,
+    "neutral": 14,
+    "positive": 22
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 18
+    },
+    {
+      "category": "문의",
+      "count": 11
+    },
+    {
+      "category": "후기",
+      "count": 10
+    },
+    {
+      "category": "불만",
+      "count": 1
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "카페/GLN",
+      "count": 26
+    },
+    {
+      "keyword": "블로그/GLN",
+      "count": 13
+    },
+    {
+      "keyword": "뉴스/GLN",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "저 신용카드로 혀언금화 하려고 하는데요",
+      "cafe_name": "신용카드 박물관",
+      "created_at": "2026-05-04 12:20:44",
+      "importance_score": 9,
+      "sentiment": "neutral"
+    },
+    {
+      "title": "[206.03-04.태국 치앙마이 자유여행] #14. 세븐일레븐 편의점... ",
+      "cafe_name": "Gamja's Empty House",
+      "created_at": "2026-05-04 11:20:44",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "AI가 대신 결제하는 시대 시작됐다 금융결제원 AI 결제 플랫폼... ",
+      "cafe_name": "투자전략 연구소",
+      "created_at": "2026-05-04 08:20:44",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "[5월 4일] 환전•환율 정보 $100 vs 5만원권 vs 트래블카드 vs GLN_ (김청&amp;김빈&amp;그외 환전소 환전•환율정보...",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-05-04 10:20:43",
+      "importance_score": 7,
+      "sentiment": "neutral"
+    },
+    {
+      "title": "착실하게 준비하고있습니다#4",
+      "cafe_name": "다낭 고스트 - 베트남 다낭자유여행 ,...",
+      "created_at": "2026-05-04 11:20:43",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "왜..돈이 안뽑히는가ㅠ",
+      "cafe_name": "나트랑 도깨비 - 베트남 나트랑 자유여...",
+      "created_at": "2026-05-04 21:20:43",
+      "importance_score": 7,
+      "sentiment": "negative"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 1
+    }
+  ]
+}

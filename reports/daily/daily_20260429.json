@@ -1,0 +1,95 @@
+{
+  "report_type": "daily",
+  "period_start": "2026-04-29 00:00",
+  "period_end": "2026-04-29 23:55",
+  "generated_at": "2026-04-29T23:55:00.149379+09:00",
+  "total": 36,
+  "urgent": 3,
+  "unprocessed": 36,
+  "sla_overdue": 2,
+  "avg_importance_score": 4.61,
+  "health_score": 80.6,
+  "sentiment": {
+    "negative": 1,
+    "neutral": 10,
+    "positive": 25
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 22
+    },
+    {
+      "category": "후기",
+      "count": 10
+    },
+    {
+      "category": "문의",
+      "count": 3
+    },
+    {
+      "category": "기타",
+      "count": 1
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "카페/GLN",
+      "count": 20
+    },
+    {
+      "keyword": "블로그/GLN",
+      "count": 13
+    },
+    {
+      "keyword": "블로그/GLN ATM",
+      "count": 2
+    },
+    {
+      "keyword": "블로그/GLN 출금",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "[2026 속보] 환전 필요 없다! 카카오페이로도 일본 ATM 출금... ",
+      "cafe_name": "Smart Self and Life",
+      "created_at": "2026-04-29 15:20:44",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "카카오페이로도 일본 ATM 출금 가능, 수수료 0원 혜택까지?",
+      "cafe_name": "Smart Self and Life",
+      "created_at": "2026-04-29 15:20:45",
+      "importance_score": 7,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 1
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 1
+    }
+  ]
+}

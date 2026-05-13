@@ -1,0 +1,171 @@
+{
+  "report_type": "weekly",
+  "period_start": "2026-04-20 00:00",
+  "period_end": "2026-04-27 09:05",
+  "generated_at": "2026-04-27T09:05:00.206064+09:00",
+  "total": 296,
+  "urgent": 99,
+  "unprocessed": 296,
+  "sla_overdue": 10,
+  "avg_importance_score": 5.56,
+  "health_score": 81.1,
+  "sentiment": {
+    "negative": 14,
+    "neutral": 70,
+    "positive": 212
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 192
+    },
+    {
+      "category": "후기",
+      "count": 68
+    },
+    {
+      "category": "문의",
+      "count": 25
+    },
+    {
+      "category": "불만",
+      "count": 6
+    },
+    {
+      "category": "기타",
+      "count": 5
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "카페/GLN",
+      "count": 110
+    },
+    {
+      "keyword": "블로그/GLN",
+      "count": 105
+    },
+    {
+      "keyword": "뉴스/GLN",
+      "count": 72
+    },
+    {
+      "keyword": "뉴스/GLN 해외결제",
+      "count": 3
+    },
+    {
+      "keyword": "블로그/GLN 결제",
+      "count": 2
+    },
+    {
+      "keyword": "뉴스/GLN 결제",
+      "count": 2
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 1
+    },
+    {
+      "keyword": "뉴스/퍼플GLN",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "방콕 수완나품 공항 입국심사 큐알 노숙 태국 이심 공항버스... ",
+      "cafe_name": "여집 : 여행자의 집",
+      "created_at": "2026-04-24 17:20:44",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 한국-베트남 경제협력 기반 확대",
+      "cafe_name": "http://www.metroseoul.co.kr/ar",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행, 베트남 국영은행과 인프라 금융 맞손…QR 결제 서비스 론칭",
+      "cafe_name": "https://biz.sbs.co.kr/article_",
+      "created_at": "2026-04-26 09:20:45",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "하나은행·BIDV·KIND, 해외 인프라 사업 협력을 위한 3자 간 업무 협약",
+      "cafe_name": "http://www.fnnews.com/news/202",
+      "created_at": "2026-04-26 12:20:46",
+      "importance_score": 9,
+      "sentiment": "positive"
+    },
+    {
+      "title": "마사지 배달 다 트래블카드 결제가 안된다네요 ㅜ 깜란 시내 근처에 카드결제로 되는곳은 어디죠.. 슈렉샵도...",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-04-20 12:20:43",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "또 돈뎃",
+      "cafe_name": "[동배] 동남아 배낭여행 :: 트래블라오",
+      "created_at": "2026-04-20 22:20:43",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "[2025태국]07.치앙마이 근교 몬쨈투어",
+      "cafe_name": "우랑바리 지구한바퀴",
+      "created_at": "2026-04-22 19:20:44",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "4월 치앙마이 혼여/3박4일 치앙마이 여행/치앙마이 여행",
+      "cafe_name": "xii_nii_",
+      "created_at": "2026-04-23 17:20:45",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "한국·베트남 QR 결제 시대 열렸다…환전 없이 결제",
+      "cafe_name": "http://www.press9.kr/news/arti",
+      "created_at": "2026-04-24 10:20:47",
+      "importance_score": 8,
+      "sentiment": "positive"
+    },
+    {
+      "title": "베트남-한국, 양국 국경 간 QR 결제 서비스 출시",
+      "cafe_name": "베트남경제연구소",
+      "created_at": "2026-04-25 07:20:44",
+      "importance_score": 8,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 6
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 6
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 6
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 6
+    }
+  ]
+}
