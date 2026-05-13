@@ -38,7 +38,7 @@ def content_status():
     per_page  = 20
     offset    = (page - 1) * per_page
 
-    where = "WHERE 1=1"
+    where = "WHERE deleted_at IS NULL"
     args  = []
     if grade:
         where += " AND guard_grade = ?"; args.append(grade)
@@ -70,17 +70,20 @@ def content_status():
     grade_counts = {}
     for g in ["green", "yellow", "red", "pending"]:
         grade_counts[g] = conn.execute(
-            "SELECT COUNT(*) FROM content_drafts WHERE guard_grade = ?", (g,)
+            "SELECT COUNT(*) FROM content_drafts WHERE guard_grade = ? AND deleted_at IS NULL", (g,)
         ).fetchone()[0]
 
     channel_counts = {}
     for ch in ["official", "gorani"]:
         channel_counts[ch] = conn.execute(
-            "SELECT COUNT(*) FROM content_drafts WHERE channel = ?", (ch,)
+            "SELECT COUNT(*) FROM content_drafts WHERE channel = ? AND deleted_at IS NULL", (ch,)
         ).fetchone()[0]
 
     published_count = conn.execute(
-        "SELECT COUNT(*) FROM content_drafts WHERE approval_status = 'published'"
+        "SELECT COUNT(*) FROM content_drafts WHERE approval_status = 'published' AND deleted_at IS NULL"
+    ).fetchone()[0]
+    trash_count = conn.execute(
+        "SELECT COUNT(*) FROM content_drafts WHERE deleted_at IS NOT NULL"
     ).fetchone()[0]
     conn.close()
 
@@ -90,6 +93,7 @@ def content_status():
         grade_counts=grade_counts,
         channel_counts=channel_counts,
         published_count=published_count,
+        trash_count=trash_count,
         filter_grade=grade,
         filter_channel=channel,
         filter_format=fmt,
@@ -100,6 +104,22 @@ def content_status():
         total=total,
         country_label=COUNTRY_LABEL,
     )
+
+
+@content_bp.route("/content/trash")
+def content_trash():
+    conn     = get_db()
+    page     = int(request.args.get("page", 1))
+    per_page = 20
+    offset   = (page - 1) * per_page
+    total    = conn.execute("SELECT COUNT(*) FROM content_drafts WHERE deleted_at IS NOT NULL").fetchone()[0]
+    total_pages = max(1, (total + per_page - 1) // per_page)
+    drafts   = conn.execute(
+        f"SELECT * FROM content_drafts WHERE deleted_at IS NOT NULL ORDER BY deleted_at DESC LIMIT {per_page} OFFSET {offset}"
+    ).fetchall()
+    conn.close()
+    return render_template("content_trash.html",
+        drafts=drafts, total=total, total_pages=total_pages, page=page, country_label=COUNTRY_LABEL)
 
 
 @content_bp.route("/content/create")
@@ -207,11 +227,67 @@ def api_content_email(draft_id):
 
 @content_bp.route("/api/content/<int:draft_id>", methods=["DELETE"])
 def api_content_delete(draft_id):
+    now  = datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_db()
+    conn.execute("UPDATE content_drafts SET deleted_at=? WHERE id=?", (now, draft_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "deleted"})
+
+
+@content_bp.route("/api/content/bulk-delete", methods=["POST"])
+def api_content_bulk_delete():
+    ids = request.json.get("ids", [])
+    if not ids:
+        return jsonify({"deleted": 0})
+    now          = datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S")
+    placeholders = ",".join("?" * len(ids))
+    conn = get_db()
+    conn.execute(f"UPDATE content_drafts SET deleted_at=? WHERE id IN ({placeholders})", [now] + ids)
+    conn.commit()
+    conn.close()
+    return jsonify({"deleted": len(ids)})
+
+
+@content_bp.route("/api/content/<int:draft_id>/restore", methods=["POST"])
+def api_content_restore(draft_id):
+    conn = get_db()
+    conn.execute("UPDATE content_drafts SET deleted_at=NULL WHERE id=?", (draft_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"status": "restored"})
+
+
+@content_bp.route("/api/content/bulk-restore", methods=["POST"])
+def api_content_bulk_restore():
+    ids = request.json.get("ids", [])
+    if not ids:
+        return jsonify({"restored": 0})
+    placeholders = ",".join("?" * len(ids))
+    conn = get_db()
+    conn.execute(f"UPDATE content_drafts SET deleted_at=NULL WHERE id IN ({placeholders})", ids)
+    conn.commit()
+    conn.close()
+    return jsonify({"restored": len(ids)})
+
+
+@content_bp.route("/api/content/<int:draft_id>/permanent", methods=["DELETE"])
+def api_content_permanent_delete(draft_id):
     conn = get_db()
     conn.execute("DELETE FROM content_drafts WHERE id=?", (draft_id,))
     conn.commit()
     conn.close()
     return jsonify({"status": "deleted"})
+
+
+@content_bp.route("/api/content/empty-trash", methods=["POST"])
+def api_content_empty_trash():
+    conn = get_db()
+    n    = conn.execute("SELECT COUNT(*) FROM content_drafts WHERE deleted_at IS NOT NULL").fetchone()[0]
+    conn.execute("DELETE FROM content_drafts WHERE deleted_at IS NOT NULL")
+    conn.commit()
+    conn.close()
+    return jsonify({"deleted": n})
 
 
 @content_bp.route("/api/content/<int:draft_id>/generate-images", methods=["POST"])

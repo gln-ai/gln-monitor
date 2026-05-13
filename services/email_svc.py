@@ -8,7 +8,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from config import KST
-from db import get_db
+from db import get_db, get_setting
 
 
 def send_email(to: str, subject: str, html_body: str):
@@ -55,7 +55,7 @@ def send_email(to: str, subject: str, html_body: str):
 def send_urgent_alert(title: str, analysis: dict,
                       cafe_name: str = "", link: str = "",
                       created_at: str = "", post_id: int = 0):
-    to = os.getenv("URGENT_ALERT_TO", "brad@glninternational.com")
+    to = get_setting("urgent_alert_to_list") or os.getenv("URGENT_ALERT_TO", "brad@glninternational.com")
     if not to:
         return
 
@@ -98,7 +98,7 @@ def send_urgent_alert(title: str, analysis: dict,
 
 def send_daily_report(to: str = ""):
     if not to:
-        to = os.getenv("REPORT_TO", "")
+        to = get_setting("report_to_list") or os.getenv("REPORT_TO", "")
     print(f"[리포트] 수신자: {to}", flush=True)
     if not to:
         print("[리포트] 수신자 없음 — 스킵")

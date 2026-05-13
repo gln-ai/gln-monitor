@@ -100,6 +100,24 @@
   .verify-tag { font-size: 10px; color: #D97706; font-weight: 500; }
   .empty-state { padding: 60px 20px; text-align: center; }
   .empty-state p { font-size: 13px; color: #AAA7B8; margin: 4px 0; }
+  /* 선택 모드 */
+  .btn-select-mode { background: #fff; color: #5E5A71; border: 1px solid #E4E1EE; border-radius: 10px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+  .btn-select-mode.active { background: #7000FC; color: #fff; border-color: #7000FC; }
+  .cb-col { display: none; align-items: center; padding-right: 12px; flex-shrink: 0; }
+  .select-mode .cb-col { display: flex; }
+  .custom-cb { width: 20px; height: 20px; border-radius: 6px; border: 2px solid #DAD9EA; cursor: pointer; transition: all 0.15s; flex-shrink: 0; position: relative; }
+  .custom-cb.checked { background: #7000FC; border-color: #7000FC; }
+  .custom-cb.checked::after { content: ''; position: absolute; left: 5px; top: 2px; width: 6px; height: 10px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg); }
+  .draft-item.selected { background: #F5F3FF; }
+  .select-mode .draft-item:hover { background: #F5F3FF; }
+  /* 하단 액션 바 */
+  .bulk-bar { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #130D2A; border-radius: 14px; padding: 12px 18px; box-shadow: 0 8px 32px rgba(19,13,42,0.25); display: none; align-items: center; gap: 12px; z-index: 40; white-space: nowrap; }
+  .bulk-bar.visible { display: flex; }
+  .bulk-bar-count { font-size: 13px; font-weight: 600; color: #fff; }
+  .bulk-bar-cancel { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); border: none; border-radius: 8px; padding: 7px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .bulk-bar-cancel:hover { background: rgba(255,255,255,0.18); }
+  .bulk-bar-del { background: #DC2626; color: #fff; border: none; border-radius: 8px; padding: 7px 16px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .bulk-bar-del:hover { background: #B91C1C; }
   .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 16px; }
   .page-btn { width: 30px; height: 30px; border-radius: 8px; border: 0.5px solid #E4E1EE; background: #fff; font-size: 12px; color: #5E5A71; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
   .page-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 700; }
@@ -195,6 +213,14 @@
       <h1>콘텐츠 제작</h1>
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
+      <button id="selectModeBtn" class="btn-select-mode" onclick="toggleSelectMode()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="5" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="21" y2="7"/><rect x="3" y="11" width="4" height="4" rx="1"/><line x1="10" y1="13" x2="21" y2="13"/><rect x="3" y="17" width="4" height="4" rx="1"/><line x1="10" y1="19" x2="21" y2="19"/></svg>
+        선택
+      </button>
+      <a href="/content/trash" style="text-decoration:none;display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:10px;font-size:12px;font-weight:600;color:#6B7280;border:1px solid #E4E1EE;background:#fff;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        휴지통{% if trash_count %} <span style="background:#E4E1EE;border-radius:99px;padding:1px 6px;font-size:10px;">{{ trash_count }}</span>{% endif %}
+      </a>
       <a href="/content/create" class="btn btn-official" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         콘텐츠 생성
@@ -254,15 +280,23 @@
     <!-- 목록 -->
     <div class="drafts-wrap">
       <div class="drafts-header">
-        <span>총 <strong style="color:#130D2A">{{ total }}</strong>건</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="cb-col" style="padding-right:0">
+            <div id="selectAllCb" class="custom-cb" onclick="toggleSelectAll()" title="전체 선택"></div>
+          </div>
+          <span style="font-size:11px;color:#918DA0">총 <strong style="color:#130D2A">{{ total }}</strong>건</span>
+          <span id="selectedCount" style="display:none;font-size:11px;color:#7000FC;font-weight:600"></span>
+        </div>
       </div>
 
       {% if drafts %}
         {% for d in drafts %}
-        <div class="draft-item" onclick="showDetail({{ d.id }})">
+        <div class="draft-item" id="item_{{ d.id }}" onclick="_draftClick({{ d.id }})">
+          <div style="display:flex;align-items:center;gap:0">
+          <div class="cb-col"><div class="custom-cb" id="cb_{{ d.id }}" data-id="{{ d.id }}"></div></div>
+          <div style="flex:1;min-width:0;overflow:hidden">
           <div class="draft-top">
             <div class="draft-topic">{{ d.topic }}</div>
-            <!-- 채널 배지 (전체 탭일 때만) -->
             {% if not filter_channel %}
               {% if d.channel == 'gorani' %}
                 <span class="badge ch-badge-gorani">서브</span>
@@ -270,16 +304,13 @@
                 <span class="badge ch-badge-official">메인</span>
               {% endif %}
             {% endif %}
-            <!-- 포맷 배지 (플랫폼 레이블) -->
             {% if d.format %}
               {% set fmt_label = {'blog':'블로그','instagram_card':'인스타그램','youtube_shorts':'유튜브','reels':'인스타그램','threads':'스레드','cartoon':'툰'}.get(d.format, d.format) %}
               <span class="badge fmt-badge">{{ fmt_label }}</span>
             {% endif %}
-            <!-- 국가 배지 -->
             {% if d.country %}
               <span class="badge country-badge">{{ country_label.get(d.country, d.country) }}</span>
             {% endif %}
-            <!-- 소재 출처 배지 -->
             {% if d.source_type == 'manual' %}
               <span class="badge source-manual">직접입력</span>
             {% else %}
@@ -298,6 +329,7 @@
             <span class="draft-meta-item">{{ d.platform }}</span>
             {% endif %}
           </div>
+          </div></div>
         </div>
         {% endfor %}
       {% else %}
@@ -324,6 +356,13 @@
     </div>
     {% endif %}
   </div>
+</div>
+
+<!-- 선택 삭제 액션 바 -->
+<div id="bulkBar" class="bulk-bar">
+  <span class="bulk-bar-count" id="bulkBarCount">0개 선택됨</span>
+  <button class="bulk-bar-cancel" onclick="exitSelectMode()">취소</button>
+  <button class="bulk-bar-del" onclick="bulkDelete()">삭제</button>
 </div>
 
 <!-- 이미지 라이트박스 -->
@@ -655,6 +694,91 @@ function _updateListBadge(id, published) {
 }
 
 function closeModal() { document.getElementById('detailModal').style.display = 'none'; }
+
+// ── 선택 모드 ────────────────────────────────────────────
+let _selectMode = false;
+const _selected  = new Set();
+
+function _draftClick(id) {
+  if (_selectMode) toggleSelectById(id);
+  else showDetail(id);
+}
+
+function toggleSelectMode() {
+  _selectMode = !_selectMode;
+  const btn  = document.getElementById('selectModeBtn');
+  const wrap = document.querySelector('.drafts-wrap');
+  btn.classList.toggle('active', _selectMode);
+  btn.innerHTML = _selectMode
+    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 선택 중'
+    : '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="5" width="4" height="4" rx="1"/><line x1="10" y1="7" x2="21" y2="7"/><rect x="3" y="11" width="4" height="4" rx="1"/><line x1="10" y1="13" x2="21" y2="13"/><rect x="3" y="17" width="4" height="4" rx="1"/><line x1="10" y1="19" x2="21" y2="19"/></svg> 선택';
+  wrap.classList.toggle('select-mode', _selectMode);
+  if (!_selectMode) _clearAll();
+}
+
+function exitSelectMode() {
+  if (_selectMode) toggleSelectMode();
+}
+
+function toggleSelectById(id) {
+  if (_selected.has(id)) {
+    _selected.delete(id);
+    document.getElementById(`cb_${id}`)?.classList.remove('checked');
+    document.getElementById(`item_${id}`)?.classList.remove('selected');
+  } else {
+    _selected.add(id);
+    document.getElementById(`cb_${id}`)?.classList.add('checked');
+    document.getElementById(`item_${id}`)?.classList.add('selected');
+  }
+  _updateBar();
+}
+
+function toggleSelectAll() {
+  const allIds = Array.from(document.querySelectorAll('.custom-cb[data-id]')).map(el => parseInt(el.dataset.id));
+  const allSelected = allIds.every(id => _selected.has(id));
+  allIds.forEach(id => {
+    if (allSelected) {
+      _selected.delete(id);
+      document.getElementById(`cb_${id}`)?.classList.remove('checked');
+      document.getElementById(`item_${id}`)?.classList.remove('selected');
+    } else {
+      _selected.add(id);
+      document.getElementById(`cb_${id}`)?.classList.add('checked');
+      document.getElementById(`item_${id}`)?.classList.add('selected');
+    }
+  });
+  const allCb = document.getElementById('selectAllCb');
+  if (allCb) allCb.classList.toggle('checked', !allSelected);
+  _updateBar();
+}
+
+function _clearAll() {
+  _selected.clear();
+  document.querySelectorAll('.custom-cb').forEach(el => el.classList.remove('checked'));
+  document.querySelectorAll('.draft-item').forEach(el => el.classList.remove('selected'));
+  _updateBar();
+}
+
+function _updateBar() {
+  const n    = _selected.size;
+  const bar  = document.getElementById('bulkBar');
+  const cnt  = document.getElementById('bulkBarCount');
+  const scnt = document.getElementById('selectedCount');
+  if (bar)  bar.classList.toggle('visible', n > 0);
+  if (cnt)  cnt.textContent = `${n}개 선택됨`;
+  if (scnt) { scnt.textContent = n > 0 ? `${n}개 선택됨` : ''; scnt.style.display = n > 0 ? 'inline' : 'none'; }
+}
+
+async function bulkDelete() {
+  const ids = Array.from(_selected);
+  if (!ids.length) return;
+  if (!confirm(`선택한 ${ids.length}개 항목을 휴지통으로 이동하시겠습니까?`)) return;
+  const res  = await fetch('/api/content/bulk-delete', {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ids})
+  });
+  const data = await res.json();
+  if (data.deleted >= 0) location.reload();
+}
 </script>
 </body>
 </html>

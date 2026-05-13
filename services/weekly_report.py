@@ -6,7 +6,7 @@ import os
 from datetime import datetime, timedelta
 
 from config import KST
-from db import get_db
+from db import get_db, get_setting
 from services.email_svc import send_email
 
 
@@ -199,7 +199,7 @@ def build_weekly_report():
 
 def send_weekly_report(to: str = ""):
     if not to:
-        to = os.getenv("REPORT_TO", "")
+        to = get_setting("report_to_list") or os.getenv("REPORT_TO", "")
     if not to:
         print("[주간 리포트] 수신자 없음 — 스킵")
         return

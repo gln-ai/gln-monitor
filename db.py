@@ -1,6 +1,7 @@
 """
 gln-monitor/db.py — DB 초기화 및 연결
 """
+import os
 import sqlite3
 from config import DB_PATH
 
@@ -101,6 +102,8 @@ def init_db():
         "ALTER TABLE content_drafts ADD COLUMN source_type TEXT DEFAULT 'auto'",
         # v6: 생성된 이미지 경로 목록 (JSON 배열)
         "ALTER TABLE content_drafts ADD COLUMN image_paths TEXT",
+        # v8: 휴지통 — 소프트 삭제
+        "ALTER TABLE content_drafts ADD COLUMN deleted_at TEXT",
     ]:
         try:
             conn.execute(alter_sql)
@@ -125,6 +128,8 @@ def init_db():
         ("spike_threshold",      "2.0"),
         ("alert_start_hour",     "8"),
         ("alert_end_hour",       "20"),
+        ("report_to_list",       os.getenv("REPORT_TO", "")),
+        ("urgent_alert_to_list", os.getenv("URGENT_ALERT_TO", "brad@glninternational.com")),
     ]:
         conn.execute(
             "INSERT OR IGNORE INTO app_settings (key, value) VALUES (?, ?)",
