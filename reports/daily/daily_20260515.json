@@ -1,0 +1,151 @@
+{
+  "report_type": "daily",
+  "period_start": "2026-05-15 00:00",
+  "period_end": "2026-05-15 23:59",
+  "generated_at": "2026-05-15T23:55:00+09:00",
+  "total": 103,
+  "urgent": 10,
+  "unprocessed": 103,
+  "sla_overdue": 3,
+  "avg_importance_score": 4.57,
+  "health_score": 81.2,
+  "sentiment": {
+    "negative": 8,
+    "neutral": 19,
+    "positive": 76
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 50
+    },
+    {
+      "category": "후기",
+      "count": 31
+    },
+    {
+      "category": "문의",
+      "count": 12
+    },
+    {
+      "category": "기타",
+      "count": 6
+    },
+    {
+      "category": "불만",
+      "count": 4
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "카페/GLN",
+      "count": 52
+    },
+    {
+      "keyword": "블로그/GLN",
+      "count": 47
+    },
+    {
+      "keyword": "블로그/GLN 결제",
+      "count": 2
+    },
+    {
+      "keyword": "블로그/GLN 해외결제",
+      "count": 1
+    },
+    {
+      "keyword": "뉴스/GLN",
+      "count": 1
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "GLN페이 오류",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-05-17 13:21:31",
+      "importance_score": 9,
+      "sentiment": "negative"
+    },
+    {
+      "title": "[260508-12] 나트랑",
+      "cafe_name": "ღ",
+      "created_at": "2026-05-15 15:21:32",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "하루스파 이발관 네일에서 마사지 받았어요~",
+      "cafe_name": "다낭 도깨비 - 베트남 다낭자유여행 ,...",
+      "created_at": "2026-05-15 21:21:31",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "역시 여행의 꽃은 쇼핑 아니겠어요? 3방 떼샷올립니다",
+      "cafe_name": "나트랑 도깨비 - 베트남 나트랑 자유여...",
+      "created_at": "2026-05-16 12:21:31",
+      "importance_score": 8,
+      "sentiment": "negative"
+    },
+    {
+      "title": "[5월 15일] 환전•환율 정보 $100 vs 5만원권 vs 트래블카드 vs GLN_ (김청&amp;김빈&amp;그외 환전소 환전•환율정...",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-05-15 10:21:31",
+      "importance_score": 7,
+      "sentiment": "negative"
+    },
+    {
+      "title": "분기 최대·청라 시대 개막... 하나금융, '확장의 해' 본격 시동",
+      "cafe_name": "https://www.pressman.kr/news/a",
+      "created_at": "2026-05-15 19:21:33",
+      "importance_score": 7,
+      "sentiment": "positive"
+    },
+    {
+      "title": "[5월 16일] 환전•환율 정보 $100 vs 5만원권 vs 트래블카드 vs GLN_ (김청&amp;김빈&amp;그외 환전소 환전•환율정...",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-05-16 10:21:31",
+      "importance_score": 7,
+      "sentiment": "negative"
+    },
+    {
+      "title": "방콕 시티뷰 끝판왕! 그랜드 센터 포인트 룸피니 호텔 내돈내산... ",
+      "cafe_name": "원더노트의 취향산책",
+      "created_at": "2026-05-16 13:21:32",
+      "importance_score": 7,
+      "sentiment": "positive"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 2
+    },
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "red",
+      "cnt": 2
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 4
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 4
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 4
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "report_type": "daily",
+  "period_start": "2026-05-17 00:00",
+  "period_end": "2026-05-17 23:59",
+  "generated_at": "2026-05-17T23:55:00+09:00",
+  "total": 48,
+  "urgent": 1,
+  "unprocessed": 48,
+  "sla_overdue": 3,
+  "avg_importance_score": 4.54,
+  "health_score": 84.2,
+  "sentiment": {
+    "negative": 1,
+    "neutral": 11,
+    "positive": 36
+  },
+  "top_categories": [
+    {
+      "category": "정보공유",
+      "count": 24
+    },
+    {
+      "category": "후기",
+      "count": 13
+    },
+    {
+      "category": "문의",
+      "count": 7
+    },
+    {
+      "category": "기타",
+      "count": 3
+    },
+    {
+      "category": "불만",
+      "count": 1
+    }
+  ],
+  "by_keyword": [
+    {
+      "keyword": "카페/GLN",
+      "count": 26
+    },
+    {
+      "keyword": "블로그/GLN",
+      "count": 22
+    }
+  ],
+  "important_posts": [
+    {
+      "title": "GLN페이 오류",
+      "cafe_name": "베나자-베트남나트랑자유여행,달랏,무...",
+      "created_at": "2026-05-17 13:21:31",
+      "importance_score": 9,
+      "sentiment": "negative"
+    }
+  ],
+  "content_stats": [
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "green",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "reels",
+      "guard_grade": "red",
+      "cnt": 1
+    },
+    {
+      "channel": "gorani",
+      "format": "threads",
+      "guard_grade": "green",
+      "cnt": 2
+    },
+    {
+      "channel": "official",
+      "format": "blog",
+      "guard_grade": "yellow",
+      "cnt": 2
+    },
+    {
+      "channel": "official",
+      "format": "instagram_card",
+      "guard_grade": "green",
+      "cnt": 2
+    }
+  ]
+}
