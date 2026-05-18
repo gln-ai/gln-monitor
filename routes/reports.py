@@ -23,6 +23,11 @@ def _list_reports(subdir: str) -> list[dict]:
             try:
                 with open(fpath, encoding="utf-8") as f:
                     data = json.load(f)
+                sentiment = data.get("sentiment", {})
+                st = max(
+                    sentiment.get("positive", 0) + sentiment.get("neutral", 0) + sentiment.get("negative", 0),
+                    1,
+                )
                 files.append({
                     "filename":   fname,
                     "type":       data.get("report_type", subdir),
@@ -32,6 +37,9 @@ def _list_reports(subdir: str) -> list[dict]:
                     "total":        data.get("total", 0),
                     "urgent":       data.get("urgent", 0),
                     "health_score": data.get("health_score", 0),
+                    "sent_pos": round(sentiment.get("positive", 0) / st * 100),
+                    "sent_neu": round(sentiment.get("neutral",  0) / st * 100),
+                    "sent_neg": round(sentiment.get("negative", 0) / st * 100),
                 })
             except Exception:
                 pass
