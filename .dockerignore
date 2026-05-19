@@ -5,9 +5,6 @@ __pycache__/
 .env
 .env.*
 gln_monitor.db
-reports/daily/
-reports/weekly/
-reports/monthly/
 static/generated/images/
 KnuSentiLex/
 .git/

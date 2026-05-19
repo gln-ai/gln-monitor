@@ -156,53 +156,87 @@ def send_daily_report(to: str = ""):
         sections_html = ""
         ch_colors = {"카페": "#1D4ED8", "블로그": "#059669", "뉴스": "#D97706"}
         for ch, posts in cat_posts.items():
-            color    = ch_colors.get(ch, "#6B7280")
-            more_url = f"{base_url}/?channel={ch}&date_from={today}&date_to={today}"
+            color     = ch_colors.get(ch, "#6B7280")
+            more_url  = f"{base_url}/?channel={ch}&date_from={today}&date_to={today}"
             rows_html = "".join(post_row(p) for p in posts)
             sections_html += f"""
-            <div style="margin-bottom:28px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                <h2 style="font-size:14px;font-weight:600;color:{color};margin:0">{ch} ({len(posts)}건)</h2>
-                <a href="{more_url}" style="font-size:11px;color:#6B7280;text-decoration:none">대시보드에서 더보기 →</a>
-              </div>
-              <table style="width:100%;border-collapse:collapse;font-size:14px;border:1px solid #F3F4F6;border-radius:8px;overflow:hidden">
+            <div style="margin-bottom:24px">
+              <h2 style="font-size:14px;font-weight:600;color:{color};margin:0 0 8px;padding:0">{ch} ({len(posts)}건)</h2>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #F3F4F6">
                 <thead>
                   <tr style="background:#F9FAFB">
-                    <th style="padding:7px 8px;text-align:left;font-size:11px;color:#9CA3AF">제목 / 요약</th>
-                    <th style="padding:7px 8px;text-align:left;font-size:11px;color:#9CA3AF">분류</th>
-                    <th style="padding:7px 8px;text-align:left;font-size:11px;color:#9CA3AF">감성</th>
-                    <th style="padding:7px 8px;text-align:center;font-size:11px;color:#9CA3AF">중요도</th>
+                    <th style="padding:7px 8px;text-align:left;font-size:11px;color:#9CA3AF;font-weight:500">제목 / 요약</th>
+                    <th style="padding:7px 8px;text-align:left;font-size:11px;color:#9CA3AF;font-weight:500;white-space:nowrap">분류</th>
+                    <th style="padding:7px 8px;text-align:left;font-size:11px;color:#9CA3AF;font-weight:500;white-space:nowrap">감성</th>
+                    <th style="padding:7px 8px;text-align:center;font-size:11px;color:#9CA3AF;font-weight:500;white-space:nowrap">중요도</th>
                   </tr>
                 </thead>
                 <tbody>{rows_html}</tbody>
               </table>
+              <div style="text-align:right;margin-top:6px">
+                <a href="{more_url}" style="font-size:11px;color:#7000FC;text-decoration:none;font-weight:500">대시보드에서 더보기 →</a>
+              </div>
             </div>"""
 
-        html = f"""
-        <div style="font-family:-apple-system,sans-serif;max-width:680px;margin:auto;padding:24px;background:#fff">
-          <h1 style="font-size:20px;color:#111;margin:0 0 4px">GLN 일일 모니터링 리포트</h1>
-          <p style="font-size:13px;color:#6B7280;margin:0 0 20px">{today}</p>
-          <div style="display:flex;gap:12px;margin-bottom:24px">
-            <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:14px 20px;flex:1;text-align:center">
-              <div style="font-size:26px;font-weight:700;color:#111">{total}</div>
-              <div style="font-size:12px;color:#6B7280;margin-top:2px">오늘 수집</div>
-            </div>
-            <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:14px 20px;flex:1;text-align:center">
-              <div style="font-size:26px;font-weight:700;color:#DC2626">{urgent}</div>
-              <div style="font-size:12px;color:#6B7280;margin-top:2px">긴급 알림</div>
-            </div>
-            <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px 20px;flex:1;text-align:center">
-              <div style="font-size:13px;font-weight:600;color:#166534">{ch_counts.get("카페",0)}건 카페</div>
-              <div style="font-size:13px;font-weight:600;color:#1E40AF;margin-top:4px">{ch_counts.get("블로그",0)}건 블로그</div>
-              <div style="font-size:13px;font-weight:600;color:#92400E;margin-top:4px">{ch_counts.get("뉴스",0)}건 뉴스</div>
-            </div>
+        urgent_badge = f'<div style="font-size:13px;font-weight:700;color:#DC2626;margin-top:4px">⚠ 긴급 {urgent}건</div>' if urgent else ""
+        html = f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+</head>
+<body style="margin:0;padding:20px 12px;background:#F3F4F6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">
+<div style="max-width:640px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E7EB">
+
+  <!-- 브랜드 헤더 -->
+  <div style="background:#130D2A;padding:20px 24px">
+    <div style="font-size:11px;font-weight:700;color:#7000FC;letter-spacing:0.08em;margin-bottom:4px">GLN 일일 모니터링 리포트</div>
+    <div style="font-size:20px;font-weight:700;color:#fff">{today}</div>
+    {urgent_badge}
+  </div>
+
+  <!-- 본문 -->
+  <div style="padding:20px 24px">
+
+    <!-- 요약 카드 (table 레이아웃 — 이메일 호환) -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px">
+      <tr>
+        <td width="33%" style="padding-right:5px">
+          <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:26px;font-weight:700;color:#130D2A">{total}</div>
+            <div style="font-size:11px;color:#6B7280;margin-top:2px">오늘 수집</div>
           </div>
-          {sections_html}
-          <div style="border-top:1px solid #F3F4F6;padding-top:16px;text-align:center">
-            <a href="{base_url}" style="display:inline-block;padding:8px 20px;background:#111;color:#fff;border-radius:8px;text-decoration:none;font-size:13px">대시보드 열기</a>
-            <p style="font-size:11px;color:#9CA3AF;margin-top:12px">GLN 모니터링 시스템 자동 발송</p>
+        </td>
+        <td width="33%" style="padding:0 3px">
+          <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:26px;font-weight:700;color:#DC2626">{urgent}</div>
+            <div style="font-size:11px;color:#6B7280;margin-top:2px">긴급 알림</div>
           </div>
-        </div>"""
+        </td>
+        <td width="33%" style="padding-left:5px">
+          <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:12px;font-weight:600;color:#166534">{ch_counts.get("카페",0)}건 카페</div>
+            <div style="font-size:12px;font-weight:600;color:#1E40AF;margin-top:4px">{ch_counts.get("블로그",0)}건 블로그</div>
+            <div style="font-size:12px;font-weight:600;color:#92400E;margin-top:4px">{ch_counts.get("뉴스",0)}건 뉴스</div>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- 채널별 섹션 -->
+    {sections_html}
+
+    <!-- 푸터 -->
+    <div style="border-top:1px solid #F3F4F6;padding-top:16px;text-align:center">
+      <a href="{base_url}" style="display:inline-block;padding:10px 24px;background:#7000FC;color:#fff;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">대시보드 열기</a>
+      <p style="font-size:11px;color:#9CA3AF;margin-top:12px">GLN 모니터링 시스템 자동 발송</p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>"""
 
         send_email(to, f"[GLN 일일 리포트] {today} — {total}건 수집", html)
     except Exception as e:
