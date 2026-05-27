@@ -5,8 +5,11 @@ import base64
 import os
 import smtplib
 from datetime import datetime, timedelta
+from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+_MONITOR_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 from config import KST
 from db import get_db, get_setting
@@ -90,8 +93,13 @@ def _log_email(report_type: str, subject: str, recipients: str, status: str, err
         pass
 
 
-# ── 발송 (Gmail API → SMTP 폴백) ─────────────────────────────────────────────
-def send_email(to: str, subject: str, html_body: str, report_type: str = ""):
+# ── 발송 (Gmail API → SMTP 폴백, CID 인라인 이미지 지원) ────────────────────
+def send_email(to: str, subject: str, html_body: str, report_type: str = "",
+               images: "dict[str, str] | None" = None):
+    """
+    images = {"cid명": "/절대/경로/파일.jpg"} 형식으로 전달하면
+    HTML 내 <img src="cid:cid명"> 으로 인라인 임베딩됨 (로컬 IP 문제 해결).
+    """
     from_addr = os.getenv("REPORT_FROM", "glninternational.ai@gmail.com")
 
     client_id     = os.getenv("GMAIL_CLIENT_ID", "")
@@ -100,12 +108,35 @@ def send_email(to: str, subject: str, html_body: str, report_type: str = ""):
 
     recipients = [r.strip() for r in to.split(",") if r.strip()]
 
-    msg = MIMEMultipart("alternative")
+    # ── MIME 구조 조립 ────────────────────────────────────────────────────────
+    if images:
+        outer = MIMEMultipart("related")
+        alt   = MIMEMultipart("alternative")
+        alt.attach(MIMEText(html_body, "html", "utf-8"))
+        outer.attach(alt)
+        for cid, fpath in images.items():
+            try:
+                with open(fpath, "rb") as f:
+                    raw_img = f.read()
+                ext      = os.path.splitext(fpath)[1].lower().lstrip(".")
+                subtype  = "jpeg" if ext in ("jpg", "jpeg") else ext
+                img_part = MIMEImage(raw_img, _subtype=subtype)
+                img_part.add_header("Content-ID", f"<{cid}>")
+                img_part.add_header("Content-Disposition", "inline",
+                                    filename=os.path.basename(fpath))
+                outer.attach(img_part)
+            except Exception as ex:
+                print(f"[이메일] 이미지 첨부 실패 ({fpath}): {ex}", flush=True)
+        msg = outer
+    else:
+        msg = MIMEMultipart("alternative")
+        msg.attach(MIMEText(html_body, "html", "utf-8"))
+
     msg["Subject"] = subject
     msg["From"]    = from_addr
     msg["To"]      = ", ".join(recipients)
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
 
+    # ── Gmail API ─────────────────────────────────────────────────────────────
     if client_id and client_secret and refresh_token:
         try:
             from google.oauth2.credentials import Credentials
@@ -131,7 +162,7 @@ def send_email(to: str, subject: str, html_body: str, report_type: str = ""):
             _log_email(report_type, subject, to, "error", str(e))
             return
 
-    # SMTP 폴백
+    # ── SMTP 폴백 ─────────────────────────────────────────────────────────────
     smtp_user = os.getenv("SMTP_USER", "")
     smtp_pass = os.getenv("SMTP_PASS", "")
     if not (smtp_user and smtp_pass):
@@ -213,8 +244,7 @@ def send_daily_report(to: str = ""):
             f"{yesterday_dt.year}년 {yesterday_dt.month}월 {yesterday_dt.day}일"
             f" ({_WEEKDAY_KR[yesterday_dt.weekday()]})"
         )
-        base_url    = os.getenv("BASE_URL", "http://192.168.1.30:5001")
-        mascot_url  = f"{base_url}/static/img/mascot.jpg"
+        mascot_path = os.path.join(_MONITOR_DIR, "static", "img", "mascot_email.jpg")
 
         conn = get_db()
         channels = ["카페", "블로그", "뉴스"]
@@ -357,7 +387,7 @@ def send_daily_report(to: str = ""):
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr>
         <td style="padding:24px 16px 24px 24px;vertical-align:middle" width="100">
-          <img src="{mascot_url}" alt="AI퍼플이" width="84" height="84"
+          <img src="cid:mascot" alt="AI퍼플이" width="84" height="84"
                style="border-radius:50%;border:3px solid #7000FC;display:block;object-fit:cover">
         </td>
         <td style="padding:24px 24px 24px 0;vertical-align:middle">
@@ -418,7 +448,8 @@ def send_daily_report(to: str = ""):
 </html>"""
 
         subject = f"[AI퍼플이의 아침브리핑] 전일 GLN 뉴스 모아보기 ☕ ({yesterday_kr})"
-        send_email(to, subject, html, report_type="daily")
+        img_files = {"mascot": mascot_path} if os.path.isfile(mascot_path) else {}
+        send_email(to, subject, html, report_type="daily", images=img_files or None)
     except Exception as e:
         import traceback
         print(f"[아침브리핑 오류] {e}")
