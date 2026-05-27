@@ -349,22 +349,6 @@ def send_daily_report(to: str = ""):
               {more_block}
             </div>"""
 
-        # ── 국가 레전드 ───────────────────────────────────────────────────────
-        legend_items = [
-            ("#FEF2F2", "#DC2626", "#FECACA", "동북아"),
-            ("#EFF6FF", "#2563EB", "#BFDBFE", "대만"),
-            ("#F0FDF4", "#059669", "#BBF7D0", "동남아A"),
-            ("#F5F3FF", "#7C3AED", "#DDD6FE", "동남아B"),
-            ("#FFFBEB", "#D97706", "#FDE68A", "몽골"),
-            ("#F0F9FF", "#0891B2", "#BAE6FD", "괌사이판"),
-            ("#F9FAFB", "#6B7280", "#E5E7EB", "공통"),
-        ]
-        legend_html = " ".join(
-            f'<span style="background:{bg};color:{fg};border:0.5px solid {bd};'
-            f'padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600">{lbl}</span>'
-            for bg, fg, bd, lbl in legend_items
-        )
-
         # ── 긴급 뱃지 ─────────────────────────────────────────────────────────
         urgent_badge = (
             f'<span style="background:#DC2626;color:#fff;'
@@ -430,10 +414,7 @@ def send_daily_report(to: str = ""):
       </tr>
     </table>
 
-    <!-- 국가 레전드 -->
-    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px 12px;margin-bottom:20px;font-size:11px;color:#6B7280">
-      <span style="font-weight:600;margin-right:8px">국가 분류</span>{legend_html}
-    </div>
+
 
     <!-- 채널별 섹션 -->
     {sections_html if sections_html else '<p style="color:#9CA3AF;font-size:13px;text-align:center;padding:20px 0">전일 수집된 게시글이 없습니다.</p>'}
