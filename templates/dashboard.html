@@ -295,15 +295,15 @@
           <div class="post-body">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
               <div class="post-badges">
+                {% set _ccmap = {'japan':'ne','china':'ne','hongkong':'ne','macau':'ne','taiwan':'tw','thailand':'sea','vietnam':'sea','cambodia':'sea','laos':'sea','philippines':'phi','singapore':'phi','mongolia':'mn','guam':'pac','saipan':'pac'} %}
+                {% set _cc = _ccmap.get(post.country, 'com') %}
+                <span class="badge badge-country-{{ _cc }}">{{ country_label.get(post.country, '공통') }}</span>
                 {% if post.is_urgent %}<span class="badge badge-urgent">긴급</span>{% endif %}
                 {% if post.sentiment == 'positive' %}<span class="badge badge-pos">긍정</span>
                 {% elif post.sentiment == 'negative' %}<span class="badge badge-neg">부정</span>
                 {% elif post.sentiment %}<span class="badge badge-neu">중립</span>{% endif %}
                 {% if post.category %}<span class="badge badge-cat">{{ post.category }}</span>{% endif %}
                 {% if post.importance_score %}<span class="{% if post.importance_score >= 7 %}score-high{% elif post.importance_score >= 4 %}score-mid{% else %}score-low{% endif %}">{{ post.importance_score }}/10</span>{% endif %}
-                {% set _ccmap = {'japan':'ne','china':'ne','hongkong':'ne','macau':'ne','taiwan':'tw','thailand':'sea','vietnam':'sea','cambodia':'sea','laos':'sea','philippines':'phi','singapore':'phi','mongolia':'mn','guam':'pac','saipan':'pac'} %}
-                {% set _cc = _ccmap.get(post.country, 'com') %}
-                <span class="badge badge-country-{{ _cc }}">{{ country_label.get(post.country, '공통') }}</span>
               </div>
               <a href="{{ post.link }}" target="_blank" class="post-link-btn">원문보기 →</a>
             </div>
