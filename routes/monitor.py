@@ -65,6 +65,7 @@ def dashboard():
     sentiment    = request.args.get("sentiment", "")
     category     = request.args.get("category", "")
     urgent       = request.args.get("urgent", "")
+    country      = request.args.get("country", "")
     today_str    = datetime.now(KST).strftime("%Y-%m-%d")
     date_from    = request.args.get("date_from", today_str)
     date_to      = request.args.get("date_to", today_str)
@@ -74,6 +75,7 @@ def dashboard():
     query = """
         SELECT p.id, p.title, p.link, p.cafe_name, p.post_date, p.is_urgent,
                p.keyword, p.created_at, p.reply_status, p.status_updated_at,
+               p.description,
                a.summary, a.category, a.sentiment, a.importance_score
         FROM posts p
         LEFT JOIN ai_analysis a ON p.id = a.post_id
@@ -94,6 +96,13 @@ def dashboard():
         query += " AND DATE(p.created_at) >= ?"; args.append(date_from)
     if date_to:
         query += " AND DATE(p.created_at) <= ?"; args.append(date_to)
+    if country:
+        _kws = [k for k, v in _COUNTRY_MAP.items() if v == country]
+        _cc  = " OR ".join(f"(p.title LIKE ? OR p.description LIKE ?)" for _ in _kws)
+        if _cc:
+            query += f" AND ({_cc})"
+            for _kw in _kws:
+                args.extend([f"%{_kw}%", f"%{_kw}%"])
 
     page     = int(request.args.get("page", 1))
     per_page = 50
@@ -119,6 +128,10 @@ def dashboard():
         count_query += " AND DATE(p.created_at) >= ?"; count_args.append(date_from)
     if date_to:
         count_query += " AND DATE(p.created_at) <= ?"; count_args.append(date_to)
+    if country and _cc:
+        count_query += f" AND ({_cc})"
+        for _kw in _kws:
+            count_args.extend([f"%{_kw}%", f"%{_kw}%"])
 
     total       = conn.execute(count_query, count_args).fetchone()[0]
     total_pages = max(1, (total + per_page - 1) // per_page)
@@ -162,7 +175,7 @@ def dashboard():
         country_label=COUNTRY_LABEL,
         filters={"sentiment": sentiment, "category": category,
                  "urgent": urgent, "date_from": date_from, "date_to": date_to,
-                 "channel": channel, "reply_status": reply_status},
+                 "channel": channel, "reply_status": reply_status, "country": country},
         page=page, total_pages=total_pages, total=total
     )
 
