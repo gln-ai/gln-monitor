@@ -11,7 +11,21 @@ from config import KST
 from db import get_db, get_setting
 
 
-def send_email(to: str, subject: str, html_body: str):
+def _log_email(report_type: str, subject: str, recipients: str, status: str, error_msg: str = ""):
+    try:
+        from db import get_db
+        conn = get_db()
+        conn.execute(
+            "INSERT INTO email_log (report_type, subject, recipients, status, error_msg) VALUES (?,?,?,?,?)",
+            (report_type, subject, recipients, status, error_msg or None)
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+
+def send_email(to: str, subject: str, html_body: str, report_type: str = ""):
     from google.oauth2.credentials import Credentials
     from googleapiclient.discovery import build
 
@@ -22,6 +36,7 @@ def send_email(to: str, subject: str, html_body: str):
 
     if not (client_id and client_secret and refresh_token):
         print("[이메일] Gmail OAuth2 설정 없음 — 스킵")
+        _log_email(report_type, subject, to, "skip", "OAuth2 설정 없음")
         return
 
     recipients = [r.strip() for r in to.split(",") if r.strip()]
@@ -46,10 +61,12 @@ def send_email(to: str, subject: str, html_body: str):
         raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
         service.users().messages().send(userId="me", body={"raw": raw}).execute()
         print(f"[이메일 발송] {subject} → {', '.join(recipients)}", flush=True)
+        _log_email(report_type, subject, to, "ok")
     except Exception as e:
         import traceback
         print(f"[이메일 오류] {e}", flush=True)
         print(traceback.format_exc(), flush=True)
+        _log_email(report_type, subject, to, "error", str(e))
 
 
 def send_urgent_alert(title: str, analysis: dict,
@@ -93,7 +110,7 @@ def send_urgent_alert(title: str, analysis: dict,
       {link_btn}
       <p style="font-size:12px;color:#999;margin-top:24px">GLN 모니터링 시스템 자동 발송</p>
     </div>"""
-    send_email(to, f"[GLN 긴급] {title[:40]}", html)
+    send_email(to, f"[GLN 긴급] {title[:40]}", html, report_type="urgent")
 
 
 def send_daily_report(to: str = ""):
@@ -247,7 +264,7 @@ def send_daily_report(to: str = ""):
 </body>
 </html>"""
 
-        send_email(to, f"[AI퍼플이의 아침 브리핑] 전일자 GLN 카페/블로그/뉴스 모아보기 ☕", html)
+        send_email(to, f"[AI퍼플이의 아침 브리핑] 전일자 GLN 카페/블로그/뉴스 모아보기 ☕", html, report_type="daily")
     except Exception as e:
         import traceback
         print(f"[리포트 오류] {e}")

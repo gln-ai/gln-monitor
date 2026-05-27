@@ -101,6 +101,19 @@
 
   <div class="content">
 
+    <!-- 이메일 발송 이력 -->
+    <div style="margin-bottom:28px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="section-label" style="margin-bottom:0">
+          이메일 발송 이력 <span id="log-count" class="badge"></span>
+        </div>
+        <button onclick="loadEmailLog()" style="font-size:11px;background:#F6F5FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">새로고침</button>
+      </div>
+      <div id="email-log-list">
+        <div style="text-align:center;padding:20px;color:#AAA7B8;font-size:12px">불러오는 중...</div>
+      </div>
+    </div>
+
     <!-- 월간 -->
     <div class="section-label">
       월간 보고서 <span class="badge">{{ monthly|length }}건</span>
@@ -147,26 +160,31 @@
       {% for r in weekly %}
       {% set hs = r.health_score %}
       {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
-      <div class="report-card" onclick="showReport('weekly','{{ r.filename }}')">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <div class="report-card-type">Weekly</div>
-          <div style="font-size:11px;font-weight:700;color:{{ hc }};background:{{ hc }}18;padding:2px 9px;border-radius:99px;white-space:nowrap">{{ hs }}</div>
-        </div>
-        <div class="report-card-period">{{ r.period_start[5:10] }} ~ {{ r.period_end[5:10] }}</div>
-        <div class="report-card-stats">
-          <div>
-            <div class="report-stat-value">{{ r.total }}</div>
-            <div class="report-stat-label">총 수집</div>
+      <div class="report-card">
+        <div onclick="showReport('weekly','{{ r.filename }}')" style="cursor:pointer">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div class="report-card-type">Weekly</div>
+            <div style="font-size:11px;font-weight:700;color:{{ hc }};background:{{ hc }}18;padding:2px 9px;border-radius:99px;white-space:nowrap">{{ hs }}</div>
           </div>
-          <div>
-            <div class="report-stat-value" style="color:#DC2626">{{ r.urgent }}</div>
-            <div class="report-stat-label">긴급</div>
+          <div class="report-card-period">{{ r.period_start[5:10] }} ~ {{ r.period_end[5:10] }}</div>
+          <div class="report-card-stats">
+            <div>
+              <div class="report-stat-value">{{ r.total }}</div>
+              <div class="report-stat-label">총 수집</div>
+            </div>
+            <div>
+              <div class="report-stat-value" style="color:#DC2626">{{ r.urgent }}</div>
+              <div class="report-stat-label">긴급</div>
+            </div>
+          </div>
+          <div style="display:flex;height:4px;border-radius:99px;overflow:hidden;margin-top:14px">
+            <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
+            <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
+            <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
           </div>
         </div>
-        <div style="display:flex;height:4px;border-radius:99px;overflow:hidden;margin-top:14px">
-          <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
-          <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
-          <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
+        <div style="margin-top:10px;text-align:right;border-top:0.5px solid #F6F5FF;padding-top:8px">
+          <button onclick="openSendModal('weekly')" style="font-size:11px;background:#F0E6FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">📧 발송</button>
         </div>
       </div>
       {% endfor %}
@@ -192,7 +210,8 @@
       {% for r in daily %}
       {% set hs = r.health_score %}
       {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
-      <div class="report-card" onclick="showReport('daily','{{ r.filename }}')">
+      <div class="report-card">
+        <div onclick="showReport('daily','{{ r.filename }}')" style="cursor:pointer">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
           <div class="report-card-type">Daily</div>
           <div style="font-size:11px;font-weight:700;color:{{ hc }};background:{{ hc }}18;padding:2px 9px;border-radius:99px;white-space:nowrap">{{ hs }}</div>
@@ -212,6 +231,10 @@
           <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
           <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
           <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
+        </div>
+        </div>
+        <div style="margin-top:10px;text-align:right;border-top:0.5px solid #F6F5FF;padding-top:8px">
+          <button onclick="openSendModal('daily')" style="font-size:11px;background:#F0E6FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">📧 발송</button>
         </div>
       </div>
       {% endfor %}
@@ -252,6 +275,28 @@
   </div>
 </div>
 
+<!-- 발송 확인 모달 -->
+<div class="modal-overlay" id="sendModal" onclick="if(event.target===this)closeSendModal()" style="display:none">
+  <div style="background:#fff;border-radius:16px;width:420px;max-width:94vw;padding:24px;position:relative">
+    <button onclick="closeSendModal()" style="position:absolute;top:14px;right:14px;background:#F6F5FF;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:13px;color:#5E5A71">✕</button>
+    <div style="font-size:15px;font-weight:700;color:#130D2A;margin-bottom:4px">📧 리포트 발송</div>
+    <div id="send-modal-desc" style="font-size:12px;color:#918DA0;margin-bottom:16px"></div>
+    <div style="font-size:11px;font-weight:700;color:#130D2A;margin-bottom:8px">수신자</div>
+    <div id="send-modal-tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:10px"></div>
+    <div style="display:flex;gap:6px">
+      <input id="send-extra-email" type="email" placeholder="추가 수신자 이메일"
+        style="flex:1;border:0.5px solid #DAD9EA;border-radius:10px;padding:8px 12px;font-size:12px;outline:none;color:#130D2A"
+        onfocus="this.style.borderColor='#7000FC'" onblur="this.style.borderColor='#DAD9EA'"
+        onkeydown="if(event.key==='Enter')sendModalAddEmail()">
+      <button onclick="sendModalAddEmail()" style="background:#F0E6FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">+ 추가</button>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
+      <button onclick="closeSendModal()" style="font-size:12px;padding:8px 16px;border:0.5px solid #DAD9EA;border-radius:10px;background:#fff;cursor:pointer;color:#5E5A71">취소</button>
+      <button onclick="confirmSend()" style="background:#7000FC;color:#fff;border:none;border-radius:10px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer">발송</button>
+    </div>
+  </div>
+</div>
+
 <!-- 상세 모달 -->
 <div class="modal-overlay" id="reportModal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
@@ -263,6 +308,144 @@
 
 <script>
 let _sentChart = null;
+
+// ── 발송 이력 ──────────────────────────────────────────────
+async function loadEmailLog() {
+  const list = document.getElementById('email-log-list');
+  const countEl = document.getElementById('log-count');
+  try {
+    const res  = await fetch('/api/email-log');
+    const logs = await res.json();
+    countEl.textContent = logs.length + '건';
+
+    if (!logs.length) {
+      list.innerHTML = '<div style="text-align:center;padding:20px;color:#AAA7B8;font-size:12px">발송 이력이 없습니다</div>';
+      return;
+    }
+
+    const typeBadge = {
+      daily:   'background:#EFF6FF;color:#2563EB',
+      weekly:  'background:#F0EAFF;color:#7000FC',
+      urgent:  'background:#FEF2F2;color:#DC2626',
+      sla:     'background:#FFF7ED;color:#D97706',
+      spike:   'background:#FFF7ED;color:#D97706',
+    };
+    const typeLabel = { daily:'일간', weekly:'주간', urgent:'긴급', sla:'SLA', spike:'스파이크' };
+    const statusStyle = { ok: 'color:#059669;font-weight:700', error: 'color:#DC2626;font-weight:700', skip: 'color:#AAA7B8' };
+    const statusLabel = { ok: '✓ 발송', error: '✗ 오류', skip: '— 스킵' };
+
+    list.innerHTML = logs.map(log => {
+      const tb = typeBadge[log.report_type] || 'background:#F6F5FF;color:#918DA0';
+      const tl = typeLabel[log.report_type] || log.report_type;
+      const ss = statusStyle[log.status] || '';
+      const sl = statusLabel[log.status] || log.status;
+      const dt = (log.sent_at || '').slice(0, 16);
+      const subj = (log.subject || '').length > 40 ? log.subject.slice(0, 40) + '…' : (log.subject || '-');
+      const recip = (log.recipients || '').split(',').filter(Boolean);
+      const recipText = recip.length > 2 ? recip[0] + ' 외 ' + (recip.length - 1) + '명' : recip.join(', ');
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;border:0.5px solid #E4E1EE;border-radius:10px;margin-bottom:4px">
+        <span style="font-size:11px;color:#AAA7B8;white-space:nowrap;width:90px;flex-shrink:0">${dt}</span>
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0;${tb}">${tl}</span>
+        <span style="flex:1;font-size:12px;color:#130D2A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${subj}</span>
+        <span style="font-size:11px;color:#AAA7B8;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis">${recipText}</span>
+        <span style="font-size:11px;white-space:nowrap;${ss}">${sl}</span>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:#DC2626;font-size:12px">불러오기 실패</div>';
+  }
+}
+
+// ── 발송 모달 ──────────────────────────────────────────────
+let _sendType = 'daily';
+let _sendRecipients = [];
+
+async function openSendModal(type) {
+  _sendType = type;
+  _sendRecipients = [];
+
+  const modal = document.getElementById('sendModal');
+  const desc  = document.getElementById('send-modal-desc');
+  desc.textContent = type === 'weekly'
+    ? '주간 GLN 리포트를 아래 수신자에게 발송합니다.'
+    : '일일 AI퍼플이 아침 브리핑을 아래 수신자에게 발송합니다.';
+
+  try {
+    const res  = await fetch('/api/settings');
+    const data = await res.json();
+    const csvKey = type === 'weekly' ? 'report_to_list' : (data.daily_report_to_list ? 'daily_report_to_list' : 'report_to_list');
+    const csv = data[csvKey] || data.report_to_list || '';
+    _sendRecipients = csv.split(',').map(e => e.trim()).filter(Boolean);
+  } catch (e) {}
+
+  _renderSendTags();
+  modal.style.display = 'flex';
+}
+
+function closeSendModal() {
+  document.getElementById('sendModal').style.display = 'none';
+  document.getElementById('send-extra-email').value = '';
+}
+
+function _renderSendTags() {
+  const container = document.getElementById('send-modal-tags');
+  container.innerHTML = _sendRecipients.length
+    ? _sendRecipients.map(email => `
+        <span style="display:inline-flex;align-items:center;gap:5px;background:#F5F3FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:99px;padding:4px 10px;font-size:11px;font-weight:500">
+          ${email}
+          <button onclick="_removeSendEmail('${email}')" style="background:none;border:none;cursor:pointer;color:#7000FC;font-size:13px;line-height:1;padding:0">×</button>
+        </span>`).join('')
+    : '<span style="font-size:11px;color:#AAA7B8">수신자가 없습니다</span>';
+}
+
+function _removeSendEmail(email) {
+  _sendRecipients = _sendRecipients.filter(e => e !== email);
+  _renderSendTags();
+}
+
+function sendModalAddEmail() {
+  const input = document.getElementById('send-extra-email');
+  const email = (input.value || '').trim().toLowerCase();
+  if (!email || !email.includes('@')) { input.focus(); return; }
+  if (!_sendRecipients.includes(email)) {
+    _sendRecipients.push(email);
+    _renderSendTags();
+  }
+  input.value = '';
+  input.focus();
+}
+
+async function confirmSend() {
+  if (!_sendRecipients.length) { alert('수신자를 1명 이상 추가하세요'); return; }
+  const btn = document.querySelector('#sendModal button[onclick="confirmSend()"]');
+  btn.disabled = true; btn.textContent = '발송 중...';
+  try {
+    const res = await fetch('/api/report/send', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ type: _sendType, to: _sendRecipients.join(',') })
+    });
+    const data = await res.json();
+    closeSendModal();
+    _showToast('발송을 시작했습니다. 잠시 후 이력에 기록됩니다.');
+    setTimeout(loadEmailLog, 5000);
+  } catch (e) {
+    alert('발송 요청 실패');
+  } finally {
+    btn.disabled = false; btn.textContent = '발송';
+  }
+}
+
+function _showToast(msg) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#130D2A;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:9999;opacity:0;transition:opacity 0.3s';
+  document.body.appendChild(t);
+  setTimeout(() => t.style.opacity = '1', 10);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// 페이지 로드 시 이력 조회
+document.addEventListener('DOMContentLoaded', loadEmailLog);
 
 function setDailyView(type) {
   document.getElementById('dailyGridView').style.display = type === 'grid' ? '' : 'none';

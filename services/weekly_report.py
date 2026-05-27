@@ -206,7 +206,7 @@ def send_weekly_report(to: str = ""):
     print(f"[주간 리포트] 생성 시작 ({datetime.now(KST).strftime('%Y-%m-%d %H:%M')})", flush=True)
     try:
         html, week_label, total = build_weekly_report()
-        send_email(to, f"[GLN 주간 리포트] {week_label} — 총 {total}건", html)
+        send_email(to, f"[GLN 주간 리포트] {week_label} — 총 {total}건", html, report_type="weekly")
         print(f"[주간 리포트] 발송 완료: {week_label}", flush=True)
     except Exception as e:
         import traceback

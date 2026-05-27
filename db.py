@@ -65,6 +65,16 @@ def init_db():
             created_at TEXT DEFAULT (datetime('now','localtime'))
         );
 
+        CREATE TABLE IF NOT EXISTS email_log (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            report_type TEXT,
+            subject     TEXT,
+            recipients  TEXT,
+            sent_at     TEXT DEFAULT (datetime('now','localtime')),
+            status      TEXT DEFAULT 'ok',
+            error_msg   TEXT
+        );
+
         CREATE TABLE IF NOT EXISTS content_drafts (
             id             INTEGER PRIMARY KEY AUTOINCREMENT,
             source_post_id INTEGER,
