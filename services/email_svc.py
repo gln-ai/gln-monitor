@@ -392,9 +392,9 @@ def send_daily_report(to: str = ""):
                style="border-radius:50%;border:3px solid #7000FC;display:block;object-fit:cover">
         </td>
         <td style="padding:24px 24px 24px 0;vertical-align:middle">
-          <div style="font-size:10px;font-weight:800;color:#7000FC;letter-spacing:0.12em;margin-bottom:8px">AI퍼플이의 아침브리핑 ☕</div>
-          <div style="font-size:20px;font-weight:800;color:#1E0942;line-height:1.2">전일 GLN 뉴스 모아보기</div>
-          <div style="font-size:13px;color:#6D28D9;margin-top:6px;font-weight:500">
+          <div style="font-size:12px;font-weight:800;color:#7000FC;letter-spacing:0.12em;margin-bottom:8px">AI퍼플이의 아침브리핑 ☕</div>
+          <div style="font-size:22px;font-weight:800;color:#1E0942;line-height:1.2">전일 GLN 뉴스 모아보기</div>
+          <div style="font-size:15px;color:#6D28D9;margin-top:6px;font-weight:500">
             {yesterday_kr}{urgent_badge}
           </div>
         </td>
