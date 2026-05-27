@@ -114,6 +114,8 @@ def init_db():
         "ALTER TABLE content_drafts ADD COLUMN image_paths TEXT",
         # v8: 휴지통 — 소프트 삭제
         "ALTER TABLE content_drafts ADD COLUMN deleted_at TEXT",
+        # v9: GLN 관련성 (0=무관, 1=관련, NULL=미분석)
+        "ALTER TABLE ai_analysis ADD COLUMN is_relevant INTEGER DEFAULT 1",
     ]:
         try:
             conn.execute(alter_sql)

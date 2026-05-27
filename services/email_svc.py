@@ -260,6 +260,7 @@ def send_daily_report(to: str = ""):
                 LEFT JOIN ai_analysis a ON p.id = a.post_id
                 WHERE DATE(p.created_at) = ?
                   AND p.keyword LIKE ?
+                  AND (a.is_relevant IS NULL OR a.is_relevant = 1)
                 ORDER BY a.importance_score DESC NULLS LAST
             """, (yesterday, f"{ch}/%")).fetchall()
             if rows:

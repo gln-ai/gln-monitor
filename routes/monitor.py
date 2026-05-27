@@ -79,7 +79,7 @@ def dashboard():
                a.summary, a.category, a.sentiment, a.importance_score
         FROM posts p
         LEFT JOIN ai_analysis a ON p.id = a.post_id
-        WHERE 1=1
+        WHERE (a.is_relevant IS NULL OR a.is_relevant = 1)
     """
     args = []
     if sentiment:
@@ -112,7 +112,7 @@ def dashboard():
     count_query = """
         SELECT COUNT(*) FROM posts p
         LEFT JOIN ai_analysis a ON p.id = a.post_id
-        WHERE 1=1
+        WHERE (a.is_relevant IS NULL OR a.is_relevant = 1)
     """
     count_args = []
     if sentiment:
