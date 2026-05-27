@@ -128,6 +128,7 @@ def init_db():
         ("spike_threshold",      "2.0"),
         ("alert_start_hour",     "8"),
         ("alert_end_hour",       "20"),
+        ("daily_report_to_list", os.getenv("REPORT_TO", "")),
         ("report_to_list",       os.getenv("REPORT_TO", "")),
         ("urgent_alert_to_list", os.getenv("URGENT_ALERT_TO", "brad@glninternational.com")),
     ]:

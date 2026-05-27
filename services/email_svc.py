@@ -98,14 +98,16 @@ def send_urgent_alert(title: str, analysis: dict,
 
 def send_daily_report(to: str = ""):
     if not to:
-        to = get_setting("report_to_list") or os.getenv("REPORT_TO", "")
-    print(f"[리포트] 수신자: {to}", flush=True)
+        to = get_setting("daily_report_to_list") or get_setting("report_to_list") or os.getenv("REPORT_TO", "")
+    print(f"[일일리포트] 수신자: {to}", flush=True)
     if not to:
-        print("[리포트] 수신자 없음 — 스킵")
+        print("[일일리포트] 수신자 없음 — 스킵")
         return
     try:
-        base_url = os.getenv("BASE_URL", "http://192.168.1.60:5001")
-        today    = datetime.now(KST).strftime("%Y-%m-%d")
+        from datetime import timedelta
+        base_url  = os.getenv("BASE_URL", "http://192.168.1.60:5001")
+        now       = datetime.now(KST)
+        yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
         conn = get_db()
         channels = ["카페", "블로그", "뉴스"]
         cat_posts = {}
@@ -115,31 +117,31 @@ def send_daily_report(to: str = ""):
                        a.summary, a.category, a.sentiment, a.importance_score
                 FROM posts p
                 LEFT JOIN ai_analysis a ON p.id = a.post_id
-                WHERE DATE(p.created_at) = DATE('now','localtime')
+                WHERE DATE(p.created_at) = ?
                   AND p.keyword LIKE ?
                 ORDER BY a.importance_score DESC NULLS LAST
                 LIMIT 10
-            """, (f"{ch}/%",)).fetchall()
+            """, (yesterday, f"{ch}/%")).fetchall()
             if rows:
                 cat_posts[ch] = rows
         total = conn.execute(
-            "SELECT COUNT(*) as cnt FROM posts WHERE DATE(created_at)=DATE('now','localtime')"
+            "SELECT COUNT(*) as cnt FROM posts WHERE DATE(created_at)=?", (yesterday,)
         ).fetchone()["cnt"]
         urgent = conn.execute(
-            "SELECT COUNT(*) as cnt FROM posts WHERE is_urgent=1 AND DATE(created_at)=DATE('now','localtime')"
+            "SELECT COUNT(*) as cnt FROM posts WHERE is_urgent=1 AND DATE(created_at)=?", (yesterday,)
         ).fetchone()["cnt"]
         ch_counts = {}
         for ch in ["카페", "블로그", "뉴스"]:
             cnt = conn.execute(
-                "SELECT COUNT(*) FROM posts WHERE DATE(created_at)=DATE('now','localtime') AND keyword LIKE ?",
-                (f"{ch}/%",)
+                "SELECT COUNT(*) FROM posts WHERE DATE(created_at)=? AND keyword LIKE ?",
+                (yesterday, f"{ch}/%")
             ).fetchone()[0]
             ch_counts[ch] = cnt
         conn.close()
 
         def post_row(p):
-            sc = {"positive": "#16A34A", "neutral": "#6B7280", "negative": "#DC2626"}.get(p["sentiment"], "#6B7280")
-            sl = {"positive": "긍정", "neutral": "중립", "negative": "부정"}.get(p["sentiment"], "-")
+            sc  = {"positive": "#16A34A", "neutral": "#6B7280", "negative": "#DC2626"}.get(p["sentiment"], "#6B7280")
+            sl  = {"positive": "긍정", "neutral": "중립", "negative": "부정"}.get(p["sentiment"], "-")
             cat = p["category"] or "-"
             return f"""
             <tr style="border-bottom:1px solid #F3F4F6">
@@ -157,7 +159,6 @@ def send_daily_report(to: str = ""):
         ch_colors = {"카페": "#1D4ED8", "블로그": "#059669", "뉴스": "#D97706"}
         for ch, posts in cat_posts.items():
             color     = ch_colors.get(ch, "#6B7280")
-            more_url  = f"{base_url}/?channel={ch}&date_from={today}&date_to={today}"
             rows_html = "".join(post_row(p) for p in posts)
             sections_html += f"""
             <div style="margin-bottom:24px">
@@ -173,12 +174,10 @@ def send_daily_report(to: str = ""):
                 </thead>
                 <tbody>{rows_html}</tbody>
               </table>
-              <div style="text-align:right;margin-top:6px">
-                <a href="{more_url}" style="font-size:11px;color:#7000FC;text-decoration:none;font-weight:500">대시보드에서 더보기 →</a>
-              </div>
             </div>"""
 
-        urgent_badge = f'<div style="font-size:13px;font-weight:700;color:#DC2626;margin-top:4px">⚠ 긴급 {urgent}건</div>' if urgent else ""
+        urgent_txt = f'<div style="font-size:13px;font-weight:700;color:#F87171;margin-top:6px">⚠ 전일 긴급 {urgent}건 발생</div>' if urgent else ""
+        mascot_url = f"{base_url}/static/img/mascot.jpg"
         html = f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -189,23 +188,34 @@ def send_daily_report(to: str = ""):
 <body style="margin:0;padding:20px 12px;background:#F3F4F6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">
 <div style="max-width:640px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #E5E7EB">
 
-  <!-- 브랜드 헤더 -->
-  <div style="background:#130D2A;padding:20px 24px">
-    <div style="font-size:11px;font-weight:700;color:#7000FC;letter-spacing:0.08em;margin-bottom:4px">GLN 일일 모니터링 리포트</div>
-    <div style="font-size:20px;font-weight:700;color:#fff">{today}</div>
-    {urgent_badge}
+  <!-- 헤더: 마스코트 + 브랜딩 -->
+  <div style="background:#130D2A;padding:0">
+    <table width="100%" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="padding:20px 20px 20px 0;vertical-align:middle" align="right" width="110">
+          <img src="{mascot_url}" alt="AI퍼플이" width="90" height="90"
+               style="border-radius:50%;border:3px solid #7000FC;display:block;object-fit:cover">
+        </td>
+        <td style="padding:20px 20px 20px 0;vertical-align:middle">
+          <div style="font-size:10px;font-weight:700;color:#7000FC;letter-spacing:0.1em;margin-bottom:6px">AI퍼플이의 아침 브리핑 ☕</div>
+          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.3">전일자 GLN<br>카페·블로그·뉴스 모아보기</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:6px">{yesterday}</div>
+          {urgent_txt}
+        </td>
+      </tr>
+    </table>
   </div>
 
   <!-- 본문 -->
   <div style="padding:20px 24px">
 
-    <!-- 요약 카드 (table 레이아웃 — 이메일 호환) -->
+    <!-- 요약 카드 -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px">
       <tr>
         <td width="33%" style="padding-right:5px">
           <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:14px;text-align:center">
             <div style="font-size:26px;font-weight:700;color:#130D2A">{total}</div>
-            <div style="font-size:11px;color:#6B7280;margin-top:2px">오늘 수집</div>
+            <div style="font-size:11px;color:#6B7280;margin-top:2px">전일 수집</div>
           </div>
         </td>
         <td width="33%" style="padding:0 3px">
@@ -215,10 +225,10 @@ def send_daily_report(to: str = ""):
           </div>
         </td>
         <td width="33%" style="padding-left:5px">
-          <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:14px;text-align:center">
-            <div style="font-size:12px;font-weight:600;color:#166534">{ch_counts.get("카페",0)}건 카페</div>
-            <div style="font-size:12px;font-weight:600;color:#1E40AF;margin-top:4px">{ch_counts.get("블로그",0)}건 블로그</div>
-            <div style="font-size:12px;font-weight:600;color:#92400E;margin-top:4px">{ch_counts.get("뉴스",0)}건 뉴스</div>
+          <div style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:14px;text-align:center">
+            <div style="font-size:12px;font-weight:600;color:#166534">{ch_counts.get("카페",0)} 카페</div>
+            <div style="font-size:12px;font-weight:600;color:#1E40AF;margin-top:4px">{ch_counts.get("블로그",0)} 블로그</div>
+            <div style="font-size:12px;font-weight:600;color:#92400E;margin-top:4px">{ch_counts.get("뉴스",0)} 뉴스</div>
           </div>
         </td>
       </tr>
@@ -228,9 +238,8 @@ def send_daily_report(to: str = ""):
     {sections_html}
 
     <!-- 푸터 -->
-    <div style="border-top:1px solid #F3F4F6;padding-top:16px;text-align:center">
-      <a href="{base_url}" style="display:inline-block;padding:10px 24px;background:#7000FC;color:#fff;border-radius:10px;text-decoration:none;font-size:13px;font-weight:600">대시보드 열기</a>
-      <p style="font-size:11px;color:#9CA3AF;margin-top:12px">GLN 모니터링 시스템 자동 발송</p>
+    <div style="border-top:1px solid #F3F4F6;padding-top:14px;text-align:center">
+      <p style="font-size:11px;color:#9CA3AF;margin:0">GLN 모니터링 시스템 · 매일 오전 8시 자동 발송</p>
     </div>
 
   </div>
@@ -238,7 +247,7 @@ def send_daily_report(to: str = ""):
 </body>
 </html>"""
 
-        send_email(to, f"[GLN 일일 리포트] {today} — {total}건 수집", html)
+        send_email(to, f"[AI퍼플이의 아침 브리핑] 전일자 GLN 카페/블로그/뉴스 모아보기 ☕", html)
     except Exception as e:
         import traceback
         print(f"[리포트 오류] {e}")
