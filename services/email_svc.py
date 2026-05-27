@@ -75,7 +75,7 @@ def _country_badge_html(country: str) -> str:
     return (
         f'<span style="background:{bg};color:{fg};border:0.5px solid {bd};'
         f'padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600;'
-        f'white-space:nowrap;margin-right:4px">{label}</span>'
+        f'white-space:nowrap;margin-right:4px">● {label}</span>'
     )
 
 
@@ -349,13 +349,6 @@ def send_daily_report(to: str = ""):
               {more_block}
             </div>"""
 
-        # ── 긴급 뱃지 ─────────────────────────────────────────────────────────
-        urgent_badge = (
-            f'<span style="background:#DC2626;color:#fff;'
-            f'padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;'
-            f'margin-left:8px">⚠ 긴급 {urgent}건</span>'
-            if urgent else ""
-        )
 
         html = f"""<!DOCTYPE html>
 <html lang="ko">
@@ -376,10 +369,10 @@ def send_daily_report(to: str = ""):
                style="border-radius:50%;border:3px solid #7000FC;display:block;object-fit:cover">
         </td>
         <td style="padding:24px 24px 24px 0;vertical-align:middle">
-          <div style="font-size:12px;font-weight:800;color:#7000FC;letter-spacing:0.12em;margin-bottom:8px">AI퍼플이의 아침브리핑 ☕</div>
-          <div style="font-size:22px;font-weight:800;color:#1E0942;line-height:1.2">전일 GLN 뉴스 모아보기</div>
+          <div style="font-size:12px;font-weight:800;color:#7000FC;letter-spacing:0.12em;margin-bottom:8px">[AI퍼플이] 아침 브리핑 ☕</div>
+          <div style="font-size:22px;font-weight:800;color:#1E0942;line-height:1.2">GLN 카페·블로그·뉴스 모아보기</div>
           <div style="font-size:15px;color:#6D28D9;margin-top:6px;font-weight:500">
-            {yesterday_kr}{urgent_badge}
+            {yesterday_kr}
           </div>
         </td>
       </tr>
@@ -429,7 +422,7 @@ def send_daily_report(to: str = ""):
 </body>
 </html>"""
 
-        subject = f"[AI퍼플이의 아침브리핑] 전일 GLN 뉴스 모아보기 ☕ ({yesterday_kr})"
+        subject = f"[AI퍼플이] 아침 브리핑 ☕ GLN 카페·블로그·뉴스 모아보기 ({yesterday_kr})"
         img_files = {"mascot": mascot_path} if os.path.isfile(mascot_path) else {}
         send_email(to, subject, html, report_type="daily", images=img_files or None)
     except Exception as e:

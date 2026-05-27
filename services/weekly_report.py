@@ -83,6 +83,7 @@ def build_weekly_report():
         SELECT p.title, p.link, a.summary, a.category, a.sentiment, a.importance_score
         FROM posts p LEFT JOIN ai_analysis a ON p.id = a.post_id
         WHERE DATE(p.created_at) BETWEEN ? AND ? AND a.importance_score IS NOT NULL
+          AND (a.is_relevant IS NULL OR a.is_relevant = 1)
         ORDER BY a.importance_score DESC LIMIT 5
     """, (date_from, date_to)).fetchall()
 
@@ -92,7 +93,7 @@ def build_weekly_report():
     ).fetchone()[0]
     conn.close()
 
-    base_url = os.getenv("BASE_URL", "http://192.168.1.60:5001")
+    base_url = os.getenv("BASE_URL", "http://192.168.1.30:5001")
 
     def sentiment_badge(s):
         colors = {"positive": ("#DCFCE7","#16A34A","긍정"), "neutral": ("#F3F4F6","#6B7280","중립"), "negative": ("#FEE2E2","#DC2626","부정")}
