@@ -46,8 +46,8 @@ COUNTRY_LABEL = {
     "cambodia":    "캄보디아",
     "mongolia":    "몽골",
     "laos":        "라오스",
-    "guam":        "괌",
-    "saipan":      "사이판",
+    "guam":        "괌사이판",
+    "saipan":      "괌사이판",
 }
 
 
@@ -97,7 +97,8 @@ def dashboard():
     if date_to:
         query += " AND DATE(p.created_at) <= ?"; args.append(date_to)
     if country:
-        _kws = [k for k, v in _COUNTRY_MAP.items() if v == country]
+        _targets = ('guam', 'saipan') if country == 'guam_saipan' else (country,)
+        _kws = [k for k, v in _COUNTRY_MAP.items() if v in _targets]
         _cc  = " OR ".join(f"(p.title LIKE ? OR p.description LIKE ?)" for _ in _kws)
         if _cc:
             query += f" AND ({_cc})"
@@ -128,7 +129,7 @@ def dashboard():
         count_query += " AND DATE(p.created_at) >= ?"; count_args.append(date_from)
     if date_to:
         count_query += " AND DATE(p.created_at) <= ?"; count_args.append(date_to)
-    if country and _cc:
+    if country and _kws and _cc:
         count_query += f" AND ({_cc})"
         for _kw in _kws:
             count_args.extend([f"%{_kw}%", f"%{_kw}%"])

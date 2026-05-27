@@ -259,7 +259,7 @@
       <div class="filter-bar" style="overflow-x:auto;flex-wrap:nowrap;padding:8px 16px;gap:5px;border-top:0.5px solid #F0EDF7">
         <span style="font-size:10px;font-weight:700;color:#918DA0;white-space:nowrap;align-self:center;margin-right:2px">국가</span>
         <div class="filter-sep"></div>
-        {% set _clist = [('japan','일본','ne','#DC2626'),('china','중국','ne','#DC2626'),('hongkong','홍콩','ne','#DC2626'),('macau','마카오','ne','#DC2626'),('taiwan','대만','tw','#2563EB'),('thailand','태국','sea','#059669'),('vietnam','베트남','sea','#059669'),('cambodia','캄보디아','sea','#059669'),('laos','라오스','sea','#059669'),('philippines','필리핀','phi','#7C3AED'),('singapore','싱가포르','phi','#7C3AED'),('mongolia','몽골','mn','#D97706'),('guam','괌','pac','#0891B2'),('saipan','사이판','pac','#0891B2')] %}
+        {% set _clist = [('vietnam','베트남','sea','#059669'),('china','중국','ne','#DC2626'),('hongkong','홍콩','ne','#DC2626'),('macau','마카오','ne','#DC2626'),('philippines','필리핀','phi','#7C3AED'),('thailand','태국','sea','#059669'),('laos','라오스','sea','#059669'),('japan','일본','ne','#DC2626'),('taiwan','대만','tw','#2563EB'),('mongolia','몽골','mn','#D97706'),('singapore','싱가포르','phi','#7C3AED'),('cambodia','캄보디아','sea','#059669'),('guam_saipan','괌사이판','pac','#0891B2')] %}
         {% for code, label, cls, clr in _clist %}
         <a href="?country={{ code }}&{{ _fchan }}"
            class="filter-chip-country"

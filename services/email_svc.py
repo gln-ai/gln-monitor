@@ -34,7 +34,7 @@ _COUNTRY_LABEL = {
     "vietnam": "베트남", "philippines": "필리핀", "singapore": "싱가포르",
     "hongkong": "홍콩", "macau": "마카오", "china": "중국",
     "cambodia": "캄보디아", "mongolia": "몽골", "laos": "라오스",
-    "guam": "괌", "saipan": "사이판",
+    "guam": "괌사이판", "saipan": "괌사이판",
 }
 
 # (배경색, 텍스트색, 보더색)
@@ -325,7 +325,7 @@ def send_daily_report(to: str = ""):
             ("#F0FDF4", "#059669", "#BBF7D0", "동남아A"),
             ("#F5F3FF", "#7C3AED", "#DDD6FE", "동남아B"),
             ("#FFFBEB", "#D97706", "#FDE68A", "몽골"),
-            ("#F0F9FF", "#0891B2", "#BAE6FD", "태평양"),
+            ("#F0F9FF", "#0891B2", "#BAE6FD", "괌사이판"),
             ("#F9FAFB", "#6B7280", "#E5E7EB", "공통"),
         ]
         legend_html = " ".join(
