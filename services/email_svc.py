@@ -343,33 +343,28 @@ def send_daily_report(to: str = ""):
         ch_colors = {"카페": "#1D4ED8", "블로그": "#059669", "뉴스": "#D97706"}
         sections_html = ""
         for ch, posts in cat_posts.items():
-            color    = ch_colors.get(ch, "#6B7280")
-            top      = posts[:3]
-            more     = posts[3:]
+            color = ch_colors.get(ch, "#6B7280")
+            top   = posts[:3]
+            more  = posts[3:]
             top_rows = "".join(post_row(p) for p in top)
 
-            more_block = ""
+            more_badge = ""
             if more:
-                more_rows = "".join(post_row(p) for p in more)
-                more_block = f"""
-              <details>
-                <summary style="cursor:pointer;padding:9px 10px;font-size:12px;
-                  color:#7000FC;font-weight:700;background:#F5F3FF;
-                  border-top:1px solid #EDE7FF;list-style:none;outline:none;
-                  border-radius:0 0 6px 6px">
-                  ▾ {len(more)}건 더보기
-                </summary>
-                {table_header()}{more_rows}</tbody></table>
-              </details>"""
+                more_badge = (
+                    f'<span style="font-size:11px;color:#7000FC;font-weight:600;'
+                    f'background:#EDE7FF;padding:2px 8px;border-radius:99px;'
+                    f'margin-left:6px">+{len(more)}건</span>'
+                )
 
             sections_html += f"""
             <div style="margin-bottom:28px">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-                <span style="font-size:14px;font-weight:700;color:{color}">{ch}</span>
-                <span style="font-size:12px;color:#9CA3AF">{len(posts)}건</span>
-              </div>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px">
+                <tr>
+                  <td style="font-size:15px;font-weight:700;color:{color};padding:0">{ch}</td>
+                  <td style="font-size:12px;color:#9CA3AF;padding:0 0 0 10px;white-space:nowrap">{len(posts)}건{more_badge}</td>
+                </tr>
+              </table>
               {table_header()}{top_rows}</tbody></table>
-              {more_block}
             </div>"""
 
 
