@@ -343,28 +343,18 @@ def send_daily_report(to: str = ""):
         ch_colors = {"카페": "#1D4ED8", "블로그": "#059669", "뉴스": "#D97706"}
         sections_html = ""
         for ch, posts in cat_posts.items():
-            color = ch_colors.get(ch, "#6B7280")
-            top   = posts[:3]
-            more  = posts[3:]
-            top_rows = "".join(post_row(p) for p in top)
-
-            more_badge = ""
-            if more:
-                more_badge = (
-                    f'<span style="font-size:11px;color:#7000FC;font-weight:600;'
-                    f'background:#EDE7FF;padding:2px 8px;border-radius:99px;'
-                    f'margin-left:6px">+{len(more)}건</span>'
-                )
+            color    = ch_colors.get(ch, "#6B7280")
+            all_rows = "".join(post_row(p) for p in posts)
 
             sections_html += f"""
             <div style="margin-bottom:28px">
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px">
                 <tr>
                   <td style="font-size:15px;font-weight:700;color:{color};padding:0">{ch}</td>
-                  <td style="font-size:12px;color:#9CA3AF;padding:0 0 0 10px;white-space:nowrap">{len(posts)}건{more_badge}</td>
+                  <td style="font-size:12px;color:#9CA3AF;padding:0 0 0 10px;white-space:nowrap">{len(posts)}건</td>
                 </tr>
               </table>
-              {table_header()}{top_rows}</tbody></table>
+              {table_header()}{all_rows}</tbody></table>
             </div>"""
 
 
