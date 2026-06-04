@@ -63,13 +63,13 @@
   .issue-filter-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; }
   .content { padding: 20px 24px 40px; }
   .stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 16px; }
-  .stat-card { background: #fff; border-radius: 14px; padding: 16px 18px; border: 0.5px solid #E4E1EE; }
+  .stat-card { background: #fff; border-radius: 14px; padding: 16px 18px; border: 0.5px solid #E4E1EE; border-left: 3px solid #7000FC; }
   .stat-label { font-size: 11px; color: #918DA0; margin-bottom: 4px; }
   .stat-value { font-size: 26px; font-weight: 700; color: #130D2A; line-height: 1; }
   .stat-change { font-size: 11px; margin-top: 4px; }
   .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
   .chart-card { background: #fff; border-radius: 14px; border: 0.5px solid #E4E1EE; padding: 18px 20px; }
-  .chart-title { font-size: 13px; font-weight: 600; color: #130D2A; margin-bottom: 16px; }
+  .chart-title { font-size: 13px; font-weight: 700; color: #1E0942; margin-bottom: 16px; }
   .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .chart-header .chart-title { margin-bottom: 0; }
   .chart-date-range { font-size: 10px; color: #AAA7B8; font-weight: 500; }
@@ -152,6 +152,20 @@
       <button class="date-apply-btn" onclick="applyInsightDate()">조회</button>
     </div>
 
+    <!-- 리포트 연계 현황 배너 -->
+    <div style="background:#EDE7FF;border:0.5px solid #DDD6FE;border-radius:14px;padding:16px 20px;margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:0">
+      <div style="padding-right:16px;border-right:0.5px solid #DDD6FE">
+        <div style="font-size:11px;font-weight:700;color:#7000FC;margin-bottom:6px">☕ 오늘 브리핑 <span id="banner-today-date" style="color:#9CA3AF;font-weight:400"></span></div>
+        <div id="banner-today-stats" style="font-size:12px;color:#4C1D95;line-height:1.7;margin-bottom:8px">로딩 중...</div>
+        <button onclick="sendDailyReport(this)" style="font-size:11px;font-weight:600;color:#7000FC;background:#fff;border:1px solid #DDD6FE;border-radius:8px;padding:5px 14px;cursor:pointer">지금 발송</button>
+      </div>
+      <div style="padding-left:16px">
+        <div style="font-size:11px;font-weight:700;color:#7000FC;margin-bottom:6px">📊 기간 현황 <span id="banner-period-label" style="color:#9CA3AF;font-weight:400"></span></div>
+        <div id="banner-period-stats" style="font-size:12px;color:#4C1D95;line-height:1.7;margin-bottom:8px">로딩 중...</div>
+        <button onclick="sendWeeklyReport(this)" style="font-size:11px;font-weight:600;color:#7000FC;background:#fff;border:1px solid #DDD6FE;border-radius:8px;padding:5px 14px;cursor:pointer">주간 리포트 발송</button>
+      </div>
+    </div>
+
     <!-- 브랜드 헬스 + 전기간 비교 -->
     <div style="display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-bottom:10px">
       <!-- 브랜드 헬스 스코어 -->
@@ -159,7 +173,7 @@
         <div style="font-size:11px;color:#918DA0;margin-bottom:8px;letter-spacing:0.05em;text-transform:uppercase">브랜드 헬스 스코어</div>
         <div style="position:relative;width:90px;height:90px;margin-bottom:8px">
           <svg viewBox="0 0 36 36" width="90" height="90" style="transform:rotate(-90deg)">
-            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#F0EDF7" stroke-width="3"/>
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#EDE7FF" stroke-width="3"/>
             <circle id="health-arc" cx="18" cy="18" r="15.9" fill="none" stroke="#7000FC" stroke-width="3"
               stroke-dasharray="0 100" stroke-linecap="round"/>
           </svg>
@@ -255,32 +269,94 @@
       </div>
     </div>
 
-    <!-- 발굴된 이슈 -->
+    <!-- 카테고리별 이슈 요약 -->
     <div style="background:#fff;border:0.5px solid #E4E1EE;border-radius:14px;padding:16px 20px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
         <div>
-          <div class="chart-title" style="margin:0">🔍 발굴된 이슈</div>
+          <div class="chart-title" style="margin:0">🔍 카테고리별 이슈 요약</div>
           <div style="font-size:11px;color:#918DA0;margin-top:2px" id="issue-subtitle">기간 내 주목 언급</div>
         </div>
         <a href="/" style="font-size:11px;color:#7000FC;text-decoration:none;font-weight:600">모니터링 보기 →</a>
       </div>
-      <div class="issue-filter-btns">
-        <button class="issue-filter-btn active" onclick="loadIssues('all',this)">전체</button>
-        <button class="issue-filter-btn" onclick="loadIssues('urgent',this)">긴급</button>
-        <button class="issue-filter-btn" onclick="loadIssues('negative',this)">부정 감성</button>
-        <button class="issue-filter-btn" onclick="loadIssues('no_content',this)">콘텐츠 미생성</button>
-      </div>
-      <div id="issue-list"><div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">로딩 중...</div></div>
+      <div id="issue-summary-list"><div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">로딩 중...</div></div>
     </div>
+
+    <!-- 국가별 월별 관광객 추이 -->
+    <div style="background:#fff;border:0.5px solid #E4E1EE;border-radius:14px;padding:16px 20px;margin-top:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div>
+          <div class="chart-title" style="margin:0">✈️ GLN 국가별 관광객 월별 추이</div>
+          <div style="font-size:11px;color:#918DA0;margin-top:2px">일본: JNTO 자동수집 · 기타국가: 수동 업로드 (한국인 방문객 기준)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="tourism-updated" style="font-size:10px;color:#C4C1D4"></span>
+          <button onclick="document.getElementById('tourism-upload-panel').style.display=document.getElementById('tourism-upload-panel').style.display==='none'?'block':'none'"
+            style="font-size:10px;color:#7000FC;border:0.5px solid #7000FC;background:#fff;padding:3px 10px;border-radius:6px;cursor:pointer">+ 업로드</button>
+        </div>
+      </div>
+      <!-- 업로드 패널 -->
+      <div id="tourism-upload-panel" style="display:none;background:#FDFCFF;border:0.5px solid #E4E1EE;border-radius:10px;padding:14px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:8px">Excel 업로드</div>
+        <div style="font-size:10px;color:#918DA0;margin-bottom:10px;line-height:1.7">
+          <b>모드 ① JNTO Excel</b> — JNTO 공식 xlsx 파일 그대로 업로드<br>
+          <b>모드 ② 간편 양식</b> — A열: YYYY-MM, B열: 국가코드(japan 등), C열: 방문자수(명)
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+          <select id="upload-mode" style="font-size:11px;padding:4px 8px;border:0.5px solid #D1D5DB;border-radius:6px">
+            <option value="jnto">JNTO Excel (자동파싱)</option>
+            <option value="simple">간편 양식</option>
+          </select>
+          <select id="upload-country" style="font-size:11px;padding:4px 8px;border:0.5px solid #D1D5DB;border-radius:6px">
+            <option value="japan">일본</option><option value="thailand">태국</option>
+            <option value="vietnam">베트남</option><option value="taiwan">대만</option>
+            <option value="philippines">필리핀</option><option value="singapore">싱가포르</option>
+            <option value="hongkong">홍콩</option><option value="macau">마카오</option>
+            <option value="china">중국</option><option value="cambodia">캄보디아</option>
+            <option value="mongolia">몽골</option><option value="laos">라오스</option>
+            <option value="guam">괌</option><option value="saipan">사이판</option>
+          </select>
+          <input type="file" id="upload-file" accept=".xlsx,.xls"
+            style="font-size:10px;border:0.5px solid #D1D5DB;border-radius:6px;padding:3px 6px">
+          <button onclick="doTourismUpload()"
+            style="font-size:11px;background:#7000FC;color:#fff;border:none;padding:5px 14px;border-radius:6px;cursor:pointer">업로드</button>
+          <span id="upload-result" style="font-size:10px;color:#059669"></span>
+        </div>
+      </div>
+      <!-- 국가 토글 칩 -->
+      <div id="tourism-chips" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div id="tourism-empty" style="display:none;text-align:center;padding:32px 16px">
+        <div style="font-size:28px;margin-bottom:8px">📂</div>
+        <div style="font-size:12px;color:#918DA0">아직 데이터가 없습니다.<br>일본 데이터는 자동 수집됩니다. 기타 국가는 + 업로드 버튼을 사용하세요.</div>
+      </div>
+      <canvas id="tourismChart" height="160"></canvas>
+    </div>
+
   </div>
 </div>
 
 <script>
 let dailyChart = null;
 let sentimentChart = null;
+let tourismChart   = null;
 let currentDateFrom = '';
 let currentDateTo   = '';
-let currentIssueFilter = 'all';
+let tourismRawData  = {};
+let activeCountries = new Set(['japan','thailand','vietnam','taiwan','philippines']);
+
+const CAT_COLOR = { '불만': '#DC2626', '문의': '#D97706', '후기': '#059669', '정보공유': '#7000FC', '기타': '#9CA3AF' };
+
+const TOURISM_COLORS = {
+  japan:'#E11D48', thailand:'#D97706', vietnam:'#059669', taiwan:'#0EA5E9',
+  philippines:'#8B5CF6', singapore:'#06B6D4', hongkong:'#F59E0B',
+  macau:'#10B981', china:'#DC2626', cambodia:'#7C3AED',
+  mongolia:'#0284C7', laos:'#65A30D', guam:'#0891B2', saipan:'#DB2777',
+};
+const TOURISM_LABEL = {
+  japan:'일본', thailand:'태국', vietnam:'베트남', taiwan:'대만',
+  philippines:'필리핀', singapore:'싱가포르', hongkong:'홍콩',
+  macau:'마카오', china:'중국', cambodia:'캄보디아',
+  mongolia:'몽골', laos:'라오스', guam:'괌', saipan:'사이판',
+};
 
 function _fmt(d) {
   return d.getFullYear() + '-' +
@@ -307,7 +383,7 @@ function applyInsightDate() {
   // 수동 입력 조회 시 프리셋 버튼 active 해제
   document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
   loadData();
-  loadIssues(currentIssueFilter);
+  loadIssueSummary();
 }
 
 async function loadData() {
@@ -327,6 +403,7 @@ async function loadData() {
   renderSentimentChart(data.sentiment);
   renderKwSentiment(advData.kw_sentiment);
   renderKeywords(data.keywords);
+  updateBannerPeriod(advData);
   // subtitle & chart date labels
   if (currentDateFrom && currentDateTo) {
     const dateLabel = currentDateFrom + ' ~ ' + currentDateTo;
@@ -336,57 +413,133 @@ async function loadData() {
   }
 }
 
-async function loadIssues(filter, btn) {
-  currentIssueFilter = filter || 'all';
-  if (btn) {
-    document.querySelectorAll('.issue-filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+async function loadTodayBanner() {
+  const today = _fmt(new Date());
+  document.getElementById('banner-today-date').textContent = '(' + today.slice(5).replace('-', '/') + ')';
+  try {
+    const r = await fetch(`/api/insights?date_from=${today}&date_to=${today}`);
+    const d = await r.json();
+    const total    = d.summary?.total    ?? 0;
+    const urgent   = d.summary?.urgent   ?? 0;
+    const negative = d.summary?.negative ?? 0;
+    document.getElementById('banner-today-stats').innerHTML =
+      `<span style="font-weight:600">${total}건</span> 수집 &nbsp;·&nbsp; ` +
+      (urgent > 0 ? `<span style="color:#DC2626;font-weight:600">긴급 ${urgent}건</span>` : '긴급 없음') +
+      ` &nbsp;·&nbsp; ` +
+      (negative > 0 ? `<span style="color:#D97706">부정 ${negative}건</span>` : '부정 없음');
+  } catch(e) {
+    document.getElementById('banner-today-stats').textContent = '데이터 없음';
   }
-  const params = new URLSearchParams({ filter: currentIssueFilter });
-  if (currentDateFrom) params.set('date_from', currentDateFrom);
-  if (currentDateTo)   params.set('date_to',   currentDateTo);
-  document.getElementById('issue-list').innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">로딩 중...</div>';
-  const res    = await fetch('/api/insights/issues?' + params);
-  const issues = await res.json();
-  renderIssues(issues);
 }
 
-function renderIssues(issues) {
+function updateBannerPeriod(advData) {
+  const from = currentDateFrom, to = currentDateTo;
+  const label = (from && to) ? `(${from.slice(5).replace('-','/')} ~ ${to.slice(5).replace('-','/')})` : '';
+  document.getElementById('banner-period-label').textContent = label;
+  const total  = advData.comparison?.total?.current  ?? '-';
+  const urgent = advData.comparison?.urgent?.current ?? '-';
+  const health = advData.health_score ?? '-';
+  document.getElementById('banner-period-stats').innerHTML =
+    `<span style="font-weight:600">${total}건</span> 수집 &nbsp;·&nbsp; ` +
+    (typeof urgent === 'number' && urgent > 0
+      ? `<span style="color:#DC2626;font-weight:600">긴급 ${urgent}건</span>`
+      : `긴급 ${urgent}건`) +
+    ` &nbsp;·&nbsp; 헬스 <span style="font-weight:600;color:#7000FC">${health}</span>`;
+}
+
+async function sendDailyReport(btn) {
+  btn.textContent = '발송 중...'; btn.disabled = true;
+  try {
+    await fetch('/api/report', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    btn.textContent = '발송됨 ✓';
+  } catch(e) { btn.textContent = '오류'; }
+  setTimeout(() => { btn.textContent = '지금 발송'; btn.disabled = false; }, 3000);
+}
+
+async function sendWeeklyReport(btn) {
+  btn.textContent = '발송 중...'; btn.disabled = true;
+  try {
+    await fetch('/api/report/weekly', { method: 'POST' });
+    btn.textContent = '발송됨 ✓';
+  } catch(e) { btn.textContent = '오류'; }
+  setTimeout(() => { btn.textContent = '주간 리포트 발송'; btn.disabled = false; }, 3000);
+}
+
+async function loadIssueSummary() {
+  const params = new URLSearchParams({ filter: 'all' });
+  if (currentDateFrom) params.set('date_from', currentDateFrom);
+  if (currentDateTo)   params.set('date_to',   currentDateTo);
+  document.getElementById('issue-summary-list').innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">로딩 중...</div>';
+  try {
+    const res    = await fetch('/api/insights/issues?' + params);
+    const issues = await res.json();
+    renderIssueSummary(issues);
+  } catch(e) {
+    document.getElementById('issue-summary-list').innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">오류 발생</div>';
+  }
+}
+
+function renderIssueSummary(issues) {
   if (!issues || issues.length === 0) {
-    document.getElementById('issue-list').innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">이슈 없음</div>';
+    document.getElementById('issue-summary-list').innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">이슈 없음</div>';
     return;
   }
-  const sentimentColor = { positive: '#7000FC', neutral: '#918DA0', negative: '#DC2626' };
-  const sentimentLabel = { positive: '긍정', neutral: '중립', negative: '부정' };
-  const html = issues.map(issue => {
-    const sc    = issue.importance_score || 0;
-    const senti = issue.sentiment || 'neutral';
-    const badge = `<span style="font-size:10px;padding:1px 7px;border-radius:20px;background:${sentimentColor[senti]}22;color:${sentimentColor[senti]};font-weight:600">${sentimentLabel[senti]}</span>`;
-    const urgBadge = issue.is_urgent ? `<span style="font-size:10px;padding:1px 7px;border-radius:20px;background:#FEE2E2;color:#DC2626;font-weight:600;margin-left:4px">긴급</span>` : '';
-    const contentBtn = issue.content_count > 0
-      ? `<span style="font-size:11px;color:#918DA0">콘텐츠 ${issue.content_count}건</span>`
-      : '';
-    const sourceName = [issue.cafe_name, issue.keyword].filter(Boolean).join(' · ');
-    return `
-      <div class="issue-item">
-        <div class="issue-score">
-          <span class="issue-score-num">${sc}</span>
-          <span class="issue-score-label">중요도</span>
-        </div>
-        <div class="issue-body">
-          <div class="issue-title">
-            <a href="${issue.link || '#'}" target="_blank">${issue.title || '(제목 없음)'}</a>
-            ${badge}${urgBadge}
-          </div>
-          ${issue.summary ? `<div class="issue-summary">${issue.summary}</div>` : ''}
-          <div class="issue-source">
-            ${sourceName ? `<span class="issue-source-name">${sourceName}</span>` : ''}
-            <span class="issue-source-date">${(issue.created_at || '').slice(0,10)}</span>
-          </div>
-        </div>
-      </div>`;
+  const groups = {};
+  for (const issue of issues) {
+    const cat = issue.category || '기타';
+    if (!groups[cat]) groups[cat] = { issues: [], total: 0, urgent: 0, negative: 0 };
+    groups[cat].issues.push(issue);
+    groups[cat].total++;
+    if (issue.is_urgent)              groups[cat].urgent++;
+    if (issue.sentiment === 'negative') groups[cat].negative++;
+  }
+  const catOrder = ['불만', '문의', '후기', '정보공유', '기타'];
+  const sorted   = catOrder.filter(c => groups[c]).concat(Object.keys(groups).filter(c => !catOrder.includes(c)));
+  const maxTotal = Math.max(...sorted.map(c => groups[c].total));
+  const sentLabel = { positive: '긍정', neutral: '중립', negative: '부정' };
+  const sentColor = { positive: '#7000FC', neutral: '#9CA3AF', negative: '#DC2626' };
+
+  const barsHtml = sorted.map(cat => {
+    const g     = groups[cat];
+    const pct   = Math.round(g.total / maxTotal * 100);
+    const color = CAT_COLOR[cat] || '#9CA3AF';
+    const badges = [
+      g.urgent   > 0 ? `<span style="font-size:9px;color:#DC2626;font-weight:600">긴급 ${g.urgent}</span>`   : '',
+      g.negative > 0 ? `<span style="font-size:9px;color:#D97706">부정 ${g.negative}</span>` : '',
+    ].filter(Boolean).join('<span style="color:#E5E7EB"> · </span>');
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0">
+      <div style="width:64px;font-size:11px;font-weight:600;color:#374151;text-align:right;flex-shrink:0">${cat}</div>
+      <div style="flex:1;height:8px;background:#F3F4F6;border-radius:4px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${color};border-radius:4px;transition:width 0.5s"></div>
+      </div>
+      <div style="font-size:11px;font-weight:600;color:#374151;width:24px;text-align:right;flex-shrink:0">${g.total}</div>
+      <div style="min-width:80px;display:flex;gap:4px;flex-wrap:wrap">${badges || '<span style="font-size:9px;color:#D1D5DB">-</span>'}</div>
+    </div>`;
   }).join('');
-  document.getElementById('issue-list').innerHTML = html;
+
+  const cardsHtml = sorted.map(cat => {
+    const g     = groups[cat];
+    const color = CAT_COLOR[cat] || '#9CA3AF';
+    const top   = [...g.issues].sort((a, b) => (b.importance_score || 0) - (a.importance_score || 0))[0];
+    const s     = top.sentiment || 'neutral';
+    return `<div style="background:#FDFCFF;border:0.5px solid #E4E1EE;border-radius:12px;padding:14px;border-left:3px solid ${color}">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:${color};background:${color}1A;padding:2px 9px;border-radius:99px">${cat}</span>
+        <span style="font-size:10px;color:#918DA0;margin-left:auto">${g.total}건</span>
+      </div>
+      <a href="${top.link || '#'}" target="_blank" style="font-size:12px;font-weight:600;color:#130D2A;text-decoration:none;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${top.title || '(제목 없음)'}</a>
+      ${top.summary ? `<div style="font-size:11px;color:#5E5A71;line-height:1.5;margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${top.summary}</div>` : ''}
+      <div style="display:flex;align-items:center;gap:5px;margin-top:8px">
+        <span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:99px;background:${sentColor[s]}1A;color:${sentColor[s]}">${sentLabel[s]}</span>
+        ${top.is_urgent ? `<span style="font-size:9px;font-weight:600;padding:1px 6px;border-radius:99px;background:#FEE2E2;color:#DC2626">긴급</span>` : ''}
+        <span style="font-size:10px;color:#C4C1D4;margin-left:auto">${(top.created_at||'').slice(0,10)}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('issue-summary-list').innerHTML =
+    `<div style="margin-bottom:16px">${barsHtml}</div>` +
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">${cardsHtml}</div>`;
 }
 
 function renderChangeLabel(change, invertColor) {
@@ -515,8 +668,142 @@ function renderKeywords(keywords) {
   document.getElementById('kw-list').innerHTML = html || '<div class="loading">데이터 없음</div>';
 }
 
+// ── 관광객 추이 차트 ────────────────────────────────────────────
+async function loadTourismChart() {
+  try {
+    const res  = await fetch('/api/insights/tourism-monthly?n=36');
+    const data = await res.json();
+    const canvas = document.getElementById('tourismChart');
+    const chips  = document.getElementById('tourism-chips');
+    const empty  = document.getElementById('tourism-empty');
+
+    if (!data.months || data.months.length === 0) {
+      canvas.style.display = 'none';
+      chips.style.display  = 'none';
+      empty.style.display  = 'block';
+      return;
+    }
+    empty.style.display  = 'none';
+    canvas.style.display = 'block';
+    tourismRawData = data;
+    if (data.last_updated)
+      document.getElementById('tourism-updated').textContent = '업데이트: ' + data.last_updated;
+    buildTourismChips();
+    renderTourismChart();
+  } catch(e) {
+    console.warn('[관광통계] 로드 실패:', e);
+  }
+}
+
+async function doTourismUpload() {
+  const fileEl   = document.getElementById('upload-file');
+  const mode     = document.getElementById('upload-mode').value;
+  const country  = document.getElementById('upload-country').value;
+  const resultEl = document.getElementById('upload-result');
+  if (!fileEl.files.length) { resultEl.textContent = '파일을 선택하세요'; return; }
+
+  const fd = new FormData();
+  fd.append('file', fileEl.files[0]);
+  fd.append('mode', mode);
+  fd.append('country', country);
+
+  resultEl.textContent = '업로드 중...';
+  resultEl.style.color = '#918DA0';
+  try {
+    const r = await fetch('/api/admin/tourism-upload', { method: 'POST', body: fd });
+    const d = await r.json();
+    if (d.ok) {
+      resultEl.textContent = `✓ ${d.saved}건 저장`;
+      resultEl.style.color = '#059669';
+      await loadTourismChart();
+    } else {
+      resultEl.textContent = '오류: ' + (d.error || '알 수 없음');
+      resultEl.style.color = '#DC2626';
+    }
+  } catch(e) {
+    resultEl.textContent = '업로드 실패';
+    resultEl.style.color = '#DC2626';
+  }
+}
+
+function buildTourismChips() {
+  const container = document.getElementById('tourism-chips');
+  const allCodes  = Object.keys(tourismRawData.countries || {})
+    .sort((a, b) => {
+      const sumA = (tourismRawData.countries[a] || []).reduce((s,v) => s+v, 0);
+      const sumB = (tourismRawData.countries[b] || []).reduce((s,v) => s+v, 0);
+      return sumB - sumA;
+    });
+  container.innerHTML = allCodes.map(code => {
+    const color  = TOURISM_COLORS[code] || '#9CA3AF';
+    const label  = TOURISM_LABEL[code]  || code;
+    const active = activeCountries.has(code);
+    return `<button id="tchip-${code}" onclick="toggleTourismCountry('${code}')"
+      style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;cursor:pointer;border:1.5px solid ${color};
+             color:${active ? '#fff' : color};background:${active ? color : 'transparent'};transition:all 0.15s">
+      ${label}
+    </button>`;
+  }).join('');
+}
+
+function toggleTourismCountry(code) {
+  if (activeCountries.has(code)) {
+    if (activeCountries.size > 1) activeCountries.delete(code);
+  } else {
+    activeCountries.add(code);
+  }
+  buildTourismChips();
+  renderTourismChart();
+}
+
+function renderTourismChart() {
+  const ctx = document.getElementById('tourismChart').getContext('2d');
+  if (tourismChart) tourismChart.destroy();
+  const months  = (tourismRawData.months || []);
+  const datasets = [...activeCountries].map(code => ({
+    label:           TOURISM_LABEL[code] || code,
+    data:            (tourismRawData.countries[code] || []),
+    borderColor:     TOURISM_COLORS[code] || '#9CA3AF',
+    backgroundColor: (TOURISM_COLORS[code] || '#9CA3AF') + '18',
+    borderWidth:     2,
+    pointRadius:     3,
+    pointHoverRadius:5,
+    tension:         0.3,
+    fill:            false,
+  }));
+  tourismChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: months.map(m => m.slice(2).replace('-', '/')), datasets },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      spanGaps: true,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 12, padding: 10 } },
+        tooltip: {
+          callbacks: {
+            title: items => months[items[0].dataIndex],
+            label: ctx => ctx.raw == null ? null : `${ctx.dataset.label}: ${(ctx.raw / 10000).toFixed(1)}만명`
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#918DA0', maxTicksLimit: 18 } },
+        y: {
+          grid: { color: '#F0EDF7' },
+          ticks: {
+            font: { size: 10 }, color: '#918DA0',
+            callback: v => (v >= 10000 ? (v / 10000).toFixed(0) + '만' : v.toLocaleString())
+          }
+        }
+      }
+    }
+  });
+}
+
 // init with 7-day range
 setInsightRange(6, 0, document.getElementById('btn-7d'));
+loadTodayBanner();
+loadTourismChart();
 </script>
 </body>
 </html>

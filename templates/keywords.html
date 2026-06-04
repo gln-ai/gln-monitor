@@ -150,6 +150,32 @@
       </div>
     </div>
 
+    <!-- 리포트 수신자 관리 -->
+    <div class="card" style="margin-top:8px">
+      <div style="font-size:13px;font-weight:700;color:#130D2A;margin-bottom:4px">일일 리포트 수신자 관리</div>
+      <div style="font-size:11px;color:#918DA0;margin-bottom:16px">개별 발송 (1인 1통) · 줄바꿈 또는 쉼표로 구분</div>
+
+      <div style="margin-bottom:14px">
+        <div style="font-size:12px;font-weight:600;color:#130D2A;margin-bottom:6px">📅 평일 수신자 (월~금)</div>
+        <textarea id="inp-report_to_weekday" rows="5"
+          placeholder="email@example.com&#10;email2@example.com"
+          style="width:100%;box-sizing:border-box;border:0.5px solid #DAD9EA;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:vertical;outline:none;color:#130D2A"></textarea>
+        <div id="weekday-count" style="font-size:10px;color:#918DA0;margin-top:4px"></div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;font-weight:600;color:#130D2A;margin-bottom:6px">🏖️ 주말 수신자 (토~일)</div>
+        <textarea id="inp-report_to_weekend" rows="3"
+          placeholder="email@example.com"
+          style="width:100%;box-sizing:border-box;border:0.5px solid #DAD9EA;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:vertical;outline:none;color:#130D2A"></textarea>
+        <div id="weekend-count" style="font-size:10px;color:#918DA0;margin-top:4px"></div>
+      </div>
+
+      <div style="text-align:right">
+        <button class="btn btn-primary" onclick="saveReportRecipients()">저장</button>
+      </div>
+    </div>
+
     <!-- 스케줄 현황 -->
     <div class="card" style="margin-top:8px">
       <div style="font-size:13px;font-weight:700;color:#130D2A;margin-bottom:14px">자동 실행 스케줄</div>
@@ -162,7 +188,7 @@
         <div style="background:#F6F5FF;border-radius:10px;padding:12px 14px">
           <div style="font-size:10px;color:#918DA0;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">일일 리포트</div>
           <div style="font-size:14px;font-weight:700;color:#130D2A">매일 08:00</div>
-          <div style="font-size:11px;color:#918DA0;margin-top:2px">REPORT_TO 수신자</div>
+          <div style="font-size:11px;color:#918DA0;margin-top:2px">평일/주말 수신자 별도</div>
         </div>
         <div style="background:#F6F5FF;border-radius:10px;padding:12px 14px">
           <div style="font-size:10px;color:#918DA0;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">주간 리포트</div>
@@ -389,6 +415,56 @@ async function saveAlertSettings() {
 }
 
 loadAlertSettings();
+
+// ── 리포트 수신자 관리 ────────────────────────────────────────
+function _parseEmails(raw) {
+  return raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+}
+
+function _updateCount(fieldId, countId) {
+  const ta = document.getElementById(fieldId);
+  const ct = document.getElementById(countId);
+  if (!ta || !ct) return;
+  const n = _parseEmails(ta.value).length;
+  ct.textContent = n > 0 ? `${n}명` : '';
+  ta.addEventListener('input', () => {
+    ct.textContent = _parseEmails(ta.value).length > 0 ? `${_parseEmails(ta.value).length}명` : '';
+  });
+}
+
+async function loadReportRecipients() {
+  try {
+    const res  = await fetch('/api/settings');
+    const data = await res.json();
+    const wday = document.getElementById('inp-report_to_weekday');
+    const wend = document.getElementById('inp-report_to_weekend');
+    if (wday && data.report_to_weekday)
+      wday.value = _parseEmails(data.report_to_weekday).join('\n');
+    if (wend && data.report_to_weekend)
+      wend.value = _parseEmails(data.report_to_weekend).join('\n');
+    _updateCount('inp-report_to_weekday', 'weekday-count');
+    _updateCount('inp-report_to_weekend', 'weekend-count');
+  } catch(e) { console.warn('수신자 로드 실패:', e); }
+}
+
+async function saveReportRecipients() {
+  const wday = _parseEmails(document.getElementById('inp-report_to_weekday').value).join(',');
+  const wend = _parseEmails(document.getElementById('inp-report_to_weekend').value).join(',');
+  const res  = await fetch('/api/settings', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ report_to_weekday: wday, report_to_weekend: wend })
+  });
+  if (res.ok) {
+    const wn = _parseEmails(wday).length;
+    const en = _parseEmails(wend).length;
+    showToast(`저장됨 — 평일 ${wn}명 / 주말 ${en}명`);
+  } else {
+    showToast('저장 실패');
+  }
+}
+
+loadReportRecipients();
 </script>
 </body>
 </html>

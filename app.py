@@ -16,7 +16,7 @@ import config  # noqa: F401 (side-effect: .env load, sys.path update)
 
 from flask import Flask
 
-from db import init_db
+from db import init_db, get_setting
 from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp
 from services.naver import collect_all
 from services.email_svc import send_daily_report
@@ -25,6 +25,24 @@ from services.sla_reminder import send_sla_reminder
 from services.spike_detector import send_spike_alert
 from services.weekly_report import send_weekly_report
 from services.log_reporter import save_daily_report, save_weekly_report as save_weekly_log, save_monthly_report
+from services.tourism_stats import update_all as update_tourism
+from services.jnto_fetcher import fetch_jnto
+
+
+def _daily_weekday():
+    to = (get_setting("report_to_weekday") or os.getenv("REPORT_TO", "")).strip()
+    if to:
+        send_daily_report(to)
+    else:
+        print("[일일리포트] 평일 수신자 미설정 — 스킵")
+
+
+def _daily_weekend():
+    to = (get_setting("report_to_weekend") or "").strip()
+    if to:
+        send_daily_report(to)
+    else:
+        print("[일일리포트] 주말 수신자 미설정 — 스킵")
 
 app = Flask(__name__)
 app.register_blueprint(monitor_bp)
@@ -40,16 +58,20 @@ init_db()
 
 _scheduler = BackgroundScheduler(timezone="Asia/Seoul")
 _scheduler.add_job(collect_all,          "interval", hours=1,  id="collect")
-_scheduler.add_job(send_daily_report,    "cron", hour=8,  minute=0, id="daily_report")
+# [이메일 발송 일시 정지]
+# _scheduler.add_job(_daily_weekday,       "cron", day_of_week="mon-fri", hour=8, minute=0, id="daily_weekday")
+# _scheduler.add_job(_daily_weekend,       "cron", day_of_week="sat,sun",  hour=8, minute=0, id="daily_weekend")
 _scheduler.add_job(run_content_pipeline, "cron", hour=9,  minute=0, id="content_pipeline")
-_scheduler.add_job(send_sla_reminder,    "cron", hour=17, minute=0, id="sla_reminder")
-_scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
-_scheduler.add_job(send_weekly_report,   "cron", day_of_week="mon", hour=9, minute=0,  id="weekly_report")
+# _scheduler.add_job(send_sla_reminder,    "cron", hour=17, minute=0, id="sla_reminder")
+# _scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
+# _scheduler.add_job(send_weekly_report,   "cron", day_of_week="mon", hour=8, minute=0,  id="weekly_report")
 _scheduler.add_job(save_daily_report,    "cron", hour=23, minute=55,                   id="log_daily")
-_scheduler.add_job(save_weekly_log,      "cron", day_of_week="mon", hour=9, minute=5,  id="log_weekly")
-_scheduler.add_job(save_monthly_report,  "cron", day=1,  hour=9, minute=10,            id="log_monthly")
+_scheduler.add_job(save_weekly_log,      "cron", day_of_week="mon", hour=8, minute=5,  id="log_weekly")
+_scheduler.add_job(save_monthly_report,  "cron", day=1,  hour=8, minute=10,            id="log_monthly")
+_scheduler.add_job(update_tourism,       "cron", day=1,  hour=9, minute=30,            id="tourism_update")
+_scheduler.add_job(fetch_jnto,           "cron", day=15, hour=10, minute=0,            id="jnto_monthly")
 _scheduler.start()
-print("[스케줄러] 수집 1h / 일일리포트 08:00 / 주간리포트 월09:00 / 콘텐츠 09:00 / SLA 17:00 / 스파이크 1h / 로그저장 23:55")
+print("[스케줄러] 수집 1h / 콘텐츠 09:00 / 로그저장 23:55 | 이메일 발송 일시 정지")
 
 if __name__ == "__main__":
     print("\n✅ GLN 모니터링 시작!")

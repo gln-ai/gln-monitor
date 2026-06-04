@@ -71,17 +71,18 @@ def api_email_log():
 
 @reports_bp.route("/api/report/send", methods=["POST"])
 def api_report_send():
+    import os as _os
+    if _os.getenv("DISABLE_EMAIL_SEND", "false").lower() == "true":
+        return jsonify({"status": "이메일 발송 비활성화됨 (DISABLE_EMAIL_SEND=true)"})
     data        = request.get_json(silent=True) or {}
     report_type = data.get("type", "daily")
     to          = data.get("to", "").strip()
-
     if report_type == "weekly":
         from services.weekly_report import send_weekly_report
         threading.Thread(target=send_weekly_report, args=(to,), daemon=True).start()
     else:
         from services.email_svc import send_daily_report
         threading.Thread(target=send_daily_report, args=(to,), daemon=True).start()
-
     return jsonify({"status": "발송 시작됨", "type": report_type})
 
 

@@ -65,6 +65,23 @@ def init_db():
             created_at TEXT DEFAULT (datetime('now','localtime'))
         );
 
+        CREATE TABLE IF NOT EXISTS tourism_stats (
+            year_month  TEXT NOT NULL,
+            country     TEXT NOT NULL,
+            visitors    INTEGER NOT NULL,
+            fetched_at  TEXT DEFAULT (datetime('now','localtime')),
+            PRIMARY KEY (year_month, country)
+        );
+
+        CREATE TABLE IF NOT EXISTS tourism_monthly (
+            year_month  TEXT NOT NULL,
+            country     TEXT NOT NULL,
+            visitors    INTEGER NOT NULL,
+            source      TEXT DEFAULT 'upload',
+            fetched_at  TEXT DEFAULT (datetime('now','localtime')),
+            PRIMARY KEY (year_month, country)
+        );
+
         CREATE TABLE IF NOT EXISTS email_log (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             report_type TEXT,
@@ -142,6 +159,8 @@ def init_db():
         ("alert_end_hour",       "20"),
         ("daily_report_to_list", os.getenv("REPORT_TO", "")),
         ("report_to_list",       os.getenv("REPORT_TO", "")),
+        ("report_to_weekday",    os.getenv("REPORT_TO", "")),
+        ("report_to_weekend",    ""),
         ("urgent_alert_to_list", os.getenv("URGENT_ALERT_TO", "brad@glninternational.com")),
     ]:
         conn.execute(

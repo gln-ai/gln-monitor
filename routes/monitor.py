@@ -17,6 +17,7 @@ monitor_bp = Blueprint("monitor", __name__)
 
 # GLN 서비스 지원 국가 감지 (gln-content 의존성 없이 로컬 복사)
 _COUNTRY_MAP = {
+    # 국가명
     "태국": "thailand",    "방콕": "thailand",
     "일본": "japan",       "도쿄": "japan",       "오사카": "japan",
     "대만": "taiwan",      "타이베이": "taiwan",
@@ -31,6 +32,33 @@ _COUNTRY_MAP = {
     "라오스": "laos",
     "괌": "guam",
     "사이판": "saipan",
+    # 베트남 도시
+    "나트랑": "vietnam",   "냐짱": "vietnam",     "다낭": "vietnam",
+    "달랏": "vietnam",     "다랏": "vietnam",     "푸꾸옥": "vietnam",
+    "할롱": "vietnam",     "호이안": "vietnam",   "무이네": "vietnam",
+    "빈펄": "vietnam",     "사파": "vietnam",     "붕따우": "vietnam",
+    # 태국 도시
+    "치앙마이": "thailand", "파타야": "thailand",  "푸켓": "thailand",
+    "사무이": "thailand",   "끄라비": "thailand",  "후아힌": "thailand",
+    # 일본 도시
+    "교토": "japan",       "후쿠오카": "japan",    "삿포로": "japan",
+    "오키나와": "japan",   "나고야": "japan",      "나하": "japan",
+    "고베": "japan",       "요코하마": "japan",    "히로시마": "japan",
+    # 대만 도시
+    "가오슝": "taiwan",    "타이중": "taiwan",     "타이난": "taiwan",
+    "화롄": "taiwan",
+    # 필리핀 도시
+    "세부": "philippines", "보라카이": "philippines", "다바오": "philippines",
+    "팔라완": "philippines", "엘니도": "philippines",
+    # 중국 도시
+    "광저우": "china",     "선전": "china",        "청두": "china",
+    "시안": "china",       "항저우": "china",      "구이린": "china",
+    # 캄보디아 도시
+    "씨엠립": "cambodia",  "앙코르": "cambodia",
+    # 라오스 도시
+    "비엔티안": "laos",    "루앙프라방": "laos",   "방비엥": "laos",
+    # 괌
+    "투몬": "guam",
 }
 
 COUNTRY_LABEL = {
@@ -48,6 +76,14 @@ COUNTRY_LABEL = {
     "laos":        "라오스",
     "guam":        "괌사이판",
     "saipan":      "괌사이판",
+}
+
+COUNTRY_EMOJI = {
+    "vietnam":     "🇻🇳", "china":       "🇨🇳", "hongkong":    "🇭🇰",
+    "macau":       "🇲🇴", "philippines": "🇵🇭", "thailand":    "🇹🇭",
+    "laos":        "🇱🇦", "japan":       "🇯🇵", "taiwan":      "🇹🇼",
+    "mongolia":    "🇲🇳", "singapore":   "🇸🇬", "cambodia":    "🇰🇭",
+    "guam":        "🏝️",  "saipan":      "🏝️",
 }
 
 
@@ -99,11 +135,11 @@ def dashboard():
     if country:
         _targets = ('guam', 'saipan') if country == 'guam_saipan' else (country,)
         _kws = [k for k, v in _COUNTRY_MAP.items() if v in _targets]
-        _cc  = " OR ".join(f"(p.title LIKE ? OR p.description LIKE ?)" for _ in _kws)
+        _cc  = " OR ".join(f"(p.title LIKE ? OR p.description LIKE ? OR p.cafe_name LIKE ?)" for _ in _kws)
         if _cc:
             query += f" AND ({_cc})"
             for _kw in _kws:
-                args.extend([f"%{_kw}%", f"%{_kw}%"])
+                args.extend([f"%{_kw}%", f"%{_kw}%", f"%{_kw}%"])
 
     page     = int(request.args.get("page", 1))
     per_page = 50
@@ -132,7 +168,7 @@ def dashboard():
     if country and _kws and _cc:
         count_query += f" AND ({_cc})"
         for _kw in _kws:
-            count_args.extend([f"%{_kw}%", f"%{_kw}%"])
+            count_args.extend([f"%{_kw}%", f"%{_kw}%", f"%{_kw}%"])
 
     total       = conn.execute(count_query, count_args).fetchone()[0]
     total_pages = max(1, (total + per_page - 1) // per_page)
@@ -142,7 +178,9 @@ def dashboard():
     posts = []
     for r in _rows:
         d = dict(r)
-        d["country"] = _detect_country((d.get("title") or "") + " " + (d.get("description") or ""))
+        d["country"] = _detect_country(
+            (d.get("title") or "") + " " + (d.get("description") or "") + " " + (d.get("cafe_name") or "")
+        )
         posts.append(d)
 
     stats_where = "WHERE 1=1"
@@ -174,6 +212,7 @@ def dashboard():
         report_to=report_to,
         today_str=today_str,
         country_label=COUNTRY_LABEL,
+        country_emoji=COUNTRY_EMOJI,
         filters={"sentiment": sentiment, "category": category,
                  "urgent": urgent, "date_from": date_from, "date_to": date_to,
                  "channel": channel, "reply_status": reply_status, "country": country},
@@ -253,8 +292,13 @@ def api_process():
 
 @monitor_bp.route("/api/report", methods=["POST"])
 def api_report():
-    data = request.get_json(silent=True) or {}
-    to   = data.get("to", "").strip() or os.getenv("REPORT_TO", "")
+    if os.getenv("DISABLE_EMAIL_SEND", "false").lower() == "true":
+        return jsonify({"status": "이메일 발송 비활성화됨 (DISABLE_EMAIL_SEND=true)"})
+    import datetime as _dt
+    data    = request.get_json(silent=True) or {}
+    weekday = _dt.datetime.now().weekday()
+    setting_key = "report_to_weekend" if weekday >= 5 else "report_to_weekday"
+    to = data.get("to", "").strip() or (get_setting(setting_key) or os.getenv("REPORT_TO", ""))
     print(f"[API] 리포트 발송 요청 — 수신자: {to}", flush=True)
     threading.Thread(target=send_daily_report, args=(to,), daemon=True).start()
     return jsonify({"status": "리포트 발송 시작됨"})
@@ -522,3 +566,120 @@ def api_insights_advanced():
         "date_from": date_from,
         "date_to":   date_to,
     })
+
+
+@monitor_bp.route("/api/report/weekly", methods=["POST"])
+def api_weekly_report():
+    if os.getenv("DISABLE_EMAIL_SEND", "false").lower() == "true":
+        return jsonify({"status": "이메일 발송 비활성화됨 (DISABLE_EMAIL_SEND=true)"})
+    from services.weekly_report import send_weekly_report
+    from db import get_setting
+    to = (get_setting("report_to_list") or os.getenv("REPORT_TO", "")).strip()
+    threading.Thread(target=send_weekly_report, args=(to,), daemon=True).start()
+    return jsonify({"status": "주간 리포트 발송 시작됨"})
+
+
+@monitor_bp.route("/api/insights/tourism")
+def api_insights_tourism():
+    import os as _os
+    from services.tourism_stats import fetch_recent_months, update_all
+    has_key = bool(_os.getenv("KOSIS_API_KEY", "").strip())
+    data = fetch_recent_months(13)
+    if not data["months"]:
+        if has_key:
+            threading.Thread(target=update_all, daemon=True).start()
+            return jsonify({"months": [], "countries": {}, "last_updated": "", "loading": True})
+        return jsonify({"months": [], "countries": {}, "last_updated": "", "no_key": True})
+    return jsonify(data)
+
+
+# ── 월별 관광통계 API ─────────────────────────────────────────────
+
+@monitor_bp.route("/api/insights/tourism-monthly")
+def api_insights_tourism_monthly():
+    n = int(request.args.get("n", 24))
+    conn = get_db()
+    rows = conn.execute(
+        "SELECT year_month, country, visitors, fetched_at FROM tourism_monthly ORDER BY year_month"
+    ).fetchall()
+    conn.close()
+
+    if not rows:
+        return jsonify({"months": [], "countries": {}, "last_updated": ""})
+
+    all_months = sorted({r["year_month"] for r in rows})
+    months = all_months[-n:]
+    year_idx = {m: i for i, m in enumerate(months)}
+
+    countries: dict = {}
+    for r in rows:
+        ym = r["year_month"]
+        if ym not in year_idx:
+            continue
+        code = r["country"]
+        if code not in countries:
+            countries[code] = [None] * len(months)
+        countries[code][year_idx[ym]] = r["visitors"]
+
+    last_updated = max((r["fetched_at"] or "") for r in rows)
+    return jsonify({"months": months, "countries": countries, "last_updated": last_updated[:10]})
+
+
+@monitor_bp.route("/api/admin/tourism-upload", methods=["POST"])
+def api_tourism_upload():
+    """Excel 파일 업로드로 tourism_monthly 벌크 저장.
+
+    Form fields:
+      file   — xlsx 파일 (openpyxl로 파싱, 형식: A열=YYYY-MM, B열=국가코드, C열=방문자수)
+      country — 단일 국가 코드 (JNTO 형식 xlsx 처리 시에도 사용)
+      mode   — 'jnto' | 'simple' (기본 'simple')
+    """
+    from flask import request as req
+
+    mode = req.form.get("mode", "simple")
+    country = req.form.get("country", "").strip()
+
+    if "file" not in req.files:
+        return jsonify({"ok": False, "error": "파일 없음"}), 400
+
+    f = req.files["file"]
+    xlsx_bytes = f.read()
+
+    if mode == "jnto":
+        from services.jnto_fetcher import _parse_and_save
+        saved = _parse_and_save(xlsx_bytes)
+        return jsonify({"ok": True, "saved": saved})
+
+    # simple 모드: A=YYYY-MM, B=국가코드, C=방문자수
+    try:
+        import openpyxl, io
+        wb = openpyxl.load_workbook(io.BytesIO(xlsx_bytes), data_only=True)
+        ws = wb.active
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 400
+
+    conn = get_db()
+    saved = 0
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if not row or row[0] is None:
+            continue
+        ym  = str(row[0]).strip()
+        cod = str(row[1]).strip() if row[1] else country
+        try:
+            vis = int(row[2])
+        except (TypeError, ValueError):
+            continue
+        if not ym or not cod or vis <= 0:
+            continue
+        conn.execute(
+            """INSERT INTO tourism_monthly (year_month, country, visitors, source, fetched_at)
+               VALUES (?, ?, ?, 'upload', datetime('now','localtime'))
+               ON CONFLICT(year_month, country) DO UPDATE
+               SET visitors=excluded.visitors, source=excluded.source,
+                   fetched_at=excluded.fetched_at""",
+            (ym, cod, vis)
+        )
+        saved += 1
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "saved": saved})

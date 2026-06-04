@@ -16,6 +16,7 @@ from db import get_db, get_setting
 
 # ── 국가 감지 상수 ────────────────────────────────────────────────────────────
 _COUNTRY_MAP = {
+    # 국가명
     "태국": "thailand",    "방콕": "thailand",
     "일본": "japan",       "도쿄": "japan",       "오사카": "japan",
     "대만": "taiwan",      "타이베이": "taiwan",
@@ -30,6 +31,33 @@ _COUNTRY_MAP = {
     "라오스": "laos",
     "괌": "guam",
     "사이판": "saipan",
+    # 베트남 도시
+    "나트랑": "vietnam",   "냐짱": "vietnam",     "다낭": "vietnam",
+    "달랏": "vietnam",     "다랏": "vietnam",     "푸꾸옥": "vietnam",
+    "할롱": "vietnam",     "호이안": "vietnam",   "무이네": "vietnam",
+    "빈펄": "vietnam",     "사파": "vietnam",     "붕따우": "vietnam",
+    # 태국 도시
+    "치앙마이": "thailand", "파타야": "thailand",  "푸켓": "thailand",
+    "사무이": "thailand",   "끄라비": "thailand",  "후아힌": "thailand",
+    # 일본 도시
+    "교토": "japan",       "후쿠오카": "japan",    "삿포로": "japan",
+    "오키나와": "japan",   "나고야": "japan",      "나하": "japan",
+    "고베": "japan",       "요코하마": "japan",    "히로시마": "japan",
+    # 대만 도시
+    "가오슝": "taiwan",    "타이중": "taiwan",     "타이난": "taiwan",
+    "화롄": "taiwan",
+    # 필리핀 도시
+    "세부": "philippines", "보라카이": "philippines", "다바오": "philippines",
+    "팔라완": "philippines", "엘니도": "philippines",
+    # 중국 도시
+    "광저우": "china",     "선전": "china",        "청두": "china",
+    "시안": "china",       "항저우": "china",      "구이린": "china",
+    # 캄보디아 도시
+    "씨엠립": "cambodia",  "앙코르": "cambodia",
+    # 라오스 도시
+    "비엔티안": "laos",    "루앙프라방": "laos",   "방비엥": "laos",
+    # 괌
+    "투몬": "guam",
 }
 
 _COUNTRY_LABEL = {
@@ -40,29 +68,19 @@ _COUNTRY_LABEL = {
     "guam": "괌사이판", "saipan": "괌사이판",
 }
 
-# (배경색, 텍스트색, 보더색)
-_COUNTRY_BADGE = {
-    "japan":       ("#FEF2F2", "#DC2626", "#FECACA"),
-    "china":       ("#FEF2F2", "#DC2626", "#FECACA"),
-    "hongkong":    ("#FEF2F2", "#DC2626", "#FECACA"),
-    "macau":       ("#FEF2F2", "#DC2626", "#FECACA"),
-    "taiwan":      ("#EFF6FF", "#2563EB", "#BFDBFE"),
-    "thailand":    ("#F0FDF4", "#059669", "#BBF7D0"),
-    "vietnam":     ("#F0FDF4", "#059669", "#BBF7D0"),
-    "cambodia":    ("#F0FDF4", "#059669", "#BBF7D0"),
-    "laos":        ("#F0FDF4", "#059669", "#BBF7D0"),
-    "philippines": ("#F5F3FF", "#7C3AED", "#DDD6FE"),
-    "singapore":   ("#F5F3FF", "#7C3AED", "#DDD6FE"),
-    "mongolia":    ("#FFFBEB", "#D97706", "#FDE68A"),
-    "guam":        ("#F0F9FF", "#0891B2", "#BAE6FD"),
-    "saipan":      ("#F0F9FF", "#0891B2", "#BAE6FD"),
+_COUNTRY_EMOJI = {
+    "vietnam":     "🇻🇳", "china":       "🇨🇳", "hongkong":    "🇭🇰",
+    "macau":       "🇲🇴", "philippines": "🇵🇭", "thailand":    "🇹🇭",
+    "laos":        "🇱🇦", "japan":       "🇯🇵", "taiwan":      "🇹🇼",
+    "mongolia":    "🇲🇳", "singapore":   "🇸🇬", "cambodia":    "🇰🇭",
+    "guam":        "🏝️",  "saipan":      "🏝️",
 }
 
 _WEEKDAY_KR = ["월", "화", "수", "목", "금", "토", "일"]
 
 
-def _detect_country_email(title: str, description: str = "") -> str:
-    text = (title or "") + " " + (description or "")
+def _detect_country_email(title: str, description: str = "", cafe_name: str = "") -> str:
+    text = (title or "") + " " + (description or "") + " " + (cafe_name or "")
     for kor, eng in _COUNTRY_MAP.items():
         if kor in text:
             return eng
@@ -70,12 +88,12 @@ def _detect_country_email(title: str, description: str = "") -> str:
 
 
 def _country_badge_html(country: str) -> str:
+    emoji = _COUNTRY_EMOJI.get(country, "🌐")
     label = _COUNTRY_LABEL.get(country, "공통")
-    bg, fg, bd = _COUNTRY_BADGE.get(country, ("#F9FAFB", "#6B7280", "#E5E7EB"))
     return (
-        f'<span style="background:{bg};color:{fg};border:0.5px solid {bd};'
-        f'padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600;'
-        f'white-space:nowrap;margin-right:4px">● {label}</span>'
+        f'<span style="background:#F3F4F6;color:#374151;border:0.5px solid #E5E7EB;'
+        f'padding:2px 7px;border-radius:99px;font-size:10px;font-weight:500;'
+        f'white-space:nowrap;margin-right:4px">{emoji} {label}</span>'
     )
 
 
@@ -100,7 +118,10 @@ def send_email(to: str, subject: str, html_body: str, report_type: str = "",
     images = {"cid명": "/절대/경로/파일.jpg"} 형식으로 전달하면
     HTML 내 <img src="cid:cid명"> 으로 인라인 임베딩됨 (로컬 IP 문제 해결).
     """
-    from_addr = os.getenv("REPORT_FROM", "glninternational.ai@gmail.com")
+    from email.header import Header
+    from email.utils import formataddr
+    _raw = os.getenv("REPORT_FROM", "glninternational.ai@gmail.com")
+    from_addr = formataddr((str(Header("AI퍼플이", "utf-8")), _raw))
 
     client_id     = os.getenv("GMAIL_CLIENT_ID", "")
     client_secret = os.getenv("GMAIL_CLIENT_SECRET", "")
@@ -231,9 +252,10 @@ def send_urgent_alert(title: str, analysis: dict,
 # ── 일일 리포트 (AI퍼플이의 아침브리핑) ──────────────────────────────────────
 def send_daily_report(to: str = ""):
     if not to:
-        to = get_setting("daily_report_to_list") or get_setting("report_to_list") or os.getenv("REPORT_TO", "")
-    print(f"[아침브리핑] 수신자: {to}", flush=True)
-    if not to:
+        to = get_setting("report_to_weekday") or get_setting("daily_report_to_list") or get_setting("report_to_list") or os.getenv("REPORT_TO", "")
+    recipient_list = [r.strip() for r in to.replace("\n", ",").split(",") if r.strip()]
+    print(f"[아침브리핑] 수신자 {len(recipient_list)}명 개별 발송", flush=True)
+    if not recipient_list:
         print("[아침브리핑] 수신자 없음 — 스킵")
         return
     try:
@@ -286,7 +308,7 @@ def send_daily_report(to: str = ""):
             sc      = {"positive": "#16A34A", "neutral": "#6B7280", "negative": "#DC2626"}.get(p["sentiment"], "#6B7280")
             sl      = {"positive": "긍정", "neutral": "중립", "negative": "부정"}.get(p["sentiment"], "-")
             cat     = p["category"] or "-"
-            country = _detect_country_email(p["title"] or "", p["description"] or "")
+            country = _detect_country_email(p["title"] or "", p["description"] or "", p["cafe_name"] or "")
             badge   = _country_badge_html(country)
             urgent_mark = (
                 '<span style="background:#FEE2E2;color:#DC2626;border:0.5px solid #FECACA;'
@@ -321,23 +343,8 @@ def send_daily_report(to: str = ""):
         ch_colors = {"카페": "#1D4ED8", "블로그": "#059669", "뉴스": "#D97706"}
         sections_html = ""
         for ch, posts in cat_posts.items():
-            color      = ch_colors.get(ch, "#6B7280")
-            top        = posts[:10]
-            more       = posts[10:]
-            top_rows   = "".join(post_row(p) for p in top)
-            more_rows  = "".join(post_row(p) for p in more)
-
-            more_block = ""
-            if more:
-                more_block = f"""
-                <details>
-                  <summary style="cursor:pointer;padding:10px 8px;font-size:12px;
-                    color:#7000FC;font-weight:600;border-top:1px solid #F3F4F6;
-                    list-style:none;outline:none">
-                    {len(more)}건 더보기 ▾
-                  </summary>
-                  {table_header()}{more_rows}</tbody></table>
-                </details>"""
+            color    = ch_colors.get(ch, "#6B7280")
+            all_rows = "".join(post_row(p) for p in posts)
 
             sections_html += f"""
             <div style="margin-bottom:24px">
@@ -345,8 +352,7 @@ def send_daily_report(to: str = ""):
                 <span style="font-size:14px;font-weight:700;color:{color}">{ch}</span>
                 <span style="font-size:12px;color:#9CA3AF">{len(posts)}건</span>
               </div>
-              {table_header()}{top_rows}</tbody></table>
-              {more_block}
+              {table_header()}{all_rows}</tbody></table>
             </div>"""
 
 
@@ -424,7 +430,8 @@ def send_daily_report(to: str = ""):
 
         subject = f"[AI퍼플이] 아침 브리핑 ☕ GLN 카페·블로그·뉴스 모아보기 ({yesterday_kr})"
         img_files = {"mascot": mascot_path} if os.path.isfile(mascot_path) else {}
-        send_email(to, subject, html, report_type="daily", images=img_files or None)
+        for addr in recipient_list:
+            send_email(addr, subject, html, report_type="daily", images=img_files or None)
     except Exception as e:
         import traceback
         print(f"[아침브리핑 오류] {e}")
