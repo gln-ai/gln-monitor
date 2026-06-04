@@ -344,7 +344,21 @@ def send_daily_report(to: str = ""):
         sections_html = ""
         for ch, posts in cat_posts.items():
             color    = ch_colors.get(ch, "#6B7280")
-            all_rows = "".join(post_row(p) for p in posts)
+            top      = posts[:3]
+            more     = posts[3:]
+            top_rows = "".join(post_row(p) for p in top)
+
+            more_block = ""
+            if more:
+                more_rows = "".join(post_row(p) for p in more)
+                more_block = f"""
+              <div style="border-top:2px dashed #EDE7FF;margin-top:4px">
+                <div style="padding:7px 8px;font-size:11px;font-weight:700;color:#7000FC;
+                            background:#F5F3FF;letter-spacing:0.03em">
+                  ▾ {len(more)}건 더보기
+                </div>
+                {table_header()}{more_rows}</tbody></table>
+              </div>"""
 
             sections_html += f"""
             <div style="margin-bottom:24px">
@@ -352,7 +366,8 @@ def send_daily_report(to: str = ""):
                 <span style="font-size:14px;font-weight:700;color:{color}">{ch}</span>
                 <span style="font-size:12px;color:#9CA3AF">{len(posts)}건</span>
               </div>
-              {table_header()}{all_rows}</tbody></table>
+              {table_header()}{top_rows}</tbody></table>
+              {more_block}
             </div>"""
 
 
