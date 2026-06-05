@@ -152,6 +152,58 @@
       <button class="date-apply-btn" onclick="applyInsightDate()">조회</button>
     </div>
 
+    <!-- 국가별 월별 관광객 추이 -->
+    <div style="background:#fff;border:0.5px solid #E4E1EE;border-radius:14px;padding:16px 20px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <div>
+          <div class="chart-title" style="margin:0">✈️ GLN 국가별 관광객 월별 추이</div>
+          <div style="font-size:11px;color:#918DA0;margin-top:2px">일본: JNTO 자동수집 · 기타국가: 수동 업로드 (한국인 방문객 기준)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="tourism-updated" style="font-size:10px;color:#C4C1D4"></span>
+          <button onclick="document.getElementById('tourism-upload-panel').style.display=document.getElementById('tourism-upload-panel').style.display==='none'?'block':'none'"
+            style="font-size:10px;color:#7000FC;border:0.5px solid #7000FC;background:#fff;padding:3px 10px;border-radius:6px;cursor:pointer">+ 업로드</button>
+        </div>
+      </div>
+      <!-- 업로드 패널 -->
+      <div id="tourism-upload-panel" style="display:none;background:#FDFCFF;border:0.5px solid #E4E1EE;border-radius:10px;padding:14px;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:8px">Excel 업로드</div>
+        <div id="upload-hint" style="font-size:10px;color:#918DA0;margin-bottom:10px;line-height:1.7">
+          <b>모드 ① JNTO Excel</b> — JNTO 공식 xlsx 파일 그대로 업로드<br>
+          <b>모드 ② KTO DataLab</b> — <a href="https://datalab.visitkorea.or.kr" target="_blank" style="color:#7000FC">datalab.visitkorea.or.kr</a> → 관광통계 → 국민 해외관광객 → Excel 다운로드<br>
+          <b>모드 ③ 간편 양식</b> — A열: YYYY-MM, B열: 국가코드(japan 등), C열: 방문자수(명)
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+          <select id="upload-mode" onchange="updateUploadHint(this.value)" style="font-size:11px;padding:4px 8px;border:0.5px solid #D1D5DB;border-radius:6px">
+            <option value="jnto">① JNTO Excel</option>
+            <option value="kto">② KTO DataLab</option>
+            <option value="simple">③ 간편 양식</option>
+          </select>
+          <select id="upload-country" style="font-size:11px;padding:4px 8px;border:0.5px solid #D1D5DB;border-radius:6px">
+            <option value="japan">일본</option><option value="thailand">태국</option>
+            <option value="vietnam">베트남</option><option value="taiwan">대만</option>
+            <option value="philippines">필리핀</option><option value="singapore">싱가포르</option>
+            <option value="hongkong">홍콩</option><option value="macau">마카오</option>
+            <option value="china">중국</option><option value="cambodia">캄보디아</option>
+            <option value="mongolia">몽골</option><option value="laos">라오스</option>
+            <option value="guam">괌</option><option value="saipan">사이판</option>
+          </select>
+          <input type="file" id="upload-file" accept=".xlsx,.xls"
+            style="font-size:10px;border:0.5px solid #D1D5DB;border-radius:6px;padding:3px 6px">
+          <button onclick="doTourismUpload()"
+            style="font-size:11px;background:#7000FC;color:#fff;border:none;padding:5px 14px;border-radius:6px;cursor:pointer">업로드</button>
+          <span id="upload-result" style="font-size:10px;color:#059669"></span>
+        </div>
+      </div>
+      <!-- 국가 토글 칩 -->
+      <div id="tourism-chips" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"></div>
+      <div id="tourism-empty" style="display:none;text-align:center;padding:32px 16px">
+        <div style="font-size:28px;margin-bottom:8px">📂</div>
+        <div style="font-size:12px;color:#918DA0">아직 데이터가 없습니다.<br>일본 데이터는 자동 수집됩니다. 기타 국가는 + 업로드 버튼을 사용하세요.</div>
+      </div>
+      <canvas id="tourismChart" height="160"></canvas>
+    </div>
+
     <!-- 리포트 연계 현황 배너 -->
     <div style="background:#EDE7FF;border:0.5px solid #DDD6FE;border-radius:14px;padding:16px 20px;margin-bottom:10px;display:grid;grid-template-columns:1fr 1fr;gap:0">
       <div style="padding-right:16px;border-right:0.5px solid #DDD6FE">
@@ -279,58 +331,6 @@
         <a href="/" style="font-size:11px;color:#7000FC;text-decoration:none;font-weight:600">모니터링 보기 →</a>
       </div>
       <div id="issue-summary-list"><div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">로딩 중...</div></div>
-    </div>
-
-    <!-- 국가별 월별 관광객 추이 -->
-    <div style="background:#fff;border:0.5px solid #E4E1EE;border-radius:14px;padding:16px 20px;margin-top:10px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <div>
-          <div class="chart-title" style="margin:0">✈️ GLN 국가별 관광객 월별 추이</div>
-          <div style="font-size:11px;color:#918DA0;margin-top:2px">일본: JNTO 자동수집 · 기타국가: 수동 업로드 (한국인 방문객 기준)</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span id="tourism-updated" style="font-size:10px;color:#C4C1D4"></span>
-          <button onclick="document.getElementById('tourism-upload-panel').style.display=document.getElementById('tourism-upload-panel').style.display==='none'?'block':'none'"
-            style="font-size:10px;color:#7000FC;border:0.5px solid #7000FC;background:#fff;padding:3px 10px;border-radius:6px;cursor:pointer">+ 업로드</button>
-        </div>
-      </div>
-      <!-- 업로드 패널 -->
-      <div id="tourism-upload-panel" style="display:none;background:#FDFCFF;border:0.5px solid #E4E1EE;border-radius:10px;padding:14px;margin-bottom:10px">
-        <div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:8px">Excel 업로드</div>
-        <div id="upload-hint" style="font-size:10px;color:#918DA0;margin-bottom:10px;line-height:1.7">
-          <b>모드 ① JNTO Excel</b> — JNTO 공식 xlsx 파일 그대로 업로드<br>
-          <b>모드 ② KTO DataLab</b> — <a href="https://datalab.visitkorea.or.kr" target="_blank" style="color:#7000FC">datalab.visitkorea.or.kr</a> → 관광통계 → 국민 해외관광객 → Excel 다운로드<br>
-          <b>모드 ③ 간편 양식</b> — A열: YYYY-MM, B열: 국가코드(japan 등), C열: 방문자수(명)
-        </div>
-        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
-          <select id="upload-mode" onchange="updateUploadHint(this.value)" style="font-size:11px;padding:4px 8px;border:0.5px solid #D1D5DB;border-radius:6px">
-            <option value="jnto">① JNTO Excel</option>
-            <option value="kto">② KTO DataLab</option>
-            <option value="simple">③ 간편 양식</option>
-          </select>
-          <select id="upload-country" style="font-size:11px;padding:4px 8px;border:0.5px solid #D1D5DB;border-radius:6px">
-            <option value="japan">일본</option><option value="thailand">태국</option>
-            <option value="vietnam">베트남</option><option value="taiwan">대만</option>
-            <option value="philippines">필리핀</option><option value="singapore">싱가포르</option>
-            <option value="hongkong">홍콩</option><option value="macau">마카오</option>
-            <option value="china">중국</option><option value="cambodia">캄보디아</option>
-            <option value="mongolia">몽골</option><option value="laos">라오스</option>
-            <option value="guam">괌</option><option value="saipan">사이판</option>
-          </select>
-          <input type="file" id="upload-file" accept=".xlsx,.xls"
-            style="font-size:10px;border:0.5px solid #D1D5DB;border-radius:6px;padding:3px 6px">
-          <button onclick="doTourismUpload()"
-            style="font-size:11px;background:#7000FC;color:#fff;border:none;padding:5px 14px;border-radius:6px;cursor:pointer">업로드</button>
-          <span id="upload-result" style="font-size:10px;color:#059669"></span>
-        </div>
-      </div>
-      <!-- 국가 토글 칩 -->
-      <div id="tourism-chips" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"></div>
-      <div id="tourism-empty" style="display:none;text-align:center;padding:32px 16px">
-        <div style="font-size:28px;margin-bottom:8px">📂</div>
-        <div style="font-size:12px;color:#918DA0">아직 데이터가 없습니다.<br>일본 데이터는 자동 수집됩니다. 기타 국가는 + 업로드 버튼을 사용하세요.</div>
-      </div>
-      <canvas id="tourismChart" height="160"></canvas>
     </div>
 
   </div>
