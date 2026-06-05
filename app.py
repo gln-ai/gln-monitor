@@ -58,9 +58,8 @@ init_db()
 
 _scheduler = BackgroundScheduler(timezone="Asia/Seoul")
 _scheduler.add_job(collect_all,          "interval", hours=1,  id="collect")
-# [이메일 발송 일시 정지]
-# _scheduler.add_job(_daily_weekday,       "cron", day_of_week="mon-fri", hour=8, minute=0, id="daily_weekday")
-# _scheduler.add_job(_daily_weekend,       "cron", day_of_week="sat,sun",  hour=8, minute=0, id="daily_weekend")
+_scheduler.add_job(_daily_weekday,       "cron", day_of_week="mon-fri", hour=8, minute=0, id="daily_weekday")
+_scheduler.add_job(_daily_weekend,       "cron", day_of_week="sat,sun",  hour=8, minute=0, id="daily_weekend")
 _scheduler.add_job(run_content_pipeline, "cron", hour=9,  minute=0, id="content_pipeline")
 # _scheduler.add_job(send_sla_reminder,    "cron", hour=17, minute=0, id="sla_reminder")
 # _scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
@@ -71,7 +70,7 @@ _scheduler.add_job(save_monthly_report,  "cron", day=1,  hour=8, minute=10,     
 _scheduler.add_job(update_tourism,       "cron", day=1,  hour=9, minute=30,            id="tourism_update")
 _scheduler.add_job(fetch_jnto,           "cron", day=15, hour=10, minute=0,            id="jnto_monthly")
 _scheduler.start()
-print("[스케줄러] 수집 1h / 콘텐츠 09:00 / 로그저장 23:55 | 이메일 발송 일시 정지")
+print("[스케줄러] 수집 1h / 아침브리핑 08:00(평일) / 콘텐츠 09:00 / 로그저장 23:55")
 
 if __name__ == "__main__":
     print("\n✅ GLN 모니터링 시작!")
