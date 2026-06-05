@@ -27,6 +27,7 @@ from services.weekly_report import send_weekly_report
 from services.log_reporter import save_daily_report, save_weekly_report as save_weekly_log, save_monthly_report
 from services.tourism_stats import update_all as update_tourism
 from services.jnto_fetcher import fetch_jnto
+from services.kto_fetcher import fetch_kto_total
 
 
 def _daily_weekday():
@@ -69,6 +70,7 @@ _scheduler.add_job(save_weekly_log,      "cron", day_of_week="mon", hour=8, minu
 _scheduler.add_job(save_monthly_report,  "cron", day=1,  hour=8, minute=10,            id="log_monthly")
 _scheduler.add_job(update_tourism,       "cron", day=1,  hour=9, minute=30,            id="tourism_update")
 _scheduler.add_job(fetch_jnto,           "cron", day=15, hour=10, minute=0,            id="jnto_monthly")
+_scheduler.add_job(fetch_kto_total,      "cron", day=5,  hour=10, minute=30,           id="kto_monthly")
 _scheduler.start()
 print("[스케줄러] 수집 1h / 아침브리핑 08:00(평일) / 콘텐츠 09:00 / 로그저장 23:55")
 

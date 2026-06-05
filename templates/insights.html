@@ -353,12 +353,14 @@ const TOURISM_COLORS = {
   philippines:'#8B5CF6', singapore:'#06B6D4', hongkong:'#F59E0B',
   macau:'#10B981', china:'#DC2626', cambodia:'#7C3AED',
   mongolia:'#0284C7', laos:'#65A30D', guam:'#0891B2', saipan:'#DB2777',
+  kor_outbound:'#9CA3AF',
 };
 const TOURISM_LABEL = {
   japan:'일본', thailand:'태국', vietnam:'베트남', taiwan:'대만',
   philippines:'필리핀', singapore:'싱가포르', hongkong:'홍콩',
   macau:'마카오', china:'중국', cambodia:'캄보디아',
   mongolia:'몽골', laos:'라오스', guam:'괌', saipan:'사이판',
+  kor_outbound:'한국 총 출국',
 };
 
 function _fmt(d) {
@@ -784,17 +786,22 @@ function renderTourismChart() {
   const ctx = document.getElementById('tourismChart').getContext('2d');
   if (tourismChart) tourismChart.destroy();
   const months  = (tourismRawData.months || []);
-  const datasets = [...activeCountries].map(code => ({
-    label:           TOURISM_LABEL[code] || code,
-    data:            (tourismRawData.countries[code] || []),
-    borderColor:     TOURISM_COLORS[code] || '#9CA3AF',
-    backgroundColor: (TOURISM_COLORS[code] || '#9CA3AF') + '18',
-    borderWidth:     2,
-    pointRadius:     3,
-    pointHoverRadius:5,
-    tension:         0.3,
-    fill:            false,
-  }));
+  const datasets = [...activeCountries].map(code => {
+    const isTotal = code === 'kor_outbound';
+    return {
+      label:           TOURISM_LABEL[code] || code,
+      data:            (tourismRawData.countries[code] || []),
+      borderColor:     TOURISM_COLORS[code] || '#9CA3AF',
+      backgroundColor: (TOURISM_COLORS[code] || '#9CA3AF') + '18',
+      borderWidth:     isTotal ? 1.5 : 2,
+      borderDash:      isTotal ? [4, 4] : [],
+      pointRadius:     isTotal ? 0 : 3,
+      pointHoverRadius:isTotal ? 3 : 5,
+      tension:         0.3,
+      fill:            false,
+      yAxisID:         isTotal ? 'y2' : 'y',
+    };
+  });
   tourismChart = new Chart(ctx, {
     type: 'line',
     data: { labels: months.map(m => m.slice(2).replace('-', '/')), datasets },
@@ -816,6 +823,15 @@ function renderTourismChart() {
           grid: { color: '#F0EDF7' },
           ticks: {
             font: { size: 10 }, color: '#918DA0',
+            callback: v => (v >= 10000 ? (v / 10000).toFixed(0) + '만' : v.toLocaleString())
+          }
+        },
+        y2: {
+          position: 'right',
+          display: [...activeCountries].includes('kor_outbound'),
+          grid: { display: false },
+          ticks: {
+            font: { size: 9 }, color: '#9CA3AF',
             callback: v => (v >= 10000 ? (v / 10000).toFixed(0) + '만' : v.toLocaleString())
           }
         }
