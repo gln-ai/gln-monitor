@@ -650,6 +650,69 @@ def api_tourism_upload():
         saved = _parse_and_save(xlsx_bytes)
         return jsonify({"ok": True, "saved": saved})
 
+    if mode == "kto":
+        # KTO DataLab Excel 형식:
+        # 1행: 헤더 (A열=기간, B열~=국가명 in Korean)
+        # 2행~: A열=기간(YYYY년 MM월 or 202401 etc.), B열~=방문자수
+        _KTO_CMAP = {
+            "베트남":"vietnam", "태국":"thailand", "일본":"japan", "대만":"taiwan",
+            "필리핀":"philippines", "싱가포르":"singapore", "홍콩":"hongkong",
+            "마카오":"macau", "중국":"china", "캄보디아":"cambodia",
+            "몽골":"mongolia", "라오스":"laos", "괌":"guam", "사이판":"saipan",
+        }
+        import re, io
+        try:
+            import openpyxl
+            wb = openpyxl.load_workbook(io.BytesIO(xlsx_bytes), data_only=True)
+            ws = wb.active
+        except Exception as e:
+            return jsonify({"ok": False, "error": str(e)}), 400
+
+        headers = [str(c.value or "").strip() for c in list(ws.iter_rows(min_row=1, max_row=1))[0]]
+        # B열~이 국가명이므로 인덱스 매핑
+        col_country = {}
+        for i, h in enumerate(headers[1:], start=1):
+            for kor, code in _KTO_CMAP.items():
+                if kor in h:
+                    col_country[i] = code
+                    break
+
+        if not col_country:
+            return jsonify({"ok": False, "error": "국가 헤더를 찾을 수 없습니다. 첫 행에 '베트남', '태국' 등 한국어 국가명이 있어야 합니다."}), 400
+
+        conn = get_db()
+        saved = 0
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if not row or row[0] is None:
+                continue
+            raw = str(row[0]).strip()
+            # 기간 파싱: "2024년 01월" / "202401" / "2024-01" / "2024.01"
+            m = re.search(r'(\d{4})[^\d]?(\d{2})', raw)
+            if not m:
+                continue
+            ym = f"{m.group(1)}-{m.group(2)}"
+            for col_i, code in col_country.items():
+                if col_i >= len(row):
+                    continue
+                try:
+                    vis = int(float(str(row[col_i]).replace(",", "")))
+                except (TypeError, ValueError):
+                    continue
+                if vis <= 0:
+                    continue
+                conn.execute(
+                    """INSERT INTO tourism_monthly (year_month, country, visitors, source, fetched_at)
+                       VALUES (?, ?, ?, 'kto', datetime('now','localtime'))
+                       ON CONFLICT(year_month, country) DO UPDATE
+                       SET visitors=excluded.visitors, source=excluded.source,
+                           fetched_at=excluded.fetched_at""",
+                    (ym, code, vis)
+                )
+                saved += 1
+        conn.commit()
+        conn.close()
+        return jsonify({"ok": True, "saved": saved})
+
     # simple 모드: A=YYYY-MM, B=국가코드, C=방문자수
     try:
         import openpyxl, io
