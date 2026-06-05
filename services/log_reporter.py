@@ -109,6 +109,21 @@ def _save(subdir: str, filename: str, data: dict):
     print(f"[로그 저장] {path}", flush=True)
 
 
+def _save_to_db(report_type: str, filename: str, data: dict):
+    conn = get_db()
+    conn.execute(
+        """INSERT OR REPLACE INTO reports_archive
+           (report_type, filename, period_start, period_end, generated_at, data_json)
+           VALUES (?, ?, ?, ?, ?, ?)""",
+        (report_type, filename,
+         data.get("period_start"), data.get("period_end"), data.get("generated_at"),
+         json.dumps(data, ensure_ascii=False, default=str))
+    )
+    conn.commit()
+    conn.close()
+    print(f"[DB 저장] reports_archive: {report_type}/{filename}", flush=True)
+
+
 def _cleanup(subdir: str, keep_days: int):
     folder = os.path.join(REPORTS_ROOT, subdir)
     if not os.path.isdir(folder):
@@ -121,26 +136,43 @@ def _cleanup(subdir: str, keep_days: int):
             print(f"[로그 정리] 삭제: {fpath}", flush=True)
 
 
+def _cleanup_db(report_type: str, keep_days: int):
+    cutoff = (datetime.now() - timedelta(days=keep_days)).strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_db()
+    conn.execute(
+        "DELETE FROM reports_archive WHERE report_type=? AND created_at < ?",
+        (report_type, cutoff)
+    )
+    conn.commit()
+    conn.close()
+
+
 def save_daily_report():
     now   = datetime.now(KST)
     since = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    fname = f"daily_{now.strftime('%Y%m%d')}.json"
     data  = {"report_type": "daily",
              "period_start": since.strftime("%Y-%m-%d 00:00"),
              "period_end":   now.strftime("%Y-%m-%d %H:%M"),
              "generated_at": now.isoformat(), **_collect(since)}
-    _save("daily", f"daily_{now.strftime('%Y%m%d')}.json", data)
+    _save("daily", fname, data)
+    _save_to_db("daily", fname, data)
     _cleanup("daily", _DAILY_KEEP)
+    _cleanup_db("daily", _DAILY_KEEP)
 
 
 def save_weekly_report():
     now   = datetime.now(KST)
     since = now - timedelta(days=7)
+    fname = f"weekly_{now.strftime('%Y-W%W')}.json"
     data  = {"report_type": "weekly",
              "period_start": since.strftime("%Y-%m-%d 00:00"),
              "period_end":   now.strftime("%Y-%m-%d %H:%M"),
              "generated_at": now.isoformat(), **_collect(since)}
-    _save("weekly", f"weekly_{now.strftime('%Y-W%W')}.json", data)
+    _save("weekly", fname, data)
+    _save_to_db("weekly", fname, data)
     _cleanup("weekly", _WEEKLY_KEEP)
+    _cleanup_db("weekly", _WEEKLY_KEEP)
 
 
 def save_monthly_report():
@@ -148,8 +180,10 @@ def save_monthly_report():
     first_this_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     last_month_end   = first_this_month - timedelta(seconds=1)
     last_month_start = last_month_end.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    fname = f"monthly_{last_month_start.strftime('%Y%m')}.json"
     data = {"report_type": "monthly",
             "period_start": last_month_start.strftime("%Y-%m-%d 00:00"),
             "period_end":   last_month_end.strftime("%Y-%m-%d 23:59"),
             "generated_at": now.isoformat(), **_collect(last_month_start)}
-    _save("monthly", f"monthly_{last_month_start.strftime('%Y%m')}.json", data)
+    _save("monthly", fname, data)
+    _save_to_db("monthly", fname, data)

@@ -82,6 +82,18 @@ def init_db():
             PRIMARY KEY (year_month, country)
         );
 
+        CREATE TABLE IF NOT EXISTS reports_archive (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            report_type  TEXT NOT NULL,
+            filename     TEXT NOT NULL,
+            period_start TEXT,
+            period_end   TEXT,
+            generated_at TEXT,
+            data_json    TEXT NOT NULL,
+            created_at   TEXT DEFAULT (datetime('now','localtime')),
+            UNIQUE(report_type, filename)
+        );
+
         CREATE TABLE IF NOT EXISTS email_log (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             report_type TEXT,
