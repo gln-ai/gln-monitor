@@ -701,7 +701,7 @@ function renderKeywords(keywords) {
 // ── 관광객 추이 차트 ────────────────────────────────────────────
 async function loadTourismChart() {
   try {
-    const res  = await fetch('/api/insights/tourism-monthly?n=36');
+    const res  = await fetch('/api/insights/tourism-monthly?n=18');
     const data = await res.json();
     const canvas = document.getElementById('tourismChart');
     const chips  = document.getElementById('tourism-chips');
