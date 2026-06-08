@@ -746,3 +746,17 @@ def api_tourism_upload():
     conn.commit()
     conn.close()
     return jsonify({"ok": True, "saved": saved})
+
+
+@monitor_bp.route("/api/admin/tourism-fetch", methods=["POST"])
+def api_tourism_fetch():
+    """JNTO + KTO 관광 데이터 수동 수집 트리거 (Railway DB 초기화용)."""
+    import threading
+    def _run():
+        from services.jnto_fetcher import fetch_jnto
+        from services.kto_fetcher import fetch_kto_total
+        n1 = fetch_jnto()
+        n2 = fetch_kto_total()
+        print(f"[tourism-fetch] JNTO={n1} KTO={n2}", flush=True)
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({"status": "수집 시작됨 (백그라운드)", "sources": ["jnto", "kto"]})
