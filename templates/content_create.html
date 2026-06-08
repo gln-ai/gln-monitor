@@ -260,7 +260,8 @@ async function startGenerate() {
     if (!res.ok || data.error) {
       throw new Error(data.error || '생성 실패');
     }
-    window.location.href = `/content?channel=${selectedChannel}`;
+    const newId = data.draft_id ? `&new=${data.draft_id}` : '';
+    window.location.href = `/content?channel=${selectedChannel}${newId}`;
   } catch (e) {
     errDiv.textContent = '오류: ' + e.message;
     errDiv.style.display = 'block';

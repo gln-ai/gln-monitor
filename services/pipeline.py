@@ -164,9 +164,17 @@ def generate_single(channel: str, fmt: str,
             source_post_id = None
     else:
         source_post_id = None
+        # 직접 입력 모드에서 country 비어있으면 토픽에서 자동 감지
+        if not country and topic:
+            country = content_gen.detect_country(topic)
+
+    # auto 모드에서 summary를 brief_summary로 전달 (품질 향상)
+    brief_text = ""
+    if use_auto and briefs:
+        brief_text = (briefs[0].get("summary") or briefs[0].get("description") or "")[:300]
 
     content = content_gen.generate(channel, fmt, topic=topic,
-                                   country=country, brief_summary="")
+                                   country=country, brief_summary=brief_text)
     result  = checker.check(content)
 
     conn = get_db()

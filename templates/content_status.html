@@ -184,6 +184,45 @@
     .kpi-grid { grid-template-columns: repeat(3, 1fr); }
     .content { padding: 16px; }
   }
+  /* ── 발행 상태 탭 ───────────────────────────────────────── */
+  .apv-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .apv-tab { padding: 6px 16px; border-radius: 99px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid #DAD9EA; background: #fff; color: #5E5A71; }
+  .apv-tab:hover { background: #F6F5FF; }
+  .apv-tab.active-unpublished { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+  .apv-tab.active-published { background: #F0FDF4; color: #059669; border-color: #BBF7D0; }
+  .apv-tab.active-all { background: #130D2A; color: #fff; border-color: #130D2A; }
+  /* ── 카드 퀵액션 ─────────────────────────────────────────── */
+  .card-meta-row { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+  .quick-actions { display: flex; gap: 5px; }
+  .qbtn { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 7px; cursor: pointer; border: none; white-space: nowrap; }
+  .qbtn-copy    { background: #F5F3FF; color: #7000FC; border: 1px solid #DDD6FE; }
+  .qbtn-copy:hover { background: #EDE9FE; }
+  .qbtn-copy.done { background: #F0FDF4; color: #059669; border-color: #BBF7D0; }
+  .qbtn-publish { background: #F0FDF4; color: #059669; border: 1px solid #BBF7D0; }
+  .qbtn-publish:hover { background: #DCFCE7; }
+  .qbtn-unpub   { background: #F6F5FF; color: #918DA0; border: 1px solid #DAD9EA; }
+  .qbtn-unpub:hover { background: #EDE9FE; color: #7000FC; }
+  .qbtn-edit    { background: #F6F5FF; color: #5E5A71; border: 1px solid #DAD9EA; }
+  .qbtn-edit:hover { background: #EDE9FE; color: #7000FC; }
+  .qbtn-del     { background: #fff; color: #AAA7B8; border: 1px solid #E4E1EE; }
+  .qbtn-del:hover { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+  /* ── 상태 점 ─────────────────────────────────────────────── */
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; }
+  .status-dot-unpublished { background: #DC2626; }
+  .status-dot-published   { background: #059669; }
+  /* ── 인라인 편집 패널 ────────────────────────────────────── */
+  .edit-panel { display: none; background: #FDFCFF; border-top: 0.5px solid #E4E1EE; padding: 14px 16px; }
+  .edit-panel.open { display: block; }
+  .edit-field-label { font-size: 10px; font-weight: 600; color: #918DA0; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 4px; }
+  .edit-field { width: 100%; border: 1px solid #DAD9EA; border-radius: 8px; padding: 8px 10px; font-size: 12px; color: #130D2A; background: #fff; font-family: inherit; line-height: 1.6; resize: vertical; outline: none; margin-bottom: 10px; }
+  .edit-field:focus { border-color: #7000FC; }
+  .edit-actions { display: flex; gap: 6px; }
+  .edit-save { background: #7000FC; color: #fff; border: none; border-radius: 8px; padding: 6px 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .edit-save:hover { background: #5A00CC; }
+  .edit-cancel { background: #F6F5FF; color: #5E5A71; border: 1px solid #DAD9EA; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+  /* ── 새 콘텐츠 하이라이트 ────────────────────────────────── */
+  .draft-item.new-highlight { animation: newPulse 2s ease-out; }
+  @keyframes newPulse { 0%,100%{background:#fff} 20%,60%{background:#F5F3FF} }
 </style>
 </head>
 <body>
@@ -249,6 +288,13 @@
     </div>
 
 
+    <!-- 발행 상태 탭 -->
+    <div class="apv-tabs">
+      <button class="apv-tab active-all" id="apvTab-all"        onclick="filterApv('')">전체</button>
+      <button class="apv-tab"            id="apvTab-unpublished" onclick="filterApv('unpublished')">미발행</button>
+      <button class="apv-tab"            id="apvTab-published"   onclick="filterApv('published')">발행완료</button>
+    </div>
+
     <!-- 날짜 필터 -->
     <div class="date-filter-row">
       <span class="date-filter-label">생성일</span>
@@ -291,12 +337,26 @@
 
       {% if drafts %}
         {% for d in drafts %}
-        <div class="draft-item" id="item_{{ d.id }}" onclick="_draftClick({{ d.id }})">
-          <div style="display:flex;align-items:center;gap:0">
+        <div class="draft-item" id="item_{{ d.id }}"
+             data-apv="{{ d.approval_status or 'unpublished' }}"
+             data-fmt="{{ d.format }}"
+             onclick="_draftClick({{ d.id }})">
+          <div style="display:flex;align-items:flex-start;gap:0">
           <div class="cb-col"><div class="custom-cb" id="cb_{{ d.id }}" data-id="{{ d.id }}"></div></div>
           <div style="flex:1;min-width:0;overflow:hidden">
-          <div class="draft-top">
-            <div class="draft-topic">{{ d.topic }}</div>
+          <div class="draft-top" style="align-items:flex-start">
+            <!-- 상태 점 -->
+            <div class="status-dot {% if d.approval_status == 'published' %}status-dot-published{% else %}status-dot-unpublished{% endif %}" title="{% if d.approval_status == 'published' %}발행완료{% else %}미발행{% endif %}"></div>
+            <div class="draft-topic" style="white-space:normal;line-height:1.4">{{ d.topic }}</div>
+            <!-- Guard 등급 -->
+            {% if d.guard_grade %}
+              {% set gmap = {'green':'grade-green','yellow':'grade-yellow','red':'grade-red','pending':'grade-pending'} %}
+              {% set glabel = {'green':'●green','yellow':'●yellow','red':'●red','pending':'●-'} %}
+              <span class="badge {{ gmap.get(d.guard_grade, 'grade-pending') }}" style="flex-shrink:0">{{ glabel.get(d.guard_grade, d.guard_grade) }}</span>
+            {% endif %}
+          </div>
+          <!-- 배지 행 -->
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin:4px 0 6px 16px">
             {% if not filter_channel %}
               {% if d.channel == 'gorani' %}
                 <span class="badge ch-badge-gorani">서브</span>
@@ -317,19 +377,44 @@
               <span class="badge source-auto">자동선택</span>
             {% endif %}
           </div>
+          <!-- 미리보기 -->
           {% if d.seo_titles %}
-          <div class="draft-preview">{{ d.seo_titles[:100] }}{% if d.seo_titles|length > 100 %}...{% endif %}</div>
+          <div class="draft-preview" style="margin-left:16px">{{ d.seo_titles[:120] }}{% if d.seo_titles|length > 120 %}...{% endif %}</div>
           {% elif d.body %}
-          <div class="draft-preview">{{ d.body[:100] }}{% if d.body|length > 100 %}...{% endif %}</div>
+          <div class="draft-preview" style="margin-left:16px">{{ d.body[:120] }}{% if d.body|length > 120 %}...{% endif %}</div>
           {% endif %}
-          <div class="draft-meta">
-            <span class="draft-meta-item">{{ d.created_at[:16] }}</span>
-            {% if d.platform %}
-            <span class="draft-meta-dot">·</span>
-            <span class="draft-meta-item">{{ d.platform }}</span>
-            {% endif %}
+          <!-- 메타 + 퀵 액션 -->
+          <div class="card-meta-row" style="margin-left:16px">
+            <div class="draft-meta">
+              <span class="draft-meta-item">{{ d.created_at[:16] }}</span>
+              {% if d.platform %}
+              <span class="draft-meta-dot">·</span>
+              <span class="draft-meta-item">{{ d.platform }}</span>
+              {% endif %}
+            </div>
+            <div class="quick-actions" onclick="event.stopPropagation()">
+              <button class="qbtn qbtn-copy" id="qcopy_{{ d.id }}" onclick="quickCopy({{ d.id }}, '{{ d.format }}', this)" title="복사">📋 복사</button>
+              {% if d.approval_status == 'published' %}
+                <button class="qbtn qbtn-unpub" id="qpub_{{ d.id }}" onclick="quickPublish({{ d.id }}, false, this)">✓ 발행됨</button>
+              {% else %}
+                <button class="qbtn qbtn-publish" id="qpub_{{ d.id }}" onclick="quickPublish({{ d.id }}, true, this)">발행완료</button>
+              {% endif %}
+              <button class="qbtn qbtn-edit" onclick="toggleInlineEdit({{ d.id }}, this)" title="편집">✏️</button>
+              <button class="qbtn qbtn-del"  onclick="deleteContent({{ d.id }}, event)" title="삭제">🗑</button>
+            </div>
           </div>
           </div></div>
+          <!-- 인라인 편집 패널 -->
+          <div class="edit-panel" id="editPanel_{{ d.id }}">
+            <div class="edit-field-label">SEO 제목 / 소개</div>
+            <textarea class="edit-field" id="editSeo_{{ d.id }}" rows="3">{{ d.seo_titles or '' }}</textarea>
+            <div class="edit-field-label">본문</div>
+            <textarea class="edit-field" id="editBody_{{ d.id }}" rows="8">{{ d.body or '' }}</textarea>
+            <div class="edit-actions">
+              <button class="edit-save" onclick="saveEdit({{ d.id }})">💾 저장</button>
+              <button class="edit-cancel" onclick="cancelEdit({{ d.id }})">취소</button>
+            </div>
+          </div>
         </div>
         {% endfor %}
       {% else %}
@@ -779,6 +864,129 @@ async function bulkDelete() {
   const data = await res.json();
   if (data.deleted >= 0) location.reload();
 }
+
+// ── 발행 상태 탭 필터 ────────────────────────────────────────
+function filterApv(status) {
+  document.querySelectorAll('.apv-tab').forEach(t => t.className = 'apv-tab');
+  if (status === '') {
+    document.getElementById('apvTab-all').classList.add('active-all');
+  } else if (status === 'unpublished') {
+    document.getElementById('apvTab-unpublished').classList.add('active-unpublished');
+  } else {
+    document.getElementById('apvTab-published').classList.add('active-published');
+  }
+  document.querySelectorAll('.draft-item[data-apv]').forEach(el => {
+    if (!status || el.dataset.apv === status) {
+      el.style.display = '';
+    } else {
+      el.style.display = 'none';
+    }
+  });
+  _updateApvCounts();
+}
+
+function _updateApvCounts() {
+  const all   = document.querySelectorAll('.draft-item[data-apv]').length;
+  const unp   = document.querySelectorAll('.draft-item[data-apv="unpublished"]').length;
+  const pub   = document.querySelectorAll('.draft-item[data-apv="published"]').length;
+  document.getElementById('apvTab-all').textContent        = `전체 (${all})`;
+  document.getElementById('apvTab-unpublished').textContent = `미발행 (${unp})`;
+  document.getElementById('apvTab-published').textContent   = `발행완료 (${pub})`;
+}
+
+// ── 퀵 복사 ──────────────────────────────────────────────────
+async function quickCopy(id, fmt, btn) {
+  const res  = await fetch(`/api/content/${id}`);
+  const d    = await res.json();
+  const FMT_COPY = {
+    blog:            (d.seo_titles || '') + '\n\n' + (d.body || ''),
+    instagram_card:  (d.body || '') + '\n\n' + (d.seo_titles || ''),
+    threads:         d.seo_titles || d.body || '',
+    youtube_shorts:  d.shorts_script || d.body || '',
+    reels:           d.body || '',
+    cartoon:         d.body || '',
+  };
+  const text = FMT_COPY[fmt] || d.body || d.seo_titles || '';
+  try {
+    await navigator.clipboard.writeText(text);
+    btn.textContent = '✓ 복사됨';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = '📋 복사'; btn.classList.remove('done'); }, 2500);
+  } catch(e) {
+    alert('복사 실패: ' + e.message);
+  }
+}
+
+// ── 퀵 발행 토글 ─────────────────────────────────────────────
+async function quickPublish(id, publish, btn) {
+  const endpoint = publish ? `/api/content/${id}/publish` : `/api/content/${id}/unpublish`;
+  await fetch(endpoint, {method: 'POST'});
+  const card = document.getElementById(`item_${id}`);
+  const dot  = card.querySelector('.status-dot');
+  if (publish) {
+    card.dataset.apv = 'published';
+    dot?.classList.replace('status-dot-unpublished', 'status-dot-published');
+    dot?.setAttribute('title', '발행완료');
+    btn.textContent = '✓ 발행됨';
+    btn.className   = 'qbtn qbtn-unpub';
+    btn.onclick     = () => quickPublish(id, false, btn);
+  } else {
+    card.dataset.apv = 'unpublished';
+    dot?.classList.replace('status-dot-published', 'status-dot-unpublished');
+    dot?.setAttribute('title', '미발행');
+    btn.textContent = '발행완료';
+    btn.className   = 'qbtn qbtn-publish';
+    btn.onclick     = () => quickPublish(id, true, btn);
+  }
+  _updateApvCounts();
+}
+
+// ── 인라인 편집 ──────────────────────────────────────────────
+function toggleInlineEdit(id, btn) {
+  const panel = document.getElementById(`editPanel_${id}`);
+  if (!panel) return;
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  if (btn) btn.style.color = isOpen ? '' : '#7000FC';
+}
+
+function cancelEdit(id) {
+  document.getElementById(`editPanel_${id}`)?.classList.remove('open');
+}
+
+async function saveEdit(id) {
+  const seo  = document.getElementById(`editSeo_${id}`)?.value || '';
+  const body = document.getElementById(`editBody_${id}`)?.value || '';
+  const res  = await fetch(`/api/content/${id}`, {
+    method: 'PATCH',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({seo_titles: seo, body: body}),
+  });
+  const d = await res.json();
+  if (d.ok) {
+    cancelEdit(id);
+    // 미리보기 업데이트
+    const card = document.getElementById(`item_${id}`);
+    const prev = card.querySelector('.draft-preview');
+    if (prev) prev.textContent = (seo || body || '').slice(0, 120) + ((seo || body || '').length > 120 ? '...' : '');
+  } else {
+    alert('저장 실패');
+  }
+}
+
+// ── 페이지 로드 시 초기화 ────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  _updateApvCounts();
+  // ?new=ID 파라미터 → 새 콘텐츠 하이라이트
+  const newId = new URLSearchParams(location.search).get('new');
+  if (newId) {
+    const el = document.getElementById(`item_${newId}`);
+    if (el) {
+      el.classList.add('new-highlight');
+      el.scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+  }
+});
 </script>
 </body>
 </html>

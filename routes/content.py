@@ -179,6 +179,28 @@ def api_content_detail(draft_id):
     return jsonify(dict(row))
 
 
+@content_bp.route("/api/content/<int:draft_id>", methods=["PATCH"])
+def api_content_update(draft_id):
+    """인라인 편집 저장 — 허용 필드: topic, seo_titles, body, shorts_script, verify_list."""
+    data    = request.get_json(silent=True) or {}
+    allowed = {"topic", "seo_titles", "body", "shorts_script", "verify_list"}
+    updates = {k: v for k, v in data.items() if k in allowed and isinstance(v, str)}
+    if not updates:
+        return jsonify({"error": "변경 없음"}), 400
+    now = datetime.now(KST).strftime("%Y-%m-%d %H:%M:%S")
+    updates["updated_at"] = now
+    set_clause = ", ".join(f"{k}=?" for k in updates)
+    values     = list(updates.values()) + [draft_id]
+    conn = get_db()
+    conn.execute(
+        f"UPDATE content_drafts SET {set_clause} WHERE id=? AND deleted_at IS NULL",
+        values
+    )
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+
+
 @content_bp.route("/api/content/<int:draft_id>/publish", methods=["POST"])
 def api_content_publish(draft_id):
     now  = datetime.now(KST).strftime("%Y-%m-%d %H:%M")
