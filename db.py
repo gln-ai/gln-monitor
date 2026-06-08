@@ -169,9 +169,9 @@ def init_db():
         ("spike_threshold",      "2.0"),
         ("alert_start_hour",     "8"),
         ("alert_end_hour",       "20"),
-        ("daily_report_to_list", os.getenv("REPORT_TO", "")),
-        ("report_to_list",       os.getenv("REPORT_TO", "")),
-        ("report_to_weekday",    os.getenv("REPORT_TO", "")),
+        ("daily_report_to_list", os.getenv("REPORT_TO", "brad@glninternational.com,heybk@glninternational.com,chaechae0704@glninternational.com,jane.oh@glninternational.com")),
+        ("report_to_list",       os.getenv("REPORT_TO", "brad@glninternational.com,heybk@glninternational.com,chaechae0704@glninternational.com,jane.oh@glninternational.com")),
+        ("report_to_weekday",    os.getenv("REPORT_TO", "brad@glninternational.com,heybk@glninternational.com,chaechae0704@glninternational.com,jane.oh@glninternational.com")),
         ("report_to_weekend",    ""),
         ("urgent_alert_to_list", os.getenv("URGENT_ALERT_TO", "brad@glninternational.com")),
     ]:
