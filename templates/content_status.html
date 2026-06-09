@@ -145,6 +145,18 @@
 .btn-copy { background: #F6F5FF; color: #7000FC; border: 0.5px solid #DDD6FE; border-radius: 6px; padding: 3px 10px; font-size: 10px; font-weight: 600; cursor: pointer; }
 .btn-copy:hover { background: #EDE9FE; }
 .btn-copy.copied { background: #F0FDF4; color: #059669; border-color: #BBF7D0; }
+/* ── 마크다운 렌더 뷰 ── */
+.modal-md-body { background:#F6F5FF;border-radius:8px;padding:14px 16px;font-size:12px;color:#130D2A;line-height:1.85;border:0.5px solid #E4E1EE;max-height:420px;overflow-y:auto; }
+.modal-md-body h2 { font-size:14px;font-weight:800;color:#130D2A;margin:14px 0 3px; }
+.modal-md-body h3 { font-size:13px;font-weight:700;color:#130D2A;margin:12px 0 3px; }
+.modal-md-body h4 { font-size:12px;font-weight:700;color:#130D2A;margin:10px 0 2px; }
+.modal-md-body hr { border:none;border-top:1px solid #DAD9EA;margin:10px 0; }
+.modal-md-body blockquote { border-left:3px solid #7000FC;padding:4px 12px;margin:8px 0;color:#5E5A71;background:#EDE9FE;border-radius:0 6px 6px 0;font-size:11px; }
+.modal-md-body li { margin-left:18px;list-style:disc;margin-bottom:2px; }
+.modal-md-body ol li { list-style:decimal; }
+.modal-md-body .md-p { margin-bottom:6px; }
+.modal-md-body strong { font-weight:700; }
+.modal-md-body em { font-style:italic;color:#5E5A71; }
 /* ── 체크리스트 ── */
 .checklist { background: #F6F5FF; border-radius: 10px; padding: 12px 14px; margin-top: 12px; border: 0.5px solid #E4E1EE; }
 .checklist-title { font-size: 11px; font-weight: 700; color: #130D2A; margin-bottom: 8px; }
@@ -404,8 +416,37 @@ function escHtml(str) {
   return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+function fixNl(text) {
+  // 리터럴 \n → 실제 줄바꿈
+  return (text || '').replace(/\\n/g, '\n');
+}
+
+function renderMd(raw) {
+  if (!raw) return '';
+  let t = escHtml(fixNl(raw));
+  // 헤더
+  t = t.replace(/^### (.+)$/gm, '<h4>$1</h4>');
+  t = t.replace(/^## (.+)$/gm,  '<h3>$1</h3>');
+  t = t.replace(/^# (.+)$/gm,   '<h2>$1</h2>');
+  // 굵게/기울임
+  t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  t = t.replace(/\*(.+?)\*/g,     '<em>$1</em>');
+  // 구분선
+  t = t.replace(/^---$/gm, '<hr>');
+  // 인용
+  t = t.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+  // 목록
+  t = t.replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>');
+  t = t.replace(/^[-*] (.+)$/gm,    '<li>$1</li>');
+  // 문단 나누기 (빈 줄)
+  t = t.replace(/\n\n/g, '<div class="md-p"></div>');
+  t = t.replace(/\n/g, '<br>');
+  return t;
+}
+
 function pkgSection(label, text, extraClass) {
-  if (!text || text === 'null' || text.trim() === '' || text === 'None' || text === '없음') return '';
+  if (!text || text === 'null' || !text.trim() || text === 'None' || text === '없음') return '';
+  const display = fixNl(text);
   const id = 'copy_' + Math.random().toString(36).slice(2);
   return `
     <div class="pkg-section">
@@ -413,7 +454,20 @@ function pkgSection(label, text, extraClass) {
         <span class="pkg-label">${label}</span>
         <button class="btn-copy" id="${id}" onclick="copyText(${JSON.stringify(text)}, '${id}')">복사</button>
       </div>
-      <pre class="modal-pre${extraClass ? ' ' + extraClass : ''}">${escHtml(text)}</pre>
+      <pre class="modal-pre${extraClass ? ' ' + extraClass : ''}">${escHtml(display)}</pre>
+    </div>`;
+}
+
+function bodySection(label, text) {
+  if (!text || text === 'null' || !text.trim() || text === 'None' || text === '없음') return '';
+  const id = 'copy_' + Math.random().toString(36).slice(2);
+  return `
+    <div class="pkg-section">
+      <div class="pkg-label-row">
+        <span class="pkg-label">${label}</span>
+        <button class="btn-copy" id="${id}" onclick="copyText(${JSON.stringify(text)}, '${id}')">복사</button>
+      </div>
+      <div class="modal-md-body">${renderMd(text)}</div>
     </div>`;
 }
 
@@ -475,30 +529,30 @@ async function showDetail(id) {
   if (!fmt || fmt === 'blog') {
     pkgHtml =
       pkgSection('SEO 제목', d.seo_titles) +
-      pkgSection('본문 전체', d.body) +
+      bodySection('본문 전체', d.body) +
       pkgSection('검증 필요 항목', d.verify_list, 'verify');
   } else if (fmt === 'instagram_card') {
     pkgHtml =
-      pkgSection('슬라이드 구성', d.body) +
+      bodySection('슬라이드 구성', d.body) +
       pkgSection('캡션 / 해시태그', d.seo_titles);
   } else if (fmt === 'youtube_shorts') {
     pkgHtml =
-      pkgSection('쇼츠 스크립트', d.body) +
+      bodySection('쇼츠 스크립트', d.body) +
       pkgSection('제목', d.seo_titles);
   } else if (fmt === 'reels') {
     pkgHtml =
       pkgSection('릴스 컨셉', d.seo_titles) +
-      pkgSection('장면 구성', d.body);
+      bodySection('장면 구성', d.body);
   } else if (fmt === 'threads') {
     pkgHtml =
-      pkgSection('스레드 포스트 (3종)', d.body) +
+      bodySection('스레드 포스트 (3종)', d.body) +
       pkgSection('추천 버전', d.seo_titles);
   } else if (fmt === 'cartoon') {
     pkgHtml =
       pkgSection('카툰 컨셉', d.seo_titles) +
-      pkgSection('컷 구성', d.body);
+      bodySection('컷 구성', d.body);
   } else {
-    pkgHtml = pkgSection('콘텐츠', d.body);
+    pkgHtml = bodySection('콘텐츠', d.body);
   }
 
   const items = CHECKLIST[fmt] || ['콘텐츠 검토', '플랫폼에 업로드'];
