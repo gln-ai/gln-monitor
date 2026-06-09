@@ -8,7 +8,7 @@ import os
 import sys
 from datetime import datetime
 
-from config import APPS_ROOT, KST
+from config import APPS_ROOT, KST, MONITOR_DIR
 from db import get_db
 
 
@@ -21,14 +21,13 @@ def _load_module(name: str, file_path: str):
 
 
 def _get_modules():
-    content_gen = _load_module(
-        "content_generator",
-        os.path.join(APPS_ROOT, "gln-content", "content_generator.py")
-    )
-    checker = _load_module(
-        "checker",
-        os.path.join(APPS_ROOT, "gln-guard", "checker.py")
-    )
+    # Railway: 번들된 로컬 복사본 우선, 없으면 상위 apps/ 형제 폴더 탐색
+    _local_cg = os.path.join(MONITOR_DIR, "gln-content", "content_generator.py")
+    _local_ck = os.path.join(MONITOR_DIR, "gln-guard", "checker.py")
+    cg_path = _local_cg if os.path.exists(_local_cg) else os.path.join(APPS_ROOT, "gln-content", "content_generator.py")
+    ck_path = _local_ck if os.path.exists(_local_ck) else os.path.join(APPS_ROOT, "gln-guard", "checker.py")
+    content_gen = _load_module("content_generator", cg_path)
+    checker     = _load_module("checker", ck_path)
     return content_gen, checker
 
 
