@@ -1,171 +1,111 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GLN 휴지통</title>
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #F6F5FF; margin: 0; }
-  .sidebar { width: 220px; min-height: 100vh; background: #130D2A; position: fixed; top: 0; left: 0; z-index: 20; display: flex; flex-direction: column; padding: 20px 14px; }
-  .nav-section { margin-bottom: 20px; }
-  .nav-section-label { font-size: 9px; font-weight: 600; color: #5E5A71; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; margin-bottom: 2px; }
-  .nav-item:hover { background: rgba(255,255,255,0.06); }
-  .nav-item.active { background: #7000FC; }
-  .nav-item-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.5; flex-shrink: 0; }
-  .nav-item.active .nav-item-icon { opacity: 1; }
-  .nav-item-text { font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
-  .nav-item.active .nav-item-text { color: #fff; }
-  .sidebar-bottom { margin-top: auto; }
-  .sidebar-info { background: rgba(112,0,252,0.15); border-radius: 10px; padding: 10px 12px; border: 0.5px solid rgba(112,0,252,0.3); }
-  .sidebar-info-text { font-size: 10px; color: #AAA7B8; line-height: 1.7; margin: 0; }
-  .main-wrap { margin-left: 220px; min-height: 100vh; }
-  .topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-  .topbar-left h1 { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0; }
-  .topbar-left p { font-size: 11px; color: #918DA0; margin: 2px 0 0; }
-  .content { padding: 20px 24px 40px; }
-  .drafts-wrap { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; }
-  .drafts-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 0.5px solid #F0EDF7; }
-  .trash-item { border-bottom: 0.5px solid #F6F5FF; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
-  .trash-item:last-child { border-bottom: none; }
-  .trash-item:hover { background: #FDFCFF; }
-  .item-cb { width: 15px; height: 15px; accent-color: #7000FC; flex-shrink: 0; cursor: pointer; }
-  .trash-item.selected { background: #F5F3FF; }
-  .trash-info { flex: 1; min-width: 0; }
-  .trash-topic { font-size: 13px; font-weight: 600; color: #130D2A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 3px; }
-  .trash-meta { font-size: 10px; color: #AAA7B8; display: flex; gap: 6px; flex-wrap: wrap; }
-  .badge { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 700; flex-shrink: 0; }
-  .ch-badge-official { background: #F5F3FF; color: #7000FC; }
-  .ch-badge-gorani   { background: #FFF7ED; color: #F97316; }
-  .fmt-badge { background: #F3F4F6; color: #6B7280; }
-  .trash-actions { display: flex; gap: 6px; flex-shrink: 0; }
-  .btn-restore { background: #F0FDF4; color: #059669; border: 1px solid #BBF7D0; border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer; }
-  .btn-restore:hover { background: #DCFCE7; }
-  .btn-perm-del { background: #fff; color: #DC2626; border: 1px solid #FECACA; border-radius: 8px; padding: 5px 10px; font-size: 11px; cursor: pointer; }
-  .btn-perm-del:hover { background: #FEF2F2; }
-  .btn-empty { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; }
-  .btn-empty:hover { background: #FECACA; }
-  .btn-bulk { border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; display: none; }
-  .btn-bulk-restore { background: #059669; color: #fff; }
-  .btn-bulk-restore:hover { background: #047857; }
-  .btn-bulk-del { background: #DC2626; color: #fff; }
-  .btn-bulk-del:hover { background: #B91C1C; }
-  .btn-back { background: #F6F5FF; color: #5E5A71; border: 1px solid #E4E1EE; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
-  .btn-back:hover { background: #EDE9FE; color: #7000FC; }
-  .empty-state { padding: 60px 20px; text-align: center; }
-  .empty-state p { font-size: 13px; color: #AAA7B8; margin: 4px 0; }
-  .notice { font-size: 11px; color: #AAA7B8; background: #F9FAFB; border: 0.5px solid #E4E1EE; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
-  .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 16px; }
-  .page-btn { width: 30px; height: 30px; border-radius: 8px; border: 0.5px solid #E4E1EE; background: #fff; font-size: 12px; color: #5E5A71; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-  .page-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 700; }
-  .page-btn.disabled { opacity: 0.3; pointer-events: none; }
-  @media (max-width: 768px) {
-    .sidebar { width: 60px; padding: 16px 8px; }
-    .nav-item-text, .sidebar-info, .nav-section-label { display: none; }
-    .nav-item { justify-content: center; padding: 10px; }
-    .main-wrap { margin-left: 60px; }
-    .content { padding: 16px; }
-  }
-</style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}GLN 휴지통{% endblock %}
 
-<div class="sidebar">
-  <div style="padding:0 2px;margin-bottom:20px">
-    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
-    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
-    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
-  </div>
-  <div class="nav-section">
-    <div class="nav-section-label">메뉴</div>
-    <a href="/insights" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-item-text">인사이트</span></a>
-    <a href="/" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-item-text">GLN 모니터링</span></a>
-    <a href="/content" class="nav-item active"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-item-text">콘텐츠 <span style="background:#7000FC;color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;vertical-align:middle;letter-spacing:0.03em">Beta</span></span></a>
-    <a href="/pr" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-item-text">보도자료</span></a>
-    <a href="/reports" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-item-text">보고서 아카이브</span></a>
-  </div>
-  <div class="sidebar-bottom">
-    <div class="sidebar-info"><p class="sidebar-info-text">메인채널 · 서브채널<br>자동 생성 + Guard 검수</p></div>
-  </div>
-</div>
+{% block page_styles %}
+.drafts-wrap { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; }
+.drafts-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 0.5px solid #F0EDF7; }
+.trash-item { border-bottom: 0.5px solid #F6F5FF; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+.trash-item:last-child { border-bottom: none; }
+.trash-item:hover { background: #FDFCFF; }
+.item-cb { width: 15px; height: 15px; accent-color: #7000FC; flex-shrink: 0; cursor: pointer; }
+.trash-item.selected { background: #F5F3FF; }
+.trash-info { flex: 1; min-width: 0; }
+.trash-topic { font-size: 13px; font-weight: 600; color: #130D2A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 3px; }
+.trash-meta { font-size: 10px; color: #AAA7B8; display: flex; gap: 6px; flex-wrap: wrap; }
+.ch-badge-official { background: #F5F3FF; color: #7000FC; }
+.ch-badge-gorani   { background: #FFF7ED; color: #F97316; }
+.fmt-badge { background: #F3F4F6; color: #6B7280; }
+.trash-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.btn-restore { background: #F0FDF4; color: #059669; border: 1px solid #BBF7D0; border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer; }
+.btn-restore:hover { background: #DCFCE7; }
+.btn-perm-del { background: #fff; color: #DC2626; border: 1px solid #FECACA; border-radius: 8px; padding: 5px 10px; font-size: 11px; cursor: pointer; }
+.btn-perm-del:hover { background: #FEF2F2; }
+.btn-bulk { border: none; border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 600; cursor: pointer; display: none; }
+.btn-bulk-restore { background: #059669; color: #fff; }
+.btn-bulk-restore:hover { background: #047857; }
+.btn-bulk-del { background: #DC2626; color: #fff; }
+.btn-bulk-del:hover { background: #B91C1C; }
+.notice { font-size: 11px; color: #AAA7B8; background: #F9FAFB; border: 0.5px solid #E4E1EE; border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; }
+{% endblock %}
 
-<div class="main-wrap">
-  <div class="topbar">
-    <div class="topbar-left">
-      <h1>휴지통</h1>
-      <p>삭제된 콘텐츠 · 복원하거나 영구 삭제</p>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <button id="bulkRestoreBtn" class="btn-bulk btn-bulk-restore" onclick="bulkRestore()">복원</button>
-      <button id="bulkDelBtn"     class="btn-bulk btn-bulk-del"     onclick="bulkPermDelete()">영구 삭제</button>
-      {% if total %}
-      <button class="btn-empty" onclick="emptyTrash()">비우기 ({{ total }}개)</button>
-      {% endif %}
-      <a href="/content" class="btn-back">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-        콘텐츠로
-      </a>
-    </div>
+{% block topbar_back %}
+<a href="/content" class="btn btn-neutral btn-sm" style="text-decoration:none;margin-right:4px;">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+</a>
+{% endblock %}
+
+{% block topbar_title %}휴지통{% endblock %}
+{% block topbar_sub %}삭제된 콘텐츠 · 복원하거나 영구 삭제{% endblock %}
+
+{% block topbar_actions %}
+<button id="bulkRestoreBtn" class="btn-bulk btn-bulk-restore" onclick="bulkRestore()">복원</button>
+<button id="bulkDelBtn"     class="btn-bulk btn-bulk-del"     onclick="bulkPermDelete()">영구 삭제</button>
+{% if total %}
+<button class="btn btn-danger btn-sm" onclick="emptyTrash()">비우기 ({{ total }}개)</button>
+{% endif %}
+<a href="/content" class="btn btn-neutral btn-sm" style="text-decoration:none;">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+  콘텐츠로
+</a>
+{% endblock %}
+
+{% block content %}
+<p class="notice">휴지통의 항목은 영구 삭제 전까지 복원할 수 있습니다.</p>
+
+<div class="drafts-wrap">
+  <div class="drafts-header">
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin:0">
+      <input type="checkbox" id="selectAll" class="item-cb" onchange="toggleSelectAll(this)">
+      <span style="font-size:11px;color:#918DA0">총 <strong style="color:#130D2A">{{ total }}</strong>건</span>
+    </label>
   </div>
 
-  <div class="content">
-    <p class="notice">휴지통의 항목은 영구 삭제 전까지 복원할 수 있습니다.</p>
-
-    <div class="drafts-wrap">
-      <div class="drafts-header">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin:0">
-          <input type="checkbox" id="selectAll" class="item-cb" onchange="toggleSelectAll(this)">
-          <span style="font-size:11px;color:#918DA0">총 <strong style="color:#130D2A">{{ total }}</strong>건</span>
-        </label>
+  {% if drafts %}
+    {% for d in drafts %}
+    {% set fmt_label = {'blog':'블로그','instagram_card':'인스타그램','youtube_shorts':'유튜브','reels':'인스타그램','threads':'스레드','cartoon':'툰'}.get(d.format, d.format or '') %}
+    <div class="trash-item" id="item_{{ d.id }}">
+      <input type="checkbox" class="item-cb" data-id="{{ d.id }}" onchange="toggleSelect({{ d.id }}, this)">
+      <div class="trash-info">
+        <div class="trash-topic">{{ d.topic or '(제목 없음)' }}</div>
+        <div class="trash-meta">
+          {% if d.channel == 'gorani' %}
+            <span class="badge ch-badge-gorani">서브</span>
+          {% else %}
+            <span class="badge ch-badge-official">메인</span>
+          {% endif %}
+          {% if fmt_label %}<span class="badge fmt-badge">{{ fmt_label }}</span>{% endif %}
+          <span>생성 {{ (d.created_at or '')[:10] }}</span>
+          <span>삭제 {{ (d.deleted_at or '')[:16] }}</span>
+        </div>
       </div>
-
-      {% if drafts %}
-        {% for d in drafts %}
-        {% set fmt_label = {'blog':'블로그','instagram_card':'인스타그램','youtube_shorts':'유튜브','reels':'인스타그램','threads':'스레드','cartoon':'툰'}.get(d.format, d.format or '') %}
-        <div class="trash-item" id="item_{{ d.id }}">
-          <input type="checkbox" class="item-cb" data-id="{{ d.id }}" onchange="toggleSelect({{ d.id }}, this)">
-          <div class="trash-info">
-            <div class="trash-topic">{{ d.topic or '(제목 없음)' }}</div>
-            <div class="trash-meta">
-              {% if d.channel == 'gorani' %}
-                <span class="badge ch-badge-gorani">서브</span>
-              {% else %}
-                <span class="badge ch-badge-official">메인</span>
-              {% endif %}
-              {% if fmt_label %}<span class="badge fmt-badge">{{ fmt_label }}</span>{% endif %}
-              <span>생성 {{ (d.created_at or '')[:10] }}</span>
-              <span>삭제 {{ (d.deleted_at or '')[:16] }}</span>
-            </div>
-          </div>
-          <div class="trash-actions">
-            <button class="btn-restore" onclick="restoreOne({{ d.id }})">복원</button>
-            <button class="btn-perm-del" onclick="permDeleteOne({{ d.id }})">영구 삭제</button>
-          </div>
-        </div>
-        {% endfor %}
-      {% else %}
-        <div class="empty-state">
-          <p style="font-size:28px;margin-bottom:8px">🗑</p>
-          <p style="font-weight:600;color:#5E5A71">휴지통이 비어 있습니다</p>
-        </div>
-      {% endif %}
+      <div class="trash-actions">
+        <button class="btn-restore" onclick="restoreOne({{ d.id }})">복원</button>
+        <button class="btn-perm-del" onclick="permDeleteOne({{ d.id }})">영구 삭제</button>
+      </div>
     </div>
-
-    {% if total_pages > 1 %}
-    <div class="pagination">
-      <a href="?page={{ page - 1 }}" class="page-btn {% if page <= 1 %}disabled{% endif %}">‹</a>
-      {% for p in range(1, total_pages + 1) %}
-        {% if p >= page - 2 and p <= page + 2 %}
-        <a href="?page={{ p }}" class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
-        {% endif %}
-      {% endfor %}
-      <a href="?page={{ page + 1 }}" class="page-btn {% if page >= total_pages %}disabled{% endif %}">›</a>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <p style="font-size:28px;margin-bottom:8px">🗑</p>
+      <p style="font-weight:600;color:#5E5A71">휴지통이 비어 있습니다</p>
     </div>
-    {% endif %}
-  </div>
+  {% endif %}
 </div>
 
+{% if total_pages > 1 %}
+<div class="pagination">
+  <a href="?page={{ page - 1 }}" class="page-btn {% if page <= 1 %}disabled{% endif %}">‹</a>
+  {% for p in range(1, total_pages + 1) %}
+    {% if p >= page - 2 and p <= page + 2 %}
+    <a href="?page={{ p }}" class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+    {% endif %}
+  {% endfor %}
+  <a href="?page={{ page + 1 }}" class="page-btn {% if page >= total_pages %}disabled{% endif %}">›</a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
 <script>
 const _selected = new Set();
 
@@ -186,9 +126,9 @@ function toggleSelectAll(cb) {
 }
 
 function _updateBulkBtns() {
-  const n  = _selected.size;
-  const r  = document.getElementById('bulkRestoreBtn');
-  const d  = document.getElementById('bulkDelBtn');
+  const n = _selected.size;
+  const r = document.getElementById('bulkRestoreBtn');
+  const d = document.getElementById('bulkDelBtn');
   r.style.display = n > 0 ? 'inline-block' : 'none';
   d.style.display = n > 0 ? 'inline-block' : 'none';
   r.textContent = `${n}개 복원`;
@@ -217,7 +157,6 @@ async function bulkPermDelete() {
   const ids = Array.from(_selected);
   if (!ids.length) return;
   if (!confirm(`${ids.length}개를 영구 삭제합니다. 복원할 수 없습니다.`)) return;
-  const placeholders = ids.map(() => '?').join(',');
   for (const id of ids) {
     await fetch(`/api/content/${id}/permanent`, {method:'DELETE'});
   }
@@ -230,5 +169,4 @@ async function emptyTrash() {
   location.reload();
 }
 </script>
-</body>
-</html>
+{% endblock %}

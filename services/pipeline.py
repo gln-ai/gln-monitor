@@ -93,7 +93,7 @@ def run_content_pipeline(channel: str = None, formats: list = None):
                         country=src.get("country", ""),
                         brief_summary=src.get("brief_summary", "")
                     )
-                    result = checker.check(content)
+                    result = checker.check_full(content)
                     print(f"[파이프라인] {ch}/{fmt} 완료: {src['topic'][:30]} / {result['grade']}")
 
                     conn = get_db()
@@ -175,7 +175,7 @@ def generate_single(channel: str, fmt: str,
 
     content = content_gen.generate(channel, fmt, topic=topic,
                                    country=country, brief_summary=brief_text)
-    result  = checker.check(content)
+    result  = checker.check_full(content)
 
     conn = get_db()
     cur  = conn.execute("""

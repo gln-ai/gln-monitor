@@ -1,38 +1,7 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GLN 보도자료 생성기</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-* { box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #F6F5FF; margin: 0; }
-/* ── 사이드바 (공통) ── */
-.sidebar-nav { width: 220px; min-height: 100vh; background: #130D2A; position: fixed; top: 0; left: 0; z-index: 20; display: flex; flex-direction: column; padding: 20px 14px; }
-.sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px; margin-bottom: 28px; }
-.logo-mark { width: 28px; height: 28px; background: #7000FC; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
-.logo-title { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; }
-.logo-sub { font-size: 10px; color: #5E5A71; }
-.nav-section { margin-bottom: 20px; }
-.nav-section-label { font-size: 9px; font-weight: 600; color: #5E5A71; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
-.nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; margin-bottom: 2px; transition: background 0.15s; }
-.nav-link:hover { background: rgba(255,255,255,0.06); }
-.nav-link.active { background: #7000FC; }
-.nav-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.5; flex-shrink: 0; }
-.nav-link.active .nav-icon { opacity: 1; }
-.nav-text { font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
-.nav-link.active .nav-text { color: #fff; }
-.nav-divider { border: none; border-top: 0.5px solid rgba(255,255,255,0.07); margin: 8px 0; }
-.sidebar-bottom { margin-top: auto; }
-.sidebar-info { background: rgba(112,0,252,0.15); border-radius: 10px; padding: 10px 12px; border: 0.5px solid rgba(112,0,252,0.3); }
-.sidebar-info-text { font-size: 10px; color: #AAA7B8; line-height: 1.7; margin: 0; }
-/* ── 메인 래퍼 ── */
-.main-wrap { margin-left: 220px; min-height: 100vh; display: flex; flex-direction: column; }
-.topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-.topbar-left h1 { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0; }
-.topbar-left p { font-size: 11px; color: #918DA0; margin: 2px 0 0; }
-/* ── 앱 컴포넌트 (원본 CSS 유지) ── */
+{% extends 'base.html' %}
+{% block title %}GLN 보도자료 생성기{% endblock %}
+
+{% block page_styles %}
 :root {
   --color-text-primary: #1a1a2e;
   --color-text-secondary: #5a6a7a;
@@ -49,7 +18,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sa
   --font-sans: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
   --font-mono: 'SF Mono', 'Consolas', monospace;
 }
-.app { display: flex; flex-direction: column; flex: 1; background: #fff; margin: 16px 24px 40px; border-radius: 14px; border: 0.5px solid #E4E1EE; overflow: hidden; }
+.app { display: flex; flex-direction: column; flex: 1; background: #fff; margin: 0 0 40px; border-radius: 14px; border: 0.5px solid #E4E1EE; overflow: hidden; }
 .top-bar { display: flex; align-items: center; gap: 10px; padding: 0.75rem 1.25rem; border-bottom: 0.5px solid var(--color-border-tertiary); flex-shrink: 0; }
 .tabs { display: flex; margin-left: auto; gap: 0; }
 .tab { padding: 6px 15px; font-size: 12px; font-weight: 500; cursor: pointer; color: var(--color-text-secondary); border-bottom: 2px solid transparent; white-space: nowrap; transition: color 0.1s; }
@@ -81,9 +50,9 @@ select { height: 34px; cursor: pointer; }
 .preview-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem; font-size: 12px; line-height: 1.8; color: var(--color-text-primary); white-space: pre-wrap; border: 0.5px solid var(--color-border-tertiary); margin-top: 0.75rem; }
 .loading-box { display: flex; align-items: center; gap: 8px; padding: 1rem; font-size: 12px; color: var(--color-text-secondary); }
 .lib-nav-grp { font-size: 10px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 8px 3px; }
-.nav-item { padding: 7px 9px; font-size: 13px; border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-secondary); margin-bottom: 1px; }
-.nav-item:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
-.nav-item.active { background: #F5F3FF; color: #7000FC; font-weight: 500; }
+.nav-item-pr { padding: 7px 9px; font-size: 13px; border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-secondary); margin-bottom: 1px; }
+.nav-item-pr:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+.nav-item-pr.active { background: #F5F3FF; color: #7000FC; font-weight: 500; }
 .phrase-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 0.9rem 1.1rem; margin-bottom: 0.65rem; }
 .phrase-lbl { font-size: 10px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.4rem; }
 .phrase-txt { font-size: 13px; line-height: 1.8; color: var(--color-text-primary); background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.65rem 0.9rem; position: relative; padding-right: 60px; }
@@ -102,7 +71,7 @@ select { height: 34px; cursor: pointer; }
 .gtbl { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 0.9rem; }
 .gtbl th { background: var(--color-background-secondary); padding: 6px 9px; text-align: left; font-weight: 500; border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
 .gtbl td { padding: 6px 9px; border: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: top; line-height: 1.6; }
-.badge { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 9px; font-weight: 500; }
+.badge-pr { display: inline-block; font-size: 10px; padding: 2px 6px; border-radius: 9px; font-weight: 500; }
 .br { background: #fde8e8; color: #c0392b; }
 .bo { background: #fff0e0; color: #d35400; }
 .bg { background: #e8f5e9; color: #27ae60; }
@@ -124,7 +93,6 @@ select { height: 34px; cursor: pointer; }
 .int-btn { flex: 1; padding: 6px; font-size: 11px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-secondary); text-align: center; transition: all 0.1s; }
 .int-btn:hover { border-color: #7000FC; }
 .int-btn.selected { background: #7000FC; color: #fff; border-color: #7000FC; }
-/* ── 규칙 학습 탭 ── */
 .learn-layout { display: flex; gap: 0; flex: 1; overflow: hidden; }
 .learn-left { width: 360px; min-width: 360px; border-right: 0.5px solid var(--color-border-tertiary); padding: 1.1rem; overflow-y: auto; max-height: calc(100vh - 130px); display: flex; flex-direction: column; gap: 0; }
 .learn-right { flex: 1; padding: 1.1rem; overflow-y: auto; max-height: calc(100vh - 130px); }
@@ -148,265 +116,226 @@ select { height: 34px; cursor: pointer; }
 .btn-reject:hover { background: var(--color-background-secondary); }
 .saved-badge { font-size: 10px; color: #27ae60; font-weight: 600; display: none; margin-left: 6px; }
 .learn-summary { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.65rem 0.9rem; font-size: 11px; color: var(--color-text-secondary); line-height: 1.7; margin-bottom: 1rem; border: 0.5px solid var(--color-border-tertiary); }
-@media (max-width: 768px) {
-  .sidebar-nav { width: 60px; padding: 16px 8px; }
-  .logo-title, .nav-text, .sidebar-info, .nav-section-label, .logo-sub { display: none; }
-  .nav-link { justify-content: center; padding: 10px; }
-  .main-wrap { margin-left: 60px; }
-}
-</style>
-</head>
-<body>
+{% endblock %}
 
-<!-- ── 사이드바 ── -->
-<div class="sidebar-nav">
-  <div style="padding:0 2px;margin-bottom:20px">
-    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
-    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
-    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
+{% block topbar_title %}보도자료 생성기{% endblock %}
+{% block topbar_sub %}GLN 보도자료 작성 규칙 적용 · Claude API 연결{% endblock %}
+
+{% block topbar_actions %}
+<a href="/pr/drafts" class="btn btn-ghost btn-sm" style="text-decoration:none;">초안 목록 보기</a>
+{% endblock %}
+
+{% block content %}
+<div class="app">
+  <div class="top-bar">
+    <div style="width:24px;height:24px;background:#7000FC;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+      <span style="color:#fff;font-size:10px;font-weight:500;">G</span>
+    </div>
+    <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);">GLN 보도자료 생성기</div>
+    <div style="font-size:10px;color:var(--color-text-tertiary);margin-left:1px;">v5</div>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('gen',this)">✏️ 기사 생성</div>
+      <div class="tab" onclick="switchTab('rev',this)">🔄 초안 리바이즈</div>
+      <div class="tab" onclick="switchTab('lib',this)">📚 고정문구</div>
+      <div class="tab" onclick="switchTab('guide',this)">📖 작성 가이드</div>
+      <div class="tab" onclick="switchTab('learn',this)">🧠 규칙 학습</div>
+    </div>
   </div>
-  <div class="nav-section">
-    <div class="nav-section-label">메뉴</div>
-    <a href="/insights" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-text">인사이트</span></a>
-    <a href="/" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-text">GLN 모니터링</span></a>
-    <a href="/content" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-text">콘텐츠 <span style="background:#7000FC;color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;vertical-align:middle;letter-spacing:0.03em">Beta</span></span></a>
-    <a href="/pr" class="nav-link active"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-text">보도자료</span></a>
-    <a href="/reports" class="nav-link"><span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-text">보고서 아카이브</span></a>
+
+  <!-- 기사 생성 탭 -->
+  <div id="tab-gen" class="tab-content active">
+    <div class="app-sidebar">
+      <div class="sl">보도자료 유형</div>
+      <select id="pressType">
+        <option value="서비스 출시">서비스 출시 / 론칭</option>
+        <option value="제휴·파트너십">제휴 · 파트너십 체결</option>
+        <option value="서비스 확대">서비스 확대 / 지역 확장</option>
+        <option value="프로모션·이벤트">프로모션 · 이벤트</option>
+        <option value="투자·성과">투자 유치 / 실적 성과</option>
+        <option value="기술·솔루션">기술 · 솔루션 발표</option>
+      </select>
+      <div class="sl">발표 국가 / 지역 <span style="font-size:9px;color:var(--color-text-tertiary);">(이용자 많은 순)</span></div>
+      <input type="text" id="country" placeholder="예: 일본, 베트남, 라오스" />
+      <div class="sl">핵심 내용 요약 <span style="color:var(--color-text-danger)">*</span></div>
+      <textarea id="summary" placeholder="보도자료 핵심 내용을 1~3줄로 요약해 주세요." style="min-height:75px;"></textarea>
+      <div class="char-c" id="summaryCount">0자</div>
+      <div class="sl">주요 서비스명</div>
+      <input type="text" id="serviceName" placeholder="예: QR출금, 위챗페이 QR결제" />
+      <div class="sl">제휴사 / 파트너 <span class="opt">(선택)</span></div>
+      <input type="text" id="partner" placeholder="예: Tenpay Global" />
+      <div class="sl">포함할 주요 앱</div>
+      <div class="tag-wrap" id="appsWrap" onclick="document.getElementById('appTagInput').focus()">
+        <input class="tag-input" id="appTagInput" placeholder="앱 이름 입력 후 Enter" />
+      </div>
+      <div class="sl">강조 키워드</div>
+      <div class="tag-wrap" id="keywordsWrap" onclick="document.getElementById('kwTagInput').focus()">
+        <input class="tag-input" id="kwTagInput" placeholder="키워드 입력 후 Enter" />
+      </div>
+      <div class="sl">이석 대표 발언 맥락 <span class="opt">(선택)</span></div>
+      <textarea id="ceoContext" placeholder="없으면 기본 문구 자동 사용" style="min-height:45px;"></textarea>
+      <div class="sl">추가 사항 <span class="opt">(선택)</span></div>
+      <textarea id="extra" placeholder="프로모션 기간, 수치, 특이사항 등" style="min-height:45px;"></textarea>
+      <div class="sl">발표 날짜</div>
+      <input type="text" id="releaseDate" placeholder="예: 2026년 4월 15일" />
+      <button class="btn-primary" id="genBtn" onclick="buildAndSend()">기사문 생성하기 ↗</button>
+    </div>
+    <div class="main-panel" id="outputPanel">
+      <div class="placeholder">
+        <div style="font-size:32px;">📄</div>
+        <p style="font-size:13px;color:var(--color-text-secondary);text-align:center;">좌측 양식을 입력하고<br>기사문 생성하기를 눌러주세요</p>
+      </div>
+    </div>
   </div>
-  <div class="sidebar-bottom">
-    <div class="sidebar-info">
-      <p class="sidebar-info-text">보도자료 생성 + 리바이즈<br>Claude API 직접 연결</p>
+
+  <!-- 리바이즈 탭 -->
+  <div id="tab-rev" class="tab-content">
+    <div class="revise-layout">
+      <div class="revise-left">
+        <div class="sl" style="margin-top:0;">리바이즈 모드 선택</div>
+        <div class="mode-grid" id="modeGrid">
+          <div class="mode-card selected" onclick="selectMode('단락 수정',this)">
+            <div class="mc-title">📝 단락 수정</div>
+            <div class="mc-desc">특정 단락만 골라서 다시 쓰기</div>
+          </div>
+          <div class="mode-card" onclick="selectMode('전체 재편집',this)">
+            <div class="mc-title">🔁 전체 재편집</div>
+            <div class="mc-desc">초안 전체를 새 방향으로 개편</div>
+          </div>
+          <div class="mode-card" onclick="selectMode('톤 교정',this)">
+            <div class="mc-title">🎯 톤 교정</div>
+            <div class="mc-desc">문체·어조만 GLN 규칙에 맞게</div>
+          </div>
+          <div class="mode-card" onclick="selectMode('금지어 교정',this)">
+            <div class="mc-title">🚫 금지어 교정</div>
+            <div class="mc-desc">ATM출금·금융서비스 등 자동 수정</div>
+          </div>
+        </div>
+        <div class="sl">초안 붙여넣기 <span style="color:var(--color-text-danger)">*</span></div>
+        <textarea id="draftInput" placeholder="기존에 작성한 보도자료 초안을 여기에 붙여넣으세요." style="min-height:140px;" oninput="updateDraftCount()"></textarea>
+        <div class="char-c" id="draftCount">0자</div>
+        <div class="sl" id="focusLabel">수정 초점 <span class="opt">(복수 선택 가능)</span></div>
+        <div class="focus-chips" id="focusChips">
+          <div class="chip selected" onclick="toggleChip(this)">이용자 규모 순 강조</div>
+          <div class="chip selected" onclick="toggleChip(this)">모바일만으로 여행 컨셉</div>
+          <div class="chip" onclick="toggleChip(this)">대표 발언 개선</div>
+          <div class="chip" onclick="toggleChip(this)">파트너 앱 강조</div>
+          <div class="chip" onclick="toggleChip(this)">프로모션 부각</div>
+          <div class="chip" onclick="toggleChip(this)">서비스 차별점 강화</div>
+          <div class="chip" onclick="toggleChip(this)">리드 문단 강화</div>
+          <div class="chip" onclick="toggleChip(this)">회사 소개 확인</div>
+        </div>
+        <div class="sl">수정 강도</div>
+        <div class="intensity-row" id="intensityRow">
+          <div class="int-btn selected" onclick="selectIntensity(this)">가볍게<br><span style="font-size:9px;opacity:0.8;">표현만 다듬기</span></div>
+          <div class="int-btn" onclick="selectIntensity(this)">보통<br><span style="font-size:9px;opacity:0.8;">구조 일부 조정</span></div>
+          <div class="int-btn" onclick="selectIntensity(this)">강하게<br><span style="font-size:9px;opacity:0.8;">전면 재작성</span></div>
+        </div>
+        <div class="sl">수정 요청 사항 <span class="opt">(선택 — 직접 입력)</span></div>
+        <textarea id="reviseNote" placeholder="예: 일본을 더 전면에 부각시켜줘&#10;예: 대표 발언 앞 인용구가 너무 딱딱해, 좀 더 자연스럽게&#10;예: 3단락이 너무 길어, 핵심만 남기고 압축해줘" style="min-height:70px;"></textarea>
+        <div class="sl">특정 단락 지정 <span class="opt">(선택 — 단락 수정 모드 시)</span></div>
+        <select id="paraSelect">
+          <option value="">전체 (선택 안 함)</option>
+          <option value="제목·소제목">제목 · 소제목</option>
+          <option value="1단락 (리드)">1단락 — 리드 문단</option>
+          <option value="2단락">2단락 — 서비스 특징</option>
+          <option value="3단락">3단락 — 이용 방법 / 앱</option>
+          <option value="4단락 (대표 발언)">4단락 — 이석 대표 발언</option>
+          <option value="5단락 (회사 소개)">5단락 — 회사 소개</option>
+        </select>
+        <button class="btn-primary" id="revBtn" onclick="buildReviseAndSend()">리바이즈 요청하기 ↗</button>
+      </div>
+      <div class="revise-right" id="reviseOutput">
+        <div class="placeholder">
+          <div style="font-size:32px;">🔄</div>
+          <p style="font-size:13px;color:var(--color-text-secondary);text-align:center;">초안을 붙여넣고<br>리바이즈 요청하기를 눌러주세요</p>
+          <p style="font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:6px;">GLN 규칙을 적용해 Claude가<br>수정된 기사문을 바로 작성합니다</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 고정문구 탭 -->
+  <div id="tab-lib" class="tab-content">
+    <div style="display:flex;gap:1.25rem;padding:1.1rem;flex:1;overflow:hidden;max-height:calc(100vh - 130px);">
+      <div style="min-width:195px;border-right:0.5px solid var(--color-border-tertiary);padding-right:1.1rem;overflow-y:auto;">
+        <div class="lib-nav-grp">고정 필수 문구</div>
+        <div class="nav-item-pr active" onclick="showLib('ceo',this)">이석 대표 발언</div>
+        <div class="nav-item-pr" onclick="showLib('intro',this)">회사 소개 단락</div>
+        <div class="nav-item-pr" onclick="showLib('company',this)">회사명 표기법</div>
+        <div class="lib-nav-grp" style="margin-top:6px;">유형별 서두 문구</div>
+        <div class="nav-item-pr" onclick="showLib('launch',this)">서비스 출시</div>
+        <div class="nav-item-pr" onclick="showLib('partnerlib',this)">제휴·파트너십</div>
+        <div class="nav-item-pr" onclick="showLib('expand',this)">서비스 확대</div>
+        <div class="nav-item-pr" onclick="showLib('promo',this)">프로모션·이벤트</div>
+        <div class="lib-nav-grp" style="margin-top:6px;">앱·서비스 표기</div>
+        <div class="nav-item-pr" onclick="showLib('apps',this)">파트너 앱 나열</div>
+        <div class="nav-item-pr" onclick="showLib('noapp',this)">모바일만으로 여행 강조</div>
+      </div>
+      <div style="flex:1;overflow-y:auto;" id="libContent"></div>
+    </div>
+  </div>
+
+  <!-- 가이드 탭 -->
+  <div id="tab-guide" class="tab-content">
+    <div style="display:flex;gap:1.25rem;padding:1.1rem;flex:1;overflow:hidden;max-height:calc(100vh - 130px);">
+      <div style="min-width:185px;border-right:0.5px solid var(--color-border-tertiary);padding-right:1.1rem;overflow-y:auto;">
+        <div class="lib-nav-grp">기본 원칙</div>
+        <div class="nav-item-pr active" onclick="showGuide('structure',this)">보도자료 구조</div>
+        <div class="nav-item-pr" onclick="showGuide('tone',this)">문체·어조 원칙</div>
+        <div class="nav-item-pr" onclick="showGuide('headline',this)">제목 작성법</div>
+        <div class="lib-nav-grp" style="margin-top:6px;">단락별 가이드</div>
+        <div class="nav-item-pr" onclick="showGuide('para1',this)">1단락: 서두</div>
+        <div class="nav-item-pr" onclick="showGuide('para2',this)">2~3단락: 본문</div>
+        <div class="nav-item-pr" onclick="showGuide('para4',this)">4단락: 대표 발언</div>
+        <div class="nav-item-pr" onclick="showGuide('para5',this)">5단락: 회사 소개</div>
+        <div class="lib-nav-grp" style="margin-top:6px;">표기 규정</div>
+        <div class="nav-item-pr" onclick="showGuide('naming',this)">고유명사 표기</div>
+        <div class="nav-item-pr" onclick="showGuide('forbidden',this)" style="color:#c0392b;font-weight:500;">🚫 금지어 규정</div>
+        <div class="nav-item-pr" onclick="showGuide('checklist',this)">최종 체크리스트</div>
+      </div>
+      <div style="flex:1;overflow-y:auto;" id="guideContent"></div>
+    </div>
+  </div>
+
+  <!-- 규칙 학습 탭 -->
+  <div id="tab-learn" class="tab-content">
+    <div class="learn-layout">
+      <div class="learn-left">
+        <div class="sl" style="margin-top:0;">완성 기사문 붙여넣기 <span style="color:var(--color-text-danger)">*</span></div>
+        <textarea id="learnArticle" placeholder="최종 승인된 보도자료를 붙여넣으세요.&#10;Claude가 기사를 분석해 pr_rules.json에 추가할 규칙 후보를 추출합니다." style="min-height:200px;" oninput="document.getElementById('learnCount').textContent=this.value.length+'자'"></textarea>
+        <div class="char-c" id="learnCount">0자</div>
+        <div class="sl">이 기사에 대한 메모 <span class="opt">(선택)</span></div>
+        <textarea id="learnNote" placeholder="예: 일본 QR출금 출시 기사, 2026년 4월 승인본&#10;예: 이 표현 방식 앞으로 계속 쓸 예정&#10;예: 대표 발언 앞 인용구 이 버전으로 고정" style="min-height:60px;"></textarea>
+        <div class="sl">분석 범위</div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-top:0.35rem;">
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
+            <input type="checkbox" id="chkForbidden" checked style="width:auto;"> 금지어 위반·신규 패턴 탐지
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
+            <input type="checkbox" id="chkPhrase" checked style="width:auto;"> 재사용 가치 있는 표현·문구 추출
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
+            <input type="checkbox" id="chkNaming" checked style="width:auto;"> 고유명사 표기 패턴 확인
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
+            <input type="checkbox" id="chkChecklist" checked style="width:auto;"> 체크리스트 항목 추가 제안
+          </label>
+        </div>
+        <button class="btn-primary" id="learnBtn" onclick="runLearn()" style="margin-top:1.2rem;">기사 분석하기 ↗</button>
+      </div>
+      <div class="learn-right" id="learnOutput">
+        <div class="placeholder">
+          <div style="font-size:32px;">🧠</div>
+          <p style="font-size:13px;color:var(--color-text-secondary);text-align:center;">완성 기사를 붙여넣고<br>분석하기를 눌러주세요</p>
+          <p style="font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:6px;">새로운 금지어, 재사용 표현, 명칭 규칙 등<br>pr_rules.json 업데이트 후보를 제안합니다</p>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+{% endblock %}
 
-<!-- ── 메인 ── -->
-<div class="main-wrap">
-  <div class="topbar">
-    <div class="topbar-left">
-      <h1>보도자료 생성기</h1>
-      <p>GLN 보도자료 작성 규칙 적용 · Claude API 연결</p>
-    </div>
-    <a href="/pr/drafts" style="font-size:12px;font-weight:600;color:#7000FC;text-decoration:none;padding:7px 14px;border:1.5px solid #DDD6FE;border-radius:9px;background:#F5F3FF;">초안 목록 보기</a>
-  </div>
-
-  <!-- ── 앱 컴포넌트 ── -->
-  <div class="app">
-    <div class="top-bar">
-      <div style="width:24px;height:24px;background:#7000FC;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-        <span style="color:#fff;font-size:10px;font-weight:500;">G</span>
-      </div>
-      <div style="font-size:13px;font-weight:500;color:var(--color-text-primary);">GLN 보도자료 생성기</div>
-      <div style="font-size:10px;color:var(--color-text-tertiary);margin-left:1px;">v5</div>
-      <div class="tabs">
-        <div class="tab active" onclick="switchTab('gen',this)">✏️ 기사 생성</div>
-        <div class="tab" onclick="switchTab('rev',this)">🔄 초안 리바이즈</div>
-        <div class="tab" onclick="switchTab('lib',this)">📚 고정문구</div>
-        <div class="tab" onclick="switchTab('guide',this)">📖 작성 가이드</div>
-        <div class="tab" onclick="switchTab('learn',this)">🧠 규칙 학습</div>
-      </div>
-    </div>
-
-    <!-- 기사 생성 탭 -->
-    <div id="tab-gen" class="tab-content active">
-      <div class="app-sidebar">
-        <div class="sl">보도자료 유형</div>
-        <select id="pressType">
-          <option value="서비스 출시">서비스 출시 / 론칭</option>
-          <option value="제휴·파트너십">제휴 · 파트너십 체결</option>
-          <option value="서비스 확대">서비스 확대 / 지역 확장</option>
-          <option value="프로모션·이벤트">프로모션 · 이벤트</option>
-          <option value="투자·성과">투자 유치 / 실적 성과</option>
-          <option value="기술·솔루션">기술 · 솔루션 발표</option>
-        </select>
-        <div class="sl">발표 국가 / 지역 <span style="font-size:9px;color:var(--color-text-tertiary);">(이용자 많은 순)</span></div>
-        <input type="text" id="country" placeholder="예: 일본, 베트남, 라오스" />
-        <div class="sl">핵심 내용 요약 <span style="color:var(--color-text-danger)">*</span></div>
-        <textarea id="summary" placeholder="보도자료 핵심 내용을 1~3줄로 요약해 주세요." style="min-height:75px;"></textarea>
-        <div class="char-c" id="summaryCount">0자</div>
-        <div class="sl">주요 서비스명</div>
-        <input type="text" id="serviceName" placeholder="예: QR출금, 위챗페이 QR결제" />
-        <div class="sl">제휴사 / 파트너 <span class="opt">(선택)</span></div>
-        <input type="text" id="partner" placeholder="예: Tenpay Global" />
-        <div class="sl">포함할 주요 앱</div>
-        <div class="tag-wrap" id="appsWrap" onclick="document.getElementById('appTagInput').focus()">
-          <input class="tag-input" id="appTagInput" placeholder="앱 이름 입력 후 Enter" />
-        </div>
-        <div class="sl">강조 키워드</div>
-        <div class="tag-wrap" id="keywordsWrap" onclick="document.getElementById('kwTagInput').focus()">
-          <input class="tag-input" id="kwTagInput" placeholder="키워드 입력 후 Enter" />
-        </div>
-        <div class="sl">이석 대표 발언 맥락 <span class="opt">(선택)</span></div>
-        <textarea id="ceoContext" placeholder="없으면 기본 문구 자동 사용" style="min-height:45px;"></textarea>
-        <div class="sl">추가 사항 <span class="opt">(선택)</span></div>
-        <textarea id="extra" placeholder="프로모션 기간, 수치, 특이사항 등" style="min-height:45px;"></textarea>
-        <div class="sl">발표 날짜</div>
-        <input type="text" id="releaseDate" placeholder="예: 2026년 4월 15일" />
-        <button class="btn-primary" id="genBtn" onclick="buildAndSend()">기사문 생성하기 ↗</button>
-      </div>
-      <div class="main-panel" id="outputPanel">
-        <div class="placeholder">
-          <div style="font-size:32px;">📄</div>
-          <p style="font-size:13px;color:var(--color-text-secondary);text-align:center;">좌측 양식을 입력하고<br>기사문 생성하기를 눌러주세요</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- 리바이즈 탭 -->
-    <div id="tab-rev" class="tab-content">
-      <div class="revise-layout">
-        <div class="revise-left">
-          <div class="sl" style="margin-top:0;">리바이즈 모드 선택</div>
-          <div class="mode-grid" id="modeGrid">
-            <div class="mode-card selected" onclick="selectMode('단락 수정',this)">
-              <div class="mc-title">📝 단락 수정</div>
-              <div class="mc-desc">특정 단락만 골라서 다시 쓰기</div>
-            </div>
-            <div class="mode-card" onclick="selectMode('전체 재편집',this)">
-              <div class="mc-title">🔁 전체 재편집</div>
-              <div class="mc-desc">초안 전체를 새 방향으로 개편</div>
-            </div>
-            <div class="mode-card" onclick="selectMode('톤 교정',this)">
-              <div class="mc-title">🎯 톤 교정</div>
-              <div class="mc-desc">문체·어조만 GLN 규칙에 맞게</div>
-            </div>
-            <div class="mode-card" onclick="selectMode('금지어 교정',this)">
-              <div class="mc-title">🚫 금지어 교정</div>
-              <div class="mc-desc">ATM출금·금융서비스 등 자동 수정</div>
-            </div>
-          </div>
-          <div class="sl">초안 붙여넣기 <span style="color:var(--color-text-danger)">*</span></div>
-          <textarea id="draftInput" placeholder="기존에 작성한 보도자료 초안을 여기에 붙여넣으세요." style="min-height:140px;" oninput="updateDraftCount()"></textarea>
-          <div class="char-c" id="draftCount">0자</div>
-          <div class="sl" id="focusLabel">수정 초점 <span class="opt">(복수 선택 가능)</span></div>
-          <div class="focus-chips" id="focusChips">
-            <div class="chip selected" onclick="toggleChip(this)">이용자 규모 순 강조</div>
-            <div class="chip selected" onclick="toggleChip(this)">모바일만으로 여행 컨셉</div>
-            <div class="chip" onclick="toggleChip(this)">대표 발언 개선</div>
-            <div class="chip" onclick="toggleChip(this)">파트너 앱 강조</div>
-            <div class="chip" onclick="toggleChip(this)">프로모션 부각</div>
-            <div class="chip" onclick="toggleChip(this)">서비스 차별점 강화</div>
-            <div class="chip" onclick="toggleChip(this)">리드 문단 강화</div>
-            <div class="chip" onclick="toggleChip(this)">회사 소개 확인</div>
-          </div>
-          <div class="sl">수정 강도</div>
-          <div class="intensity-row" id="intensityRow">
-            <div class="int-btn selected" onclick="selectIntensity(this)">가볍게<br><span style="font-size:9px;opacity:0.8;">표현만 다듬기</span></div>
-            <div class="int-btn" onclick="selectIntensity(this)">보통<br><span style="font-size:9px;opacity:0.8;">구조 일부 조정</span></div>
-            <div class="int-btn" onclick="selectIntensity(this)">강하게<br><span style="font-size:9px;opacity:0.8;">전면 재작성</span></div>
-          </div>
-          <div class="sl">수정 요청 사항 <span class="opt">(선택 — 직접 입력)</span></div>
-          <textarea id="reviseNote" placeholder="예: 일본을 더 전면에 부각시켜줘&#10;예: 대표 발언 앞 인용구가 너무 딱딱해, 좀 더 자연스럽게&#10;예: 3단락이 너무 길어, 핵심만 남기고 압축해줘" style="min-height:70px;"></textarea>
-          <div class="sl">특정 단락 지정 <span class="opt">(선택 — 단락 수정 모드 시)</span></div>
-          <select id="paraSelect">
-            <option value="">전체 (선택 안 함)</option>
-            <option value="제목·소제목">제목 · 소제목</option>
-            <option value="1단락 (리드)">1단락 — 리드 문단</option>
-            <option value="2단락">2단락 — 서비스 특징</option>
-            <option value="3단락">3단락 — 이용 방법 / 앱</option>
-            <option value="4단락 (대표 발언)">4단락 — 이석 대표 발언</option>
-            <option value="5단락 (회사 소개)">5단락 — 회사 소개</option>
-          </select>
-          <button class="btn-primary" id="revBtn" onclick="buildReviseAndSend()">리바이즈 요청하기 ↗</button>
-        </div>
-        <div class="revise-right" id="reviseOutput">
-          <div class="placeholder">
-            <div style="font-size:32px;">🔄</div>
-            <p style="font-size:13px;color:var(--color-text-secondary);text-align:center;">초안을 붙여넣고<br>리바이즈 요청하기를 눌러주세요</p>
-            <p style="font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:6px;">GLN 규칙을 적용해 Claude가<br>수정된 기사문을 바로 작성합니다</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 고정문구 탭 -->
-    <div id="tab-lib" class="tab-content">
-      <div style="display:flex;gap:1.25rem;padding:1.1rem;flex:1;overflow:hidden;max-height:calc(100vh - 130px);">
-        <div style="min-width:195px;border-right:0.5px solid var(--color-border-tertiary);padding-right:1.1rem;overflow-y:auto;">
-          <div class="lib-nav-grp">고정 필수 문구</div>
-          <div class="nav-item active" onclick="showLib('ceo',this)">이석 대표 발언</div>
-          <div class="nav-item" onclick="showLib('intro',this)">회사 소개 단락</div>
-          <div class="nav-item" onclick="showLib('company',this)">회사명 표기법</div>
-          <div class="lib-nav-grp" style="margin-top:6px;">유형별 서두 문구</div>
-          <div class="nav-item" onclick="showLib('launch',this)">서비스 출시</div>
-          <div class="nav-item" onclick="showLib('partnerlib',this)">제휴·파트너십</div>
-          <div class="nav-item" onclick="showLib('expand',this)">서비스 확대</div>
-          <div class="nav-item" onclick="showLib('promo',this)">프로모션·이벤트</div>
-          <div class="lib-nav-grp" style="margin-top:6px;">앱·서비스 표기</div>
-          <div class="nav-item" onclick="showLib('apps',this)">파트너 앱 나열</div>
-          <div class="nav-item" onclick="showLib('noapp',this)">모바일만으로 여행 강조</div>
-        </div>
-        <div style="flex:1;overflow-y:auto;" id="libContent"></div>
-      </div>
-    </div>
-
-    <!-- 가이드 탭 -->
-    <div id="tab-guide" class="tab-content">
-      <div style="display:flex;gap:1.25rem;padding:1.1rem;flex:1;overflow:hidden;max-height:calc(100vh - 130px);">
-        <div style="min-width:185px;border-right:0.5px solid var(--color-border-tertiary);padding-right:1.1rem;overflow-y:auto;">
-          <div class="lib-nav-grp">기본 원칙</div>
-          <div class="nav-item active" onclick="showGuide('structure',this)">보도자료 구조</div>
-          <div class="nav-item" onclick="showGuide('tone',this)">문체·어조 원칙</div>
-          <div class="nav-item" onclick="showGuide('headline',this)">제목 작성법</div>
-          <div class="lib-nav-grp" style="margin-top:6px;">단락별 가이드</div>
-          <div class="nav-item" onclick="showGuide('para1',this)">1단락: 서두</div>
-          <div class="nav-item" onclick="showGuide('para2',this)">2~3단락: 본문</div>
-          <div class="nav-item" onclick="showGuide('para4',this)">4단락: 대표 발언</div>
-          <div class="nav-item" onclick="showGuide('para5',this)">5단락: 회사 소개</div>
-          <div class="lib-nav-grp" style="margin-top:6px;">표기 규정</div>
-          <div class="nav-item" onclick="showGuide('naming',this)">고유명사 표기</div>
-          <div class="nav-item" onclick="showGuide('forbidden',this)" style="color:#c0392b;font-weight:500;">🚫 금지어 규정</div>
-          <div class="nav-item" onclick="showGuide('checklist',this)">최종 체크리스트</div>
-        </div>
-        <div style="flex:1;overflow-y:auto;" id="guideContent"></div>
-      </div>
-    </div>
-
-    <!-- 규칙 학습 탭 -->
-    <div id="tab-learn" class="tab-content">
-      <div class="learn-layout">
-        <!-- 왼쪽: 입력 -->
-        <div class="learn-left">
-          <div class="sl" style="margin-top:0;">완성 기사문 붙여넣기 <span style="color:var(--color-text-danger)">*</span></div>
-          <textarea id="learnArticle" placeholder="최종 승인된 보도자료를 붙여넣으세요.&#10;Claude가 기사를 분석해 pr_rules.json에 추가할 규칙 후보를 추출합니다." style="min-height:200px;" oninput="document.getElementById('learnCount').textContent=this.value.length+'자'"></textarea>
-          <div class="char-c" id="learnCount">0자</div>
-
-          <div class="sl">이 기사에 대한 메모 <span class="opt">(선택)</span></div>
-          <textarea id="learnNote" placeholder="예: 일본 QR출금 출시 기사, 2026년 4월 승인본&#10;예: 이 표현 방식 앞으로 계속 쓸 예정&#10;예: 대표 발언 앞 인용구 이 버전으로 고정" style="min-height:60px;"></textarea>
-
-          <div class="sl">분석 범위</div>
-          <div style="display:flex;flex-direction:column;gap:5px;margin-top:0.35rem;">
-            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
-              <input type="checkbox" id="chkForbidden" checked style="width:auto;"> 금지어 위반·신규 패턴 탐지
-            </label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
-              <input type="checkbox" id="chkPhrase" checked style="width:auto;"> 재사용 가치 있는 표현·문구 추출
-            </label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
-              <input type="checkbox" id="chkNaming" checked style="width:auto;"> 고유명사 표기 패턴 확인
-            </label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:12px;cursor:pointer;">
-              <input type="checkbox" id="chkChecklist" checked style="width:auto;"> 체크리스트 항목 추가 제안
-            </label>
-          </div>
-
-          <button class="btn-primary" id="learnBtn" onclick="runLearn()" style="margin-top:1.2rem;">기사 분석하기 ↗</button>
-        </div>
-
-        <!-- 오른쪽: 분석 결과 -->
-        <div class="learn-right" id="learnOutput">
-          <div class="placeholder">
-            <div style="font-size:32px;">🧠</div>
-            <p style="font-size:13px;color:var(--color-text-secondary);text-align:center;">완성 기사를 붙여넣고<br>분석하기를 눌러주세요</p>
-            <p style="font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:6px;">새로운 금지어, 재사용 표현, 명칭 규칙 등<br>pr_rules.json 업데이트 후보를 제안합니다</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /.app -->
-</div><!-- /.main-wrap -->
-
+{% block scripts %}
 <script>
 const appTags=[], kwTags=[];
 let selectedMode='단락 수정';
@@ -597,7 +526,6 @@ function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 async function savePrDraft(btn) {
   const raw = window._lastPrResult || '';
   if (!raw) return;
-  // 간단 파싱: ## 섹션으로 분리
   const sections = {};
   let cur = '', buf = [];
   raw.split('\n').forEach(line => {
@@ -623,29 +551,6 @@ async function savePrDraft(btn) {
   const data = await res.json();
   btn.textContent = '✓ 저장됨 #' + data.id;
   btn.style.background = '#047857';
-  loadPrDrafts();
-}
-
-async function loadPrDrafts() {
-  const res   = await fetch('/api/pr/drafts');
-  const items = await res.json();
-  const wrap  = document.getElementById('prDraftList');
-  if (!wrap) return;
-  if (!items.length) { wrap.innerHTML = '<div style="color:#AAA7B8;font-size:12px;padding:12px">저장된 초안 없음</div>'; return; }
-  wrap.innerHTML = items.map(d => `
-    <div style="padding:10px 0;border-bottom:0.5px solid #F6F5FF;display:flex;align-items:flex-start;gap:8px">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:600;color:#130D2A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(d.headline||'(제목 없음)')}</div>
-        <div style="font-size:10px;color:#AAA7B8;margin-top:2px">${(d.created_at||'').slice(0,16)}</div>
-      </div>
-      <button onclick="deletePrDraft(${d.id},this)" style="background:none;border:none;color:#AAA7B8;cursor:pointer;font-size:13px;padding:2px 5px;border-radius:4px" title="삭제">✕</button>
-    </div>`).join('');
-}
-
-async function deletePrDraft(id, btn) {
-  if (!confirm('삭제하시겠습니까?')) return;
-  await fetch(`/api/pr/drafts/${id}`, {method:'DELETE'});
-  loadPrDrafts();
 }
 
 function cpText(sel,label,btn){
@@ -701,11 +606,11 @@ const guideData={
   para5:`<div class="gh2">5단락: 회사 소개 (고정)</div><div class="gbox good">GLN은 2021년 7월 하나은행에서 분사해 설립된 핀테크 자회사로, 베트남, 중국, 홍콩, 마카오, 태국, 필리핀, 라오스, 일본, 대만 등 주요 지역에서 QR결제 및 QR출금 서비스를 제공하고 있다. 글로벌 금융기관 및 플랫폼 기업과의 협력을 기반으로 해외 지급결제 네트워크를 확대하고 있다.</div>`,
   naming:`<div class="gh2">고유명사 표기</div><table class="gtbl"><thead><tr><th>항목</th><th>올바른 표기</th><th>금지 표기</th></tr></thead><tbody><tr><td>출금 서비스명</td><td>QR출금</td><td>ATM출금, ATM 출금, ATMQR출금</td></tr><tr><td>회사명 (전체)</td><td>GLN인터내셔널</td><td>GLN 인터내셔널</td></tr><tr><td>대표</td><td>이석 GLN 대표</td><td>이석 대표이사</td></tr><tr><td>파트너 앱</td><td>퍼플GLN</td><td>퍼플 GLN</td></tr><tr><td>위챗페이</td><td>위챗페이(Weixin Pay)</td><td>WeChat Pay</td></tr><tr><td>국가 나열</td><td>일본·베트남·라오스</td><td>일본/베트남/라오스</td></tr></tbody></table>`,
   forbidden:`<div class="gh2">🚫 금지어 규정</div><table class="gtbl"><thead><tr><th>금지 표현</th><th>대체 표현</th></tr></thead><tbody><tr><td style="color:#c0392b;font-weight:500;">ATM출금 / ATM 출금 / ATMQR출금</td><td>QR출금</td></tr><tr><td style="color:#c0392b;font-weight:500;">금융서비스 / 금융 서비스</td><td>현금 인출 서비스 / QR출금 서비스</td></tr></tbody></table><div class="gbox bad">✗ "해외에서도 편리한 금융서비스를 누릴 수 있게 됐다"</div><div class="gbox good">✓ "스마트폰만으로 현금 인출 서비스를 이용할 수 있게 됐다"</div>`,
-  checklist:`<div class="gh2">배포 전 최종 체크리스트</div><table class="gtbl"><thead><tr><th>항목</th><th></th></tr></thead><tbody><tr><td>회사명 최초 등장 시 전체 형식 사용</td><td><span class="badge br">필수</span></td></tr><tr><td>이석 대표 발언 + 뒷 인용구 고정 문구</td><td><span class="badge br">필수</span></td></tr><tr><td>대표 발언에 "금융서비스" 없는지 확인</td><td><span class="badge br">필수</span></td></tr><tr><td>기사 전체에 "ATM출금" 없는지 확인</td><td><span class="badge br">필수</span></td></tr><tr><td>기사 전체에 "금융서비스" 없는지 확인</td><td><span class="badge br">필수</span></td></tr><tr><td>국가 나열 이용자 규모 순 확인</td><td><span class="badge br">필수</span></td></tr><tr><td>"스마트폰만으로 여행" 컨셉 반영</td><td><span class="badge br">필수</span></td></tr><tr><td>회사 소개 고정 문구 마지막 단락 포함</td><td><span class="badge br">필수</span></td></tr><tr><td>국가명 가운뎃점(·) 연결</td><td><span class="badge bo">권장</span></td></tr><tr><td>보도 문의 담당자 정보 하단 포함</td><td><span class="badge br">필수</span></td></tr></tbody></table>`
+  checklist:`<div class="gh2">배포 전 최종 체크리스트</div><table class="gtbl"><thead><tr><th>항목</th><th></th></tr></thead><tbody><tr><td>회사명 최초 등장 시 전체 형식 사용</td><td><span class="badge-pr br">필수</span></td></tr><tr><td>이석 대표 발언 + 뒷 인용구 고정 문구</td><td><span class="badge-pr br">필수</span></td></tr><tr><td>대표 발언에 "금융서비스" 없는지 확인</td><td><span class="badge-pr br">필수</span></td></tr><tr><td>기사 전체에 "ATM출금" 없는지 확인</td><td><span class="badge-pr br">필수</span></td></tr><tr><td>기사 전체에 "금융서비스" 없는지 확인</td><td><span class="badge-pr br">필수</span></td></tr><tr><td>국가 나열 이용자 규모 순 확인</td><td><span class="badge-pr br">필수</span></td></tr><tr><td>"스마트폰만으로 여행" 컨셉 반영</td><td><span class="badge-pr br">필수</span></td></tr><tr><td>회사 소개 고정 문구 마지막 단락 포함</td><td><span class="badge-pr br">필수</span></td></tr><tr><td>국가명 가운뎃점(·) 연결</td><td><span class="badge-pr bo">권장</span></td></tr><tr><td>보도 문의 담당자 정보 하단 포함</td><td><span class="badge-pr br">필수</span></td></tr></tbody></table>`
 };
 
 function showLib(key,el){
-  document.querySelectorAll('#tab-lib .nav-item').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('#tab-lib .nav-item-pr').forEach(e=>e.classList.remove('active'));
   if(el)el.classList.add('active');
   const d=libData[key];if(!d)return;
   let html=`<div style="font-size:14px;font-weight:500;margin-bottom:0.9rem;">${d.title}</div>`;
@@ -719,15 +624,14 @@ function copyPhrase(idx,key,btn){
   navigator.clipboard.writeText(libData[key].items[idx].text).then(()=>{btn.textContent='복사됨!';setTimeout(()=>btn.textContent='복사',1500);});
 }
 function showGuide(key,el){
-  document.querySelectorAll('#tab-guide .nav-item').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('#tab-guide .nav-item-pr').forEach(e=>e.classList.remove('active'));
   if(el)el.classList.add('active');
   document.getElementById('guideContent').innerHTML=guideData[key]||'';
 }
 
-showLib('ceo', document.querySelector('#tab-lib .nav-item'));
-showGuide('structure', document.querySelector('#tab-guide .nav-item'));
+showLib('ceo', document.querySelector('#tab-lib .nav-item-pr'));
+showGuide('structure', document.querySelector('#tab-guide .nav-item-pr'));
 
-/* ── 규칙 학습 ── */
 const TYPE_META = {
   forbidden: { label:'금지어·치환 규칙', cls:'forbidden' },
   phrase:    { label:'재사용 표현·고정 문구', cls:'phrase' },
@@ -781,7 +685,6 @@ function renderSuggestions(suggestions, summary) {
   let html = '';
   if (summary) html += `<div class="learn-summary">${escHtml(summary)}</div>`;
   html += `<div style="font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:0.75rem;">추출된 규칙 후보 ${suggestions.length}건 — 항목별로 승인/거절하세요</div>`;
-
   suggestions.forEach((s, i) => {
     const meta = TYPE_META[s.type] || { label:s.type, cls:'phrase' };
     html += `
@@ -796,12 +699,10 @@ function renderSuggestions(suggestions, summary) {
       </div>
     </div>`;
   });
-  // 전체 승인 버튼
   html += `<div style="margin-top:1rem;display:flex;gap:8px;">
     <button class="btn-primary" style="width:auto;padding:8px 20px;" onclick="acceptAll()">전체 승인 및 저장</button>
   </div>`;
   document.getElementById('learnOutput').innerHTML = html;
-  // 제안 목록을 전역에 보관
   window._learnSuggestions = suggestions;
 }
 
@@ -848,5 +749,4 @@ async function acceptAll() {
   } catch(e) { alert('오류: ' + e.message); }
 }
 </script>
-</body>
-</html>
+{% endblock %}

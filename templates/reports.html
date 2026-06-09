@@ -1,286 +1,213 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GLN 보고서 아카이브</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #F6F5FF; margin: 0; }
-  .sidebar { width: 220px; min-height: 100vh; background: #130D2A; position: fixed; top: 0; left: 0; z-index: 20; display: flex; flex-direction: column; padding: 20px 14px; }
-  .logo-mark { width: 28px; height: 28px; background: #7000FC; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
-  .nav-section { margin-bottom: 20px; }
-  .nav-section-label { font-size: 9px; font-weight: 600; color: #5E5A71; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; margin-bottom: 2px; }
-  .nav-item:hover { background: rgba(255,255,255,0.06); }
-  .nav-item.active { background: #7000FC; }
-  .nav-item-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.5; flex-shrink: 0; }
-  .nav-item.active .nav-item-icon { opacity: 1; }
-  .nav-item-text { font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
-  .nav-item.active .nav-item-text { color: #fff; }
-  .main-wrap { margin-left: 220px; min-height: 100vh; }
-  .topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-  .topbar-left h1 { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0; }
-  .topbar-left p { font-size: 11px; color: #918DA0; margin: 2px 0 0; }
-  .content { padding: 20px 24px 40px; }
-  .section-label { font-size: 13px; font-weight: 700; color: #130D2A; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-  .section-label .badge { font-size: 10px; background: #F6F5FF; color: #7000FC; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
-  .report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-bottom: 28px; }
-  .report-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; padding: 16px 18px; cursor: pointer; transition: box-shadow 0.15s; }
-  .report-card:hover { box-shadow: 0 2px 12px rgba(112,0,252,0.08); border-color: #DDD6FE; }
-  .report-card-type { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #918DA0; }
-  .report-card-period { font-size: 14px; font-weight: 700; color: #130D2A; margin: 6px 0 10px; }
-  .report-card-stats { display: flex; gap: 18px; }
-  .report-stat-value { font-size: 18px; font-weight: 700; color: #130D2A; line-height: 1; }
-  .report-stat-label { font-size: 10px; color: #AAA7B8; margin-top: 3px; }
-  .empty-card { background: #fff; border: 0.5px dashed #DAD9EA; border-radius: 14px; padding: 32px; text-align: center; color: #AAA7B8; font-size: 12px; margin-bottom: 28px; }
-  /* view toggle */
-  .view-btn { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; border: 0.5px solid #E4E1EE; background: #fff; color: #918DA0; cursor: pointer; transition: all 0.15s; }
-  .view-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; }
-  /* daily row-view */
-  .daily-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border: 0.5px solid #E4E1EE; border-radius: 10px; margin-bottom: 4px; cursor: pointer; transition: box-shadow 0.15s; }
-  .daily-row:hover { box-shadow: 0 2px 8px rgba(112,0,252,0.08); border-color: #DDD6FE; }
-  .daily-date { font-size: 13px; font-weight: 700; color: #130D2A; width: 40px; flex-shrink: 0; }
-  .daily-total { font-size: 12px; color: #918DA0; width: 38px; flex-shrink: 0; }
-  .urgent-chip { font-size: 10px; font-weight: 700; color: #DC2626; background: #FEF2F2; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
-  /* 모달 */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(19,13,42,0.5); z-index: 50; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 16px; }
-  .modal-box { background: #fff; border-radius: 16px; padding: 28px; width: 860px; max-width: 96vw; position: relative; }
-  .modal-close { position: absolute; top: 16px; right: 16px; background: #F6F5FF; border: none; border-radius: 8px; width: 28px; height: 28px; cursor: pointer; font-size: 14px; color: #5E5A71; }
-  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-  .stat-box { background: #F6F5FF; border-radius: 10px; padding: 12px 14px; }
-  .stat-box-label { font-size: 10px; color: #918DA0; margin-bottom: 4px; }
-  .stat-box-value { font-size: 22px; font-weight: 700; color: #130D2A; }
-  .section-h { font-size: 11px; font-weight: 600; color: #918DA0; text-transform: uppercase; letter-spacing: 0.08em; margin: 18px 0 10px; border-top: 0.5px solid #F0EDF7; padding-top: 14px; }
-  .kw-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 0.5px solid #F6F5FF; font-size: 12px; }
-  .kw-bar-wrap { flex: 1; margin: 0 12px; height: 5px; background: #F6F5FF; border-radius: 99px; overflow: hidden; }
-  .kw-bar { height: 100%; background: #7000FC; border-radius: 99px; }
-  .sidebar-bottom { margin-top: auto; }
-  .sidebar-info { background: rgba(112,0,252,0.15); border-radius: 10px; padding: 10px 12px; border: 0.5px solid rgba(112,0,252,0.3); }
-  .sidebar-info-text { font-size: 10px; color: #AAA7B8; line-height: 1.7; margin: 0; }
-  @media (max-width: 768px) {
-    .sidebar { width: 60px; padding: 16px 8px; }
-    .nav-item-text, .nav-section-label { display: none; }
-    .nav-item { justify-content: center; padding: 10px; }
-    .main-wrap { margin-left: 60px; }
-    .content { padding: 16px; }
-    .stat-grid { grid-template-columns: repeat(2,1fr); }
-  }
-</style>
-</head>
-<body>
+{% extends 'base.html' %}
+{% block title %}GLN 보고서 아카이브{% endblock %}
 
-<div class="sidebar">
-  <div style="padding:0 2px;margin-bottom:20px">
-    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
-    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
-    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block page_styles %}
+.section-label { font-size: 13px; font-weight: 700; color: #130D2A; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.section-label .badge { font-size: 10px; background: #F6F5FF; color: #7000FC; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
+.report-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-bottom: 28px; }
+.report-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; padding: 16px 18px; cursor: pointer; transition: box-shadow 0.15s; }
+.report-card:hover { box-shadow: 0 2px 12px rgba(112,0,252,0.08); border-color: #DDD6FE; }
+.report-card-type { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #918DA0; }
+.report-card-period { font-size: 14px; font-weight: 700; color: #130D2A; margin: 6px 0 10px; }
+.report-card-stats { display: flex; gap: 18px; }
+.report-stat-value { font-size: 18px; font-weight: 700; color: #130D2A; line-height: 1; }
+.report-stat-label { font-size: 10px; color: #AAA7B8; margin-top: 3px; }
+.empty-card { background: #fff; border: 0.5px dashed #DAD9EA; border-radius: 14px; padding: 32px; text-align: center; color: #AAA7B8; font-size: 12px; margin-bottom: 28px; }
+.view-btn { font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 6px; border: 0.5px solid #E4E1EE; background: #fff; color: #918DA0; cursor: pointer; transition: all 0.15s; }
+.view-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; }
+.daily-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #fff; border: 0.5px solid #E4E1EE; border-radius: 10px; margin-bottom: 4px; cursor: pointer; transition: box-shadow 0.15s; }
+.daily-row:hover { box-shadow: 0 2px 8px rgba(112,0,252,0.08); border-color: #DDD6FE; }
+.daily-date { font-size: 13px; font-weight: 700; color: #130D2A; width: 40px; flex-shrink: 0; }
+.daily-total { font-size: 12px; color: #918DA0; width: 38px; flex-shrink: 0; }
+.urgent-chip { font-size: 10px; font-weight: 700; color: #DC2626; background: #FEF2F2; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.report-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(19,13,42,0.5); z-index: 50; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 16px; }
+.report-modal-box { background: #fff; border-radius: 16px; padding: 28px; width: 860px; max-width: 96vw; position: relative; }
+.modal-close { position: absolute; top: 16px; right: 16px; background: #F6F5FF; border: none; border-radius: 8px; width: 28px; height: 28px; cursor: pointer; font-size: 14px; color: #5E5A71; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+.stat-box { background: #F6F5FF; border-radius: 10px; padding: 12px 14px; }
+.stat-box-label { font-size: 10px; color: #918DA0; margin-bottom: 4px; }
+.stat-box-value { font-size: 22px; font-weight: 700; color: #130D2A; }
+.section-h { font-size: 11px; font-weight: 600; color: #918DA0; text-transform: uppercase; letter-spacing: 0.08em; margin: 18px 0 10px; border-top: 0.5px solid #F0EDF7; padding-top: 14px; }
+.kw-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 0.5px solid #F6F5FF; font-size: 12px; }
+.kw-bar-wrap { flex: 1; margin: 0 12px; height: 5px; background: #F6F5FF; border-radius: 99px; overflow: hidden; }
+.kw-bar { height: 100%; background: #7000FC; border-radius: 99px; }
+{% endblock %}
+
+{% block sidebar_bottom %}
+<div style="background:rgba(112,0,252,0.15);border-radius:10px;padding:10px 12px;border:0.5px solid rgba(112,0,252,0.3)">
+  <p style="font-size:10px;color:#AAA7B8;line-height:1.7;margin:0">일간 30일 · 주간 12주<br>월간 무기한 자동 저장</p>
+</div>
+{% endblock %}
+
+{% block topbar_title %}보고서 아카이브{% endblock %}
+{% block topbar_sub %}일간·주간·월간 자동 저장 로그 (일간 30일 / 주간 12주 / 월간 무기한){% endblock %}
+
+{% block content %}
+
+<!-- 이메일 발송 이력 -->
+<div style="margin-bottom:28px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div class="section-label" style="margin-bottom:0">
+      이메일 발송 이력 <span id="log-count" class="badge"></span>
+    </div>
+    <button onclick="loadEmailLog()" style="font-size:11px;background:#F6F5FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">새로고침</button>
   </div>
-  <div class="nav-section">
-    <div class="nav-section-label">메뉴</div>
-    <a href="/insights" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-item-text">인사이트</span></a>
-    <a href="/" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-item-text">GLN 모니터링</span></a>
-    <a href="/content" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-item-text">콘텐츠 <span style="background:#7000FC;color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;vertical-align:middle;letter-spacing:0.03em">Beta</span></span></a>
-    <a href="/pr" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-item-text">보도자료</span></a>
-    <a href="/reports" class="nav-item active"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-item-text">보고서 아카이브</span></a>
-  </div>
-  <div class="sidebar-bottom">
-    <div class="sidebar-info"><p class="sidebar-info-text">일간 30일 · 주간 12주<br>월간 무기한 자동 저장</p></div>
+  <div id="email-log-list">
+    <div style="text-align:center;padding:20px;color:#AAA7B8;font-size:12px">불러오는 중...</div>
   </div>
 </div>
 
-<div class="main-wrap">
-  <div class="topbar">
-    <div class="topbar-left">
-      <h1>보고서 아카이브</h1>
-      <p>일간·주간·월간 자동 저장 로그 (일간 30일 / 주간 12주 / 월간 무기한)</p>
+<!-- 월간 -->
+<div class="section-label">
+  월간 보고서 <span class="badge">{{ monthly|length }}건</span>
+</div>
+{% if monthly %}
+<div class="report-grid" style="margin-bottom:28px">
+  {% for r in monthly %}
+  {% set hs = r.health_score %}
+  {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
+  <div class="report-card" onclick="showReport('monthly','{{ r.filename }}')">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div class="report-card-type">Monthly</div>
+      <div style="font-size:11px;font-weight:700;color:{{ hc }};background:{{ hc }}18;padding:2px 9px;border-radius:99px;white-space:nowrap">{{ hs }}</div>
+    </div>
+    <div class="report-card-period">{{ r.period_start[:4] }}년 {{ r.period_start[5:7] }}월</div>
+    <div class="report-card-stats">
+      <div><div class="report-stat-value">{{ r.total }}</div><div class="report-stat-label">총 수집</div></div>
+      <div><div class="report-stat-value" style="color:#DC2626">{{ r.urgent }}</div><div class="report-stat-label">긴급</div></div>
+    </div>
+    <div style="display:flex;height:4px;border-radius:99px;overflow:hidden;margin-top:14px">
+      <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
+      <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
+      <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
     </div>
   </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-card">월간 보고서 없음 (매월 1일 09:10 자동 저장)</div>
+{% endif %}
 
-  <div class="content">
-
-    <!-- 이메일 발송 이력 -->
-    <div style="margin-bottom:28px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="section-label" style="margin-bottom:0">
-          이메일 발송 이력 <span id="log-count" class="badge"></span>
-        </div>
-        <button onclick="loadEmailLog()" style="font-size:11px;background:#F6F5FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">새로고침</button>
+<!-- 주간 -->
+<div class="section-label">
+  주간 보고서 <span class="badge">{{ weekly|length }}건</span>
+</div>
+{% if weekly %}
+<div class="report-grid" style="margin-bottom:28px">
+  {% for r in weekly %}
+  {% set hs = r.health_score %}
+  {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
+  <div class="report-card">
+    <div onclick="showReport('weekly','{{ r.filename }}')" style="cursor:pointer">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div class="report-card-type">Weekly</div>
+        <div style="font-size:11px;font-weight:700;color:{{ hc }};background:{{ hc }}18;padding:2px 9px;border-radius:99px;white-space:nowrap">{{ hs }}</div>
       </div>
-      <div id="email-log-list">
-        <div style="text-align:center;padding:20px;color:#AAA7B8;font-size:12px">불러오는 중...</div>
+      <div class="report-card-period">{{ r.period_start[5:10] }} ~ {{ r.period_end[5:10] }}</div>
+      <div class="report-card-stats">
+        <div><div class="report-stat-value">{{ r.total }}</div><div class="report-stat-label">총 수집</div></div>
+        <div><div class="report-stat-value" style="color:#DC2626">{{ r.urgent }}</div><div class="report-stat-label">긴급</div></div>
+      </div>
+      <div style="display:flex;height:4px;border-radius:99px;overflow:hidden;margin-top:14px">
+        <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
+        <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
+        <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
       </div>
     </div>
+    <div style="margin-top:10px;text-align:right;border-top:0.5px solid #F6F5FF;padding-top:8px">
+      <button onclick="openSendModal('weekly')" style="font-size:11px;background:#F0E6FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">📧 발송</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-card">주간 보고서 없음 (매주 월요일 09:05 자동 저장)</div>
+{% endif %}
 
-    <!-- 월간 -->
-    <div class="section-label">
-      월간 보고서 <span class="badge">{{ monthly|length }}건</span>
-    </div>
-    {% if monthly %}
-    <div class="report-grid" style="margin-bottom:28px">
-      {% for r in monthly %}
-      {% set hs = r.health_score %}
-      {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
-      <div class="report-card" onclick="showReport('monthly','{{ r.filename }}')">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <div class="report-card-type">Monthly</div>
-          <div style="font-size:11px;font-weight:700;color:{{ hc }};background:{{ hc }}18;padding:2px 9px;border-radius:99px;white-space:nowrap">{{ hs }}</div>
-        </div>
-        <div class="report-card-period">{{ r.period_start[:4] }}년 {{ r.period_start[5:7] }}월</div>
-        <div class="report-card-stats">
-          <div>
-            <div class="report-stat-value">{{ r.total }}</div>
-            <div class="report-stat-label">총 수집</div>
-          </div>
-          <div>
-            <div class="report-stat-value" style="color:#DC2626">{{ r.urgent }}</div>
-            <div class="report-stat-label">긴급</div>
-          </div>
-        </div>
-        <div style="display:flex;height:4px;border-radius:99px;overflow:hidden;margin-top:14px">
-          <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
-          <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
-          <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-    {% else %}
-    <div class="empty-card">월간 보고서 없음 (매월 1일 09:10 자동 저장)</div>
-    {% endif %}
+<!-- 일간 -->
+<div class="section-label" style="justify-content:space-between">
+  <span>일간 보고서 <span class="badge">{{ daily|length }}건</span></span>
+  {% if daily %}
+  <div style="display:flex;gap:6px">
+    <button id="btnDailyGrid" onclick="setDailyView('grid')" class="view-btn active">⊞ 카드</button>
+    <button id="btnDailyList" onclick="setDailyView('list')" class="view-btn">≡ 목록</button>
+  </div>
+  {% endif %}
+</div>
 
-    <!-- 주간 -->
-    <div class="section-label">
-      주간 보고서 <span class="badge">{{ weekly|length }}건</span>
-    </div>
-    {% if weekly %}
-    <div class="report-grid" style="margin-bottom:28px">
-      {% for r in weekly %}
-      {% set hs = r.health_score %}
-      {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
-      <div class="report-card">
-        <div onclick="showReport('weekly','{{ r.filename }}')" style="cursor:pointer">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <div class="report-card-type">Weekly</div>
-            <div style="font-size:11px;font-weight:700;color:{{ hc }};background:{{ hc }}18;padding:2px 9px;border-radius:99px;white-space:nowrap">{{ hs }}</div>
-          </div>
-          <div class="report-card-period">{{ r.period_start[5:10] }} ~ {{ r.period_end[5:10] }}</div>
-          <div class="report-card-stats">
-            <div>
-              <div class="report-stat-value">{{ r.total }}</div>
-              <div class="report-stat-label">총 수집</div>
-            </div>
-            <div>
-              <div class="report-stat-value" style="color:#DC2626">{{ r.urgent }}</div>
-              <div class="report-stat-label">긴급</div>
-            </div>
-          </div>
-          <div style="display:flex;height:4px;border-radius:99px;overflow:hidden;margin-top:14px">
-            <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
-            <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
-            <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
-          </div>
-        </div>
-        <div style="margin-top:10px;text-align:right;border-top:0.5px solid #F6F5FF;padding-top:8px">
-          <button onclick="openSendModal('weekly')" style="font-size:11px;background:#F0E6FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">📧 발송</button>
-        </div>
+{% if daily %}
+<div id="dailyGridView" class="report-grid">
+  {% for r in daily %}
+  {% set hs = r.health_score %}
+  {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
+  <div class="report-card">
+    <div onclick="showReport('daily','{{ r.filename }}')" style="cursor:pointer">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <div class="report-card-type">Daily</div>
+        <div style="font-size:11px;font-weight:700;color:{{ hc }};background:{{ hc }}18;padding:2px 9px;border-radius:99px;white-space:nowrap">{{ hs }}</div>
       </div>
-      {% endfor %}
+      <div class="report-card-period">{{ r.period_start[5:7] }}월 {{ r.period_start[8:10] }}일</div>
+      <div class="report-card-stats">
+        <div><div class="report-stat-value">{{ r.total }}</div><div class="report-stat-label">수집</div></div>
+        <div><div class="report-stat-value" style="color:#DC2626">{{ r.urgent }}</div><div class="report-stat-label">긴급</div></div>
+      </div>
+      <div style="display:flex;height:4px;border-radius:99px;overflow:hidden;margin-top:14px">
+        <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
+        <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
+        <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
+      </div>
     </div>
-    {% else %}
-    <div class="empty-card">주간 보고서 없음 (매주 월요일 09:05 자동 저장)</div>
-    {% endif %}
+    <div style="margin-top:10px;text-align:right;border-top:0.5px solid #F6F5FF;padding-top:8px">
+      <button onclick="openSendModal('daily')" style="font-size:11px;background:#F0E6FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">📧 발송</button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
 
-    <!-- 일간 -->
-    <div class="section-label" style="justify-content:space-between">
-      <span>일간 보고서 <span class="badge">{{ daily|length }}건</span></span>
-      {% if daily %}
-      <div style="display:flex;gap:6px">
-        <button id="btnDailyGrid" onclick="setDailyView('grid')" class="view-btn active">⊞ 카드</button>
-        <button id="btnDailyList" onclick="setDailyView('list')" class="view-btn">≡ 목록</button>
-      </div>
+<div id="dailyListView" style="display:none;margin-bottom:28px">
+  {% for r in daily %}
+  {% set hs = r.health_score %}
+  {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
+  <div class="daily-row" onclick="showReport('daily','{{ r.filename }}')">
+    <div class="daily-date">{{ r.period_start[5:7] }}/{{ r.period_start[8:10] }}</div>
+    <div class="daily-total">{{ r.total }}건</div>
+    <div style="width:60px;flex-shrink:0">
+      {% if r.urgent > 0 %}
+      <span class="urgent-chip">긴급 {{ r.urgent }}</span>
       {% endif %}
     </div>
-
-    {% if daily %}
-    <!-- 카드 뷰 -->
-    <div id="dailyGridView" class="report-grid">
-      {% for r in daily %}
-      {% set hs = r.health_score %}
-      {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
-      <div class="report-card">
-        <div onclick="showReport('daily','{{ r.filename }}')" style="cursor:pointer">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <div class="report-card-type">Daily</div>
-          <div style="font-size:11px;font-weight:700;color:{{ hc }};background:{{ hc }}18;padding:2px 9px;border-radius:99px;white-space:nowrap">{{ hs }}</div>
-        </div>
-        <div class="report-card-period">{{ r.period_start[5:7] }}월 {{ r.period_start[8:10] }}일</div>
-        <div class="report-card-stats">
-          <div>
-            <div class="report-stat-value">{{ r.total }}</div>
-            <div class="report-stat-label">수집</div>
-          </div>
-          <div>
-            <div class="report-stat-value" style="color:#DC2626">{{ r.urgent }}</div>
-            <div class="report-stat-label">긴급</div>
-          </div>
-        </div>
-        <div style="display:flex;height:4px;border-radius:99px;overflow:hidden;margin-top:14px">
-          <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
-          <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
-          <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
-        </div>
-        </div>
-        <div style="margin-top:10px;text-align:right;border-top:0.5px solid #F6F5FF;padding-top:8px">
-          <button onclick="openSendModal('daily')" style="font-size:11px;background:#F0E6FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">📧 발송</button>
-        </div>
+    <div style="display:flex;align-items:center;gap:8px;flex:1">
+      <div style="flex:1;height:4px;background:#F0EDF7;border-radius:99px;overflow:hidden">
+        <div style="width:{{ hs }}%;height:100%;background:{{ hc }}"></div>
       </div>
-      {% endfor %}
+      <span style="font-size:11px;font-weight:700;color:{{ hc }};width:32px;text-align:right">{{ hs }}</span>
     </div>
-
-    <!-- 목록 뷰 -->
-    <div id="dailyListView" style="display:none;margin-bottom:28px">
-      {% for r in daily %}
-      {% set hs = r.health_score %}
-      {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
-      <div class="daily-row" onclick="showReport('daily','{{ r.filename }}')">
-        <div class="daily-date">{{ r.period_start[5:7] }}/{{ r.period_start[8:10] }}</div>
-        <div class="daily-total">{{ r.total }}건</div>
-        <div style="width:60px;flex-shrink:0">
-          {% if r.urgent > 0 %}
-          <span class="urgent-chip">긴급 {{ r.urgent }}</span>
-          {% endif %}
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;flex:1">
-          <div style="flex:1;height:4px;background:#F0EDF7;border-radius:99px;overflow:hidden">
-            <div style="width:{{ hs }}%;height:100%;background:{{ hc }}"></div>
-          </div>
-          <span style="font-size:11px;font-weight:700;color:{{ hc }};width:32px;text-align:right">{{ hs }}</span>
-        </div>
-        <div style="display:flex;height:4px;width:60px;border-radius:99px;overflow:hidden;flex-shrink:0">
-          <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
-          <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
-          <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
-        </div>
-        <div style="color:#AAA7B8;font-size:13px;flex-shrink:0">›</div>
-      </div>
-      {% endfor %}
+    <div style="display:flex;height:4px;width:60px;border-radius:99px;overflow:hidden;flex-shrink:0">
+      <div style="width:{{ r.sent_pos }}%;background:#059669"></div>
+      <div style="width:{{ r.sent_neu }}%;background:#E4E1EE"></div>
+      <div style="width:{{ r.sent_neg }}%;background:#DC2626"></div>
     </div>
-    {% else %}
-    <div class="empty-card">일간 보고서 없음 (매일 23:55 자동 저장)</div>
-    {% endif %}
-
+    <div style="color:#AAA7B8;font-size:13px;flex-shrink:0">›</div>
   </div>
+  {% endfor %}
 </div>
+{% else %}
+<div class="empty-card">일간 보고서 없음 (매일 23:55 자동 저장)</div>
+{% endif %}
 
+{% endblock %}
+
+{% block modals %}
 <!-- 발송 확인 모달 -->
 <div class="modal-overlay" id="sendModal" onclick="if(event.target===this)closeSendModal()" style="display:none">
-  <div style="background:#fff;border-radius:16px;width:420px;max-width:94vw;padding:24px;position:relative">
-    <button onclick="closeSendModal()" style="position:absolute;top:14px;right:14px;background:#F6F5FF;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:13px;color:#5E5A71">✕</button>
-    <div style="font-size:15px;font-weight:700;color:#130D2A;margin-bottom:4px">📧 리포트 발송</div>
-    <div id="send-modal-desc" style="font-size:12px;color:#918DA0;margin-bottom:16px"></div>
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeSendModal()">✕</button>
+    <div class="modal-title">📧 리포트 발송</div>
+    <div id="send-modal-desc" class="modal-sub"></div>
     <div style="font-size:11px;font-weight:700;color:#130D2A;margin-bottom:8px">수신자</div>
     <div id="send-modal-tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:10px"></div>
     <div style="display:flex;gap:6px">
@@ -291,25 +218,26 @@
       <button onclick="sendModalAddEmail()" style="background:#F0E6FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">+ 추가</button>
     </div>
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
-      <button onclick="closeSendModal()" style="font-size:12px;padding:8px 16px;border:0.5px solid #DAD9EA;border-radius:10px;background:#fff;cursor:pointer;color:#5E5A71">취소</button>
-      <button onclick="confirmSend()" style="background:#7000FC;color:#fff;border:none;border-radius:10px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer">발송</button>
+      <button class="btn btn-neutral btn-sm" onclick="closeSendModal()">취소</button>
+      <button class="btn btn-primary btn-sm" onclick="confirmSend()">발송</button>
     </div>
   </div>
 </div>
 
 <!-- 상세 모달 -->
-<div class="modal-overlay" id="reportModal" onclick="if(event.target===this)closeModal()">
-  <div class="modal-box">
+<div class="report-modal-overlay" id="reportModal" onclick="if(event.target===this)closeModal()" style="display:flex">
+  <div class="report-modal-box">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div id="modalHeader" style="margin-bottom:20px"></div>
     <div id="modalBody"><div style="text-align:center;padding:40px;color:#AAA7B8">불러오는 중...</div></div>
   </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 let _sentChart = null;
 
-// ── 발송 이력 ──────────────────────────────────────────────
 async function loadEmailLog() {
   const list = document.getElementById('email-log-list');
   const countEl = document.getElementById('log-count');
@@ -356,7 +284,6 @@ async function loadEmailLog() {
   }
 }
 
-// ── 발송 모달 ──────────────────────────────────────────────
 let _sendType = 'daily';
 let _sendRecipients = [];
 
@@ -417,14 +344,13 @@ function sendModalAddEmail() {
 
 async function confirmSend() {
   if (!_sendRecipients.length) { alert('수신자를 1명 이상 추가하세요'); return; }
-  const btn = document.querySelector('#sendModal button[onclick="confirmSend()"]');
+  const btn = document.querySelector('#sendModal .btn-primary');
   btn.disabled = true; btn.textContent = '발송 중...';
   try {
-    const res = await fetch('/api/report/send', {
+    await fetch('/api/report/send', {
       method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ type: _sendType, to: _sendRecipients.join(',') })
     });
-    const data = await res.json();
     closeSendModal();
     _showToast('발송을 시작했습니다. 잠시 후 이력에 기록됩니다.');
     setTimeout(loadEmailLog, 5000);
@@ -444,7 +370,6 @@ function _showToast(msg) {
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-// 페이지 로드 시 이력 조회
 document.addEventListener('DOMContentLoaded', loadEmailLog);
 
 function setDailyView(type) {
@@ -455,7 +380,8 @@ function setDailyView(type) {
 }
 
 async function showReport(subdir, filename) {
-  document.getElementById('reportModal').style.display = 'flex';
+  const modal = document.getElementById('reportModal');
+  modal.style.display = 'flex';
   document.getElementById('modalHeader').innerHTML = '';
   document.getElementById('modalBody').innerHTML = '<div style="text-align:center;padding:40px;color:#AAA7B8">불러오는 중...</div>';
 
@@ -472,22 +398,17 @@ async function showReport(subdir, filename) {
       <span style="font-size:14px;font-weight:700;color:#130D2A">${d.period_start} ~ ${d.period_end}</span>
     </div>`;
 
-  // 헬스 스코어 컬러
   const hs = d.health_score || 0;
   const hc = hs >= 80 ? '#059669' : hs >= 60 ? '#D97706' : '#DC2626';
-
-  // 감성 비율
   const sent     = d.sentiment || {};
   const sentTotal = Math.max((sent.positive||0) + (sent.neutral||0) + (sent.negative||0), 1);
   const posP = Math.round((sent.positive||0) / sentTotal * 100);
   const negP = Math.round((sent.negative||0) / sentTotal * 100);
   const neuP = 100 - posP - negP;
-
-  // 키워드 바
   const kws  = d.by_keyword || [];
   const maxKw = kws[0]?.count || 1;
   const kwHtml = kws.slice(0, 8).map(k => {
-    const parts   = k.keyword.split('/');
+    const parts = k.keyword.split('/');
     const channel = parts[0] || '';
     const kname   = parts.slice(1).join('/') || k.keyword;
     const chColor = channel === '카페' ? '#7000FC' : channel === '블로그' ? '#2563EB' : '#059669';
@@ -500,13 +421,9 @@ async function showReport(subdir, filename) {
       <span style="color:#AAA7B8;font-size:11px;width:32px;text-align:right">${k.count}건</span>
     </div>`;
   }).join('');
-
-  // 카테고리
   const cats = (d.top_categories||[]).map(c =>
     `<span style="background:#F6F5FF;color:#7000FC;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;margin:2px">${c.category} <span style="opacity:0.6">${c.count}</span></span>`
   ).join('');
-
-  // 중요 포스트 카드형
   const sentColor = { positive:'#059669', neutral:'#6B7280', negative:'#DC2626' };
   const sentLabel = { positive:'긍정', neutral:'중립', negative:'부정' };
   const posts = (d.important_posts||[]).map(p => {
@@ -523,89 +440,53 @@ async function showReport(subdir, filename) {
       <div style="font-size:10px;color:#AAA7B8;margin-top:4px">${p.cafe_name||''} · ${(p.created_at||'').slice(0,10)}</div>
     </div>`;
   }).join('') || '<div style="color:#AAA7B8;font-size:12px;padding:8px 0">없음</div>';
-
-  // 콘텐츠 현황 테이블
   const contents = d.content_stats || [];
   const contentHtml = contents.length ? `
     <table style="width:100%;border-collapse:collapse;font-size:11px">
-      <thead>
-        <tr style="color:#918DA0;border-bottom:0.5px solid #F0EDF7">
-          <th style="text-align:left;padding:5px 0;font-weight:600">채널</th>
-          <th style="text-align:left;padding:5px 0;font-weight:600">포맷</th>
-          <th style="text-align:left;padding:5px 0;font-weight:600">검수등급</th>
-          <th style="text-align:right;padding:5px 0;font-weight:600">건수</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${contents.map(c => {
-          const gc = c.guard_grade === 'green' ? '#059669' : c.guard_grade === 'yellow' ? '#D97706' : '#DC2626';
-          const ch = c.channel === 'official' ? '메인채널' : '서브채널';
-          return `<tr style="border-bottom:0.5px solid #F6F5FF">
-            <td style="padding:6px 0;color:#130D2A;font-weight:500">${ch}</td>
-            <td style="padding:6px 0;color:#130D2A">${c.format}</td>
-            <td style="padding:6px 0"><span style="color:${gc};font-weight:700">${c.guard_grade}</span></td>
-            <td style="padding:6px 0;text-align:right;font-weight:700;color:#130D2A">${c.cnt}건</td>
-          </tr>`;
-        }).join('')}
-      </tbody>
+      <thead><tr style="color:#918DA0;border-bottom:0.5px solid #F0EDF7">
+        <th style="text-align:left;padding:5px 0;font-weight:600">채널</th>
+        <th style="text-align:left;padding:5px 0;font-weight:600">포맷</th>
+        <th style="text-align:left;padding:5px 0;font-weight:600">검수등급</th>
+        <th style="text-align:right;padding:5px 0;font-weight:600">건수</th>
+      </tr></thead>
+      <tbody>${contents.map(c => {
+        const gc = c.guard_grade === 'green' ? '#059669' : c.guard_grade === 'yellow' ? '#D97706' : '#DC2626';
+        const ch = c.channel === 'official' ? '메인채널' : '서브채널';
+        return `<tr style="border-bottom:0.5px solid #F6F5FF">
+          <td style="padding:6px 0;color:#130D2A;font-weight:500">${ch}</td>
+          <td style="padding:6px 0;color:#130D2A">${c.format}</td>
+          <td style="padding:6px 0"><span style="color:${gc};font-weight:700">${c.guard_grade}</span></td>
+          <td style="padding:6px 0;text-align:right;font-weight:700;color:#130D2A">${c.cnt}건</td>
+        </tr>`;
+      }).join('')}</tbody>
     </table>` : '<span style="color:#AAA7B8;font-size:12px">없음</span>';
 
   document.getElementById('modalBody').innerHTML = `
     <div class="stat-grid">
-      <div class="stat-box">
-        <div class="stat-box-label">총 수집</div>
-        <div class="stat-box-value">${d.total}</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-box-label">긴급</div>
-        <div class="stat-box-value" style="color:#DC2626">${d.urgent}</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-box-label">SLA 초과</div>
-        <div class="stat-box-value" style="color:#D97706">${d.sla_overdue}</div>
-      </div>
-      <div class="stat-box" style="border-left:3px solid ${hc}">
-        <div class="stat-box-label">브랜드 헬스</div>
-        <div class="stat-box-value" style="color:${hc}">${hs}</div>
-      </div>
+      <div class="stat-box"><div class="stat-box-label">총 수집</div><div class="stat-box-value">${d.total}</div></div>
+      <div class="stat-box"><div class="stat-box-label">긴급</div><div class="stat-box-value" style="color:#DC2626">${d.urgent}</div></div>
+      <div class="stat-box"><div class="stat-box-label">SLA 초과</div><div class="stat-box-value" style="color:#D97706">${d.sla_overdue}</div></div>
+      <div class="stat-box" style="border-left:3px solid ${hc}"><div class="stat-box-label">브랜드 헬스</div><div class="stat-box-value" style="color:${hc}">${hs}</div></div>
     </div>
-
     <div class="section-h">감성 분포</div>
     <div style="display:grid;grid-template-columns:110px 1fr;gap:20px;align-items:center;margin-bottom:8px">
       <canvas id="sentChart" width="110" height="110"></canvas>
       <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="width:10px;height:10px;border-radius:50%;background:#7000FC;flex-shrink:0"></span>
-          <span style="color:#130D2A;font-weight:500">긍정</span>
-          <span style="color:#AAA7B8;margin-left:auto">${sent.positive||0}건 (${posP}%)</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="width:10px;height:10px;border-radius:50%;background:#DAD9EA;flex-shrink:0"></span>
-          <span style="color:#130D2A;font-weight:500">중립</span>
-          <span style="color:#AAA7B8;margin-left:auto">${sent.neutral||0}건 (${neuP}%)</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="width:10px;height:10px;border-radius:50%;background:#DC2626;flex-shrink:0"></span>
-          <span style="color:#130D2A;font-weight:500">부정</span>
-          <span style="color:#AAA7B8;margin-left:auto">${sent.negative||0}건 (${negP}%)</span>
-        </div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#7000FC;flex-shrink:0"></span><span style="color:#130D2A;font-weight:500">긍정</span><span style="color:#AAA7B8;margin-left:auto">${sent.positive||0}건 (${posP}%)</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#DAD9EA;flex-shrink:0"></span><span style="color:#130D2A;font-weight:500">중립</span><span style="color:#AAA7B8;margin-left:auto">${sent.neutral||0}건 (${neuP}%)</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#DC2626;flex-shrink:0"></span><span style="color:#130D2A;font-weight:500">부정</span><span style="color:#AAA7B8;margin-left:auto">${sent.negative||0}건 (${negP}%)</span></div>
       </div>
     </div>
-
     <div class="section-h">키워드별 언급</div>
     ${kwHtml || '<div style="color:#AAA7B8;font-size:12px">없음</div>'}
-
     <div class="section-h">카테고리 TOP</div>
     <div style="flex-wrap:wrap;display:flex;gap:4px">${cats || '<span style="color:#AAA7B8;font-size:12px">없음</span>'}</div>
-
     <div class="section-h">중요 포스트 (중요도 7↑)</div>
     ${posts}
-
     <div class="section-h">콘텐츠 생성 현황</div>
     ${contentHtml}
   `;
 
-  // 감성 도넛 차트 렌더링
   if (_sentChart) { _sentChart.destroy(); _sentChart = null; }
   const ctx = document.getElementById('sentChart');
   if (ctx) {
@@ -615,15 +496,10 @@ async function showReport(subdir, filename) {
         datasets: [{
           data: [sent.positive||0, sent.neutral||0, sent.negative||0],
           backgroundColor: ['#7000FC', '#DAD9EA', '#DC2626'],
-          borderWidth: 0,
-          hoverOffset: 4,
+          borderWidth: 0, hoverOffset: 4,
         }]
       },
-      options: {
-        cutout: '65%',
-        plugins: { legend: { display: false } },
-        animation: { duration: 400 },
-      }
+      options: { cutout: '65%', plugins: { legend: { display: false } }, animation: { duration: 400 } }
     });
   }
 }
@@ -633,5 +509,4 @@ function closeModal() {
   if (_sentChart) { _sentChart.destroy(); _sentChart = null; }
 }
 </script>
-</body>
-</html>
+{% endblock %}

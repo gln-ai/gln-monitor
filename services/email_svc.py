@@ -3,11 +3,34 @@ services/email_svc.py — 이메일 발송 서비스
 """
 import base64
 import os
+import re
 import smtplib
 from datetime import datetime, timedelta
 from email.mime.image import MIMEImage
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+_PROMPTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "prompts")
+
+
+def _call_claude(prompt_filename: str, user_text: str) -> str:
+    """prompts/ 폴더의 시스템 프롬프트로 Claude 호출. 실패 시 빈 문자열 반환."""
+    try:
+        import anthropic
+        prompt_path = os.path.join(_PROMPTS_DIR, prompt_filename)
+        with open(prompt_path, encoding="utf-8") as f:
+            system_prompt = f.read().strip()
+        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        resp = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=2048,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_text}],
+        )
+        return resp.content[0].text
+    except Exception as e:
+        print(f"[Claude {prompt_filename}] 오류: {e}")
+        return ""
 
 _MONITOR_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -217,9 +240,25 @@ def send_urgent_alert(title: str, analysis: dict,
         print(f"[긴급 알림] 발송 시간 외 ({now_hour}시) — 스킵")
         return
 
-    base_url     = os.getenv("BASE_URL", "http://192.168.1.30:5001")
+    base_url     = os.getenv("BASE_URL", "http://192.168.1.60:5001")
     collected_at = created_at[:16] if created_at else datetime.now(KST).strftime("%Y-%m-%d %H:%M")
     detail_url   = f"{base_url}/post/{post_id}" if post_id else base_url
+
+    # ── Claude 긴급알림 에디터 호출 ───────────────────────────────────────────
+    channel_label = analysis.get("channel", "카페") or "카페"
+    sentiment_map = {"positive": "긍정", "neutral": "중립", "negative": "부정"}
+    sentiment_kr  = sentiment_map.get(analysis.get("sentiment", ""), analysis.get("sentiment", ""))
+    claude_input  = (
+        f"[긴급 알림 요청]\n"
+        f"채널: {channel_label}\n"
+        f"중요도: {analysis.get('importance_score', '-')}\n"
+        f"감성: {sentiment_kr}\n"
+        f"게시글 URL: {link or detail_url}\n"
+        f"게시글 요약: {analysis.get('summary', title)}\n"
+        f"키워드: {analysis.get('category', '-')}"
+    )
+    claude_text = _call_claude("urgent_alert.txt", claude_input)
+
     link_btn = (
         f'<a href="{detail_url}" style="display:inline-block;margin-top:16px;'
         f'padding:8px 16px;background:#1D4ED8;color:#fff;text-decoration:none;'
@@ -229,16 +268,29 @@ def send_urgent_alert(title: str, analysis: dict,
            f'border-radius:6px;font-size:13px;border:1px solid #E5E7EB">원문 바로가기 ↗</a>'
            if link else "")
     )
+
+    claude_section = ""
+    if claude_text:
+        escaped = claude_text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        claude_section = (
+            f'<div style="background:#FFF7ED;border-left:3px solid #F97316;'
+            f'padding:14px 16px;border-radius:4px;margin-bottom:16px">'
+            f'<div style="font-size:11px;font-weight:600;color:#9A3412;margin-bottom:8px">AI 분석 요약</div>'
+            f'<pre style="font-family:inherit;font-size:13px;color:#1C1917;white-space:pre-wrap;margin:0">'
+            f'{escaped}</pre></div>'
+        )
+
     html = f"""
     <div style="font-family:sans-serif;max-width:600px;margin:auto;padding:20px">
       <div style="background:#FEE2E2;border-left:4px solid #EF4444;padding:12px 16px;border-radius:4px;margin-bottom:16px">
         <strong style="color:#B91C1C">긴급 알림 — GLN 모니터링</strong>
       </div>
       <h2 style="font-size:16px;color:#111">{title}</h2>
+      {claude_section}
       <table style="width:100%;font-size:14px;border-collapse:collapse">
         <tr><td style="padding:6px 0;color:#666;width:80px">요약</td><td>{analysis.get('summary','')}</td></tr>
         <tr><td style="padding:6px 0;color:#666">분류</td><td>{analysis.get('category','')}</td></tr>
-        <tr><td style="padding:6px 0;color:#666">감성</td><td>{analysis.get('sentiment','')}</td></tr>
+        <tr><td style="padding:6px 0;color:#666">감성</td><td>{sentiment_kr}</td></tr>
         <tr><td style="padding:6px 0;color:#666">중요도</td><td>{analysis.get('importance_score','')}/10</td></tr>
         <tr><td style="padding:6px 0;color:#666">카페</td><td>{cafe_name or '-'}</td></tr>
         <tr><td style="padding:6px 0;color:#666">수집일시</td><td>{collected_at}</td></tr>
@@ -339,6 +391,49 @@ def send_daily_report(to: str = ""):
                 <th style="padding:7px 8px;text-align:center;font-size:11px;color:#9CA3AF;font-weight:500;white-space:nowrap">중요도</th>
               </tr></thead><tbody>"""
 
+        # ── Claude 일일 브리핑 생성 ───────────────────────────────────────────
+        all_posts_flat = [p for posts in cat_posts.values() for p in posts]
+        all_posts_flat.sort(key=lambda p: p["importance_score"] or 0, reverse=True)
+        top_posts = all_posts_flat[:10]
+        analyzed  = [p for p in all_posts_flat if p["sentiment"]]
+        n_total_a = len(analyzed) or 1
+        pos_pct   = round(sum(1 for p in analyzed if p["sentiment"]=="positive") / n_total_a * 100)
+        neg_pct   = round(sum(1 for p in analyzed if p["sentiment"]=="negative") / n_total_a * 100)
+        neu_pct   = 100 - pos_pct - neg_pct
+        health    = max(0, 100 - neg_pct * 2)
+
+        posts_list_text = ""
+        for i, p in enumerate(top_posts, 1):
+            posts_list_text += (
+                f"\n{i}. [{p['importance_score'] or '-'}점] "
+                f"{p['keyword'].split('/')[0] if p['keyword'] else '-'} — "
+                f"{(p['title'] or '')[:50]}\n"
+                f"   {p['summary'] or '분석 중'}\n"
+                f"   {p['link'] or ''}\n"
+            )
+
+        claude_input = (
+            f"[일일 리포트 요청]\n"
+            f"날짜: {yesterday}\n"
+            f"수집 기간: {yesterday} 00:00 ~ 23:59\n"
+            f"총 수집 건수: {total}건\n"
+            f"채널별: 카페 {ch_counts.get('카페',0)}건 / 블로그 {ch_counts.get('블로그',0)}건 / 뉴스 {ch_counts.get('뉴스',0)}건\n"
+            f"감성 분포: 긍정 {pos_pct}% / 중립 {neu_pct}% / 부정 {neg_pct}%\n"
+            f"브랜드 헬스 스코어: {health}\n"
+            f"긴급 알림 발송 여부: {'있음' if urgent > 0 else '없음'}\n"
+            f"주요 게시글 목록:{posts_list_text}"
+        )
+        claude_daily = _call_claude("daily_report.txt", claude_input)
+
+        claude_briefing_html = ""
+        if claude_daily:
+            escaped_brief = claude_daily.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            claude_briefing_html = f"""
+    <div style="background:#F0EAFF;border-radius:12px;padding:16px 20px;margin-bottom:20px;border:1px solid #DDD6FE">
+      <div style="font-size:11px;font-weight:700;color:#7000FC;letter-spacing:0.1em;margin-bottom:10px">AI 일일 브리핑</div>
+      <pre style="font-family:inherit;font-size:13px;color:#1E0942;white-space:pre-wrap;margin:0;line-height:1.7">{escaped_brief}</pre>
+    </div>"""
+
         # ── 채널 섹션 ─────────────────────────────────────────────────────────
         ch_colors = {"카페": "#1D4ED8", "블로그": "#059669", "뉴스": "#D97706"}
         sections_html = ""
@@ -416,6 +511,9 @@ def send_daily_report(to: str = ""):
     </table>
 
 
+
+    <!-- AI 브리핑 -->
+    {claude_briefing_html}
 
     <!-- 채널별 섹션 -->
     {sections_html if sections_html else '<p style="color:#9CA3AF;font-size:13px;text-align:center;padding:20px 0">전일 수집된 게시글이 없습니다.</p>'}

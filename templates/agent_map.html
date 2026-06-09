@@ -1,0 +1,794 @@
+{% extends 'base.html' %}
+{% block title %}GLN 에이전트 맵{% endblock %}
+
+{% block page_styles %}
+/* ── 파이프라인 섹션 ── */
+.pipeline-section { margin-bottom: 32px; }
+.pipeline-section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.pipeline-section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #918DA0; }
+.pipeline-section-line { flex: 1; height: 0.5px; background: #E4E1EE; }
+.pipeline-arrow { text-align: center; margin: -8px 0 16px; color: #C4B5FD; font-size: 18px; }
+
+/* ── 고라니 카드 그리드 ── */
+.gorani-grid { display: grid; gap: 12px; }
+.gorani-grid-4 { grid-template-columns: repeat(4, 1fr); }
+.gorani-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.gorani-grid-2 { grid-template-columns: 1fr 1fr; }
+.gorani-grid-1 { grid-template-columns: 1fr; }
+
+/* ── 고라니 카드 ── */
+.gorani-card {
+  background: #fff;
+  border: 0.5px solid #E4E1EE;
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  transition: box-shadow 0.15s, transform 0.15s;
+  cursor: default;
+  position: relative;
+}
+.gorani-card:hover { box-shadow: 0 4px 20px rgba(112,0,252,0.1); transform: translateY(-2px); }
+
+/* 카드 색상 테마 */
+.card-collect { background: linear-gradient(160deg, #F0FDF4 0%, #DCFCE7 100%); border-color: #BBF7D0; }
+.card-intel   { background: linear-gradient(160deg, #EFF6FF 0%, #DBEAFE 100%); border-color: #BFDBFE; }
+.card-trend   { background: linear-gradient(160deg, #FFF7ED 0%, #FFEDD5 100%); border-color: #FED7AA; }
+.card-main    { background: linear-gradient(160deg, #F5F3FF 0%, #EDE9FE 100%); border-color: #DDD6FE; }
+.card-gorani  { background: linear-gradient(160deg, #FFF1F2 0%, #FFE4E6 100%); border-color: #FECDD3; }
+.card-guard   { background: linear-gradient(160deg, #FFFBEB 0%, #FEF3C7 100%); border-color: #FDE68A; }
+.card-report  { background: linear-gradient(160deg, #F0F9FF 0%, #E0F2FE 100%); border-color: #BAE6FD; }
+
+/* ── 고라니 아바타 ── */
+.gorani-avatar { width: 72px; height: 72px; position: relative; flex-shrink: 0; }
+
+/* ── 카드 텍스트 ── */
+.agent-badge { font-size: 9px; font-weight: 800; letter-spacing: 0.06em; padding: 2px 9px; border-radius: 99px; }
+.agent-name { font-size: 13px; font-weight: 700; color: #130D2A; line-height: 1.3; }
+.agent-sub { font-size: 11px; color: #5E5A71; line-height: 1.55; }
+.agent-tags-wrap { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 2px; }
+.agent-tag { font-size: 10px; padding: 2px 8px; border-radius: 99px; font-weight: 500; }
+
+/* ── 채널 분기 ── */
+.dual-pipeline { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.channel-col { }
+.channel-header { display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+.channel-chip { font-size: 11px; font-weight: 700; padding: 5px 14px; border-radius: 99px; }
+.chip-main   { background: #EDE9FE; color: #7000FC; }
+.chip-gorani { background: #FFE4E6; color: #BE123C; }
+
+/* ── 검수 흐름 ── */
+.guard-flow { display: flex; align-items: stretch; gap: 0; }
+.guard-arrow-h { display: flex; align-items: center; padding: 0 4px; }
+.guard-arrow-h svg { flex-shrink: 0; }
+
+/* ── 사이드 패널 ── */
+.map-layout { display: grid; grid-template-columns: 1fr 260px; gap: 20px; align-items: start; }
+.side-panel { display: flex; flex-direction: column; gap: 14px; }
+.side-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; overflow: hidden; }
+.side-card-header { padding: 10px 14px; font-size: 10px; font-weight: 700; color: #918DA0; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 0.5px solid #F0EDF7; }
+.trigger-row { display: flex; align-items: flex-start; gap: 8px; padding: 10px 14px; border-bottom: 0.5px solid #F0EDF7; }
+.trigger-row:last-child { border-bottom: none; }
+.trigger-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
+.index-row { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-bottom: 0.5px solid #F6F5FF; }
+.index-row:last-child { border-bottom: none; }
+.index-num { font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 99px; min-width: 28px; text-align: center; flex-shrink: 0; }
+
+/* ── 출력 카드 ── */
+.output-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+.output-card { border-radius: 12px; padding: 12px 14px; text-align: center; }
+.output-green { background: #14532D; }
+.output-yellow { background: #92400E; }
+
+/* ── RED 차단 배지 ── */
+.red-block { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; color: #DC2626; background: #FEF2F2; border: 0.5px solid #FECACA; padding: 2px 8px; border-radius: 99px; margin-top: 4px; }
+
+@media (max-width: 960px) {
+  .map-layout { grid-template-columns: 1fr; }
+  .gorani-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .dual-pipeline { grid-template-columns: 1fr; }
+  .guard-flow { flex-direction: column; }
+}
+{% endblock %}
+
+{% block topbar_title %}GLN 에이전트 맵{% endblock %}
+{% block topbar_sub %}마케팅 자동화 파이프라인 · 13종 에이전트 시각화{% endblock %}
+
+{% block content %}
+<div class="map-layout">
+
+  <!-- ── 왼쪽: 파이프라인 ── -->
+  <div>
+
+    <!-- Layer 0: 데이터 수집 -->
+    <div class="pipeline-section">
+      <div class="pipeline-section-header">
+        <div class="pipeline-section-label">데이터 수집</div>
+        <div class="pipeline-section-line"></div>
+        <span style="font-size:10px;color:#059669;background:#DCFCE7;padding:2px 9px;border-radius:99px;font-weight:600">자동 실행</span>
+      </div>
+      <div class="gorani-grid gorani-grid-2">
+        <!-- 수집 고라니 -->
+        <div class="gorani-card card-collect">
+          <div class="gorani-avatar">
+            <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- 몸 -->
+              <ellipse cx="36" cy="50" rx="18" ry="14" fill="#6EE7B7"/>
+              <!-- 머리 -->
+              <circle cx="36" cy="32" r="16" fill="#A7F3D0"/>
+              <!-- 왼쪽 귀 -->
+              <ellipse cx="22" cy="20" rx="5" ry="8" fill="#6EE7B7" transform="rotate(-15 22 20)"/>
+              <ellipse cx="22" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(-15 22 20)"/>
+              <!-- 오른쪽 귀 -->
+              <ellipse cx="50" cy="20" rx="5" ry="8" fill="#6EE7B7" transform="rotate(15 50 20)"/>
+              <ellipse cx="50" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(15 50 20)"/>
+              <!-- 눈 -->
+              <circle cx="28" cy="30" r="4" fill="white"/>
+              <circle cx="44" cy="30" r="4" fill="white"/>
+              <circle cx="29" cy="30" r="2.2" fill="#130D2A"/>
+              <circle cx="45" cy="30" r="2.2" fill="#130D2A"/>
+              <circle cx="30" cy="29" r="0.8" fill="white"/>
+              <circle cx="46" cy="29" r="0.8" fill="white"/>
+              <!-- 코 -->
+              <ellipse cx="36" cy="37" rx="4" ry="3" fill="#FCA5A5"/>
+              <!-- 앞니(특징) -->
+              <rect x="34" y="39" width="2" height="3" rx="1" fill="white"/>
+              <rect x="37" y="39" width="2" height="3" rx="1" fill="white"/>
+              <!-- 안테나 -->
+              <line x1="36" y1="16" x2="36" y2="8" stroke="#059669" stroke-width="1.5"/>
+              <circle cx="36" cy="7" r="2.5" fill="#059669"/>
+              <line x1="20" y1="12" x2="14" y2="6" stroke="#059669" stroke-width="1.5"/>
+              <circle cx="13" cy="5" r="2" fill="#34D399"/>
+              <line x1="52" y1="12" x2="58" y2="6" stroke="#059669" stroke-width="1.5"/>
+              <circle cx="59" cy="5" r="2" fill="#34D399"/>
+              <!-- 손에 레이더 -->
+              <circle cx="16" cy="58" r="6" stroke="#059669" stroke-width="1.5" fill="none"/>
+              <circle cx="16" cy="58" r="3" stroke="#059669" stroke-width="1" fill="none"/>
+              <circle cx="16" cy="58" r="1" fill="#059669"/>
+            </svg>
+          </div>
+          <span class="agent-badge" style="background:#DCFCE7;color:#15803D">AUTO</span>
+          <div class="agent-name">모니터링 수집</div>
+          <div class="agent-sub">네이버 카페·블로그·뉴스<br>1시간 주기 자동 수집</div>
+          <div class="agent-tags-wrap">
+            <span class="agent-tag" style="background:#DCFCE7;color:#15803D">카페</span>
+            <span class="agent-tag" style="background:#DCFCE7;color:#15803D">블로그</span>
+            <span class="agent-tag" style="background:#DCFCE7;color:#15803D">뉴스</span>
+          </div>
+        </div>
+        <!-- AI분석 고라니 -->
+        <div class="gorani-card card-collect">
+          <div class="gorani-avatar">
+            <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="36" cy="50" rx="18" ry="14" fill="#6EE7B7"/>
+              <circle cx="36" cy="32" r="16" fill="#A7F3D0"/>
+              <ellipse cx="22" cy="20" rx="5" ry="8" fill="#6EE7B7" transform="rotate(-15 22 20)"/>
+              <ellipse cx="22" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(-15 22 20)"/>
+              <ellipse cx="50" cy="20" rx="5" ry="8" fill="#6EE7B7" transform="rotate(15 50 20)"/>
+              <ellipse cx="50" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(15 50 20)"/>
+              <!-- 안경 -->
+              <rect x="23" y="27" width="9" height="7" rx="3.5" stroke="#130D2A" stroke-width="1.5" fill="none"/>
+              <rect x="40" y="27" width="9" height="7" rx="3.5" stroke="#130D2A" stroke-width="1.5" fill="none"/>
+              <line x1="32" y1="30" x2="40" y2="30" stroke="#130D2A" stroke-width="1.2"/>
+              <!-- 눈 (안경 안) -->
+              <circle cx="28" cy="30" r="1.8" fill="#130D2A"/>
+              <circle cx="45" cy="30" r="1.8" fill="#130D2A"/>
+              <ellipse cx="36" cy="37" rx="4" ry="3" fill="#FCA5A5"/>
+              <rect x="34" y="39" width="2" height="3" rx="1" fill="white"/>
+              <rect x="37" y="39" width="2" height="3" rx="1" fill="white"/>
+              <!-- 뇌 아이콘 -->
+              <path d="M12 55 Q10 50 14 48 Q12 44 16 43 Q16 40 20 40 Q24 40 24 43 Q28 44 26 48 Q30 50 28 55Z" fill="#059669" opacity="0.7"/>
+              <path d="M14 48 Q18 46 20 48" stroke="white" stroke-width="0.8" fill="none"/>
+              <path d="M16 43 Q20 44 20 47" stroke="white" stroke-width="0.8" fill="none"/>
+            </svg>
+          </div>
+          <span class="agent-badge" style="background:#DCFCE7;color:#15803D">AUTO</span>
+          <div class="agent-name">AI 분석</div>
+          <div class="agent-sub">요약·감성·카테고리<br>중요도 1~10 자동 산출</div>
+          <div class="agent-tags-wrap">
+            <span class="agent-tag" style="background:#DCFCE7;color:#15803D">Claude API</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipeline-arrow">↓</div>
+
+    <!-- Layer 1: 인텔리전스 -->
+    <div class="pipeline-section">
+      <div class="pipeline-section-header">
+        <div class="pipeline-section-label">인텔리전스</div>
+        <div class="pipeline-section-line"></div>
+      </div>
+      <div class="gorani-grid gorani-grid-1">
+        <div class="gorani-card card-intel">
+          <span style="position:absolute;top:-8px;right:12px;font-size:9px;font-weight:800;color:#fff;background:#1D4ED8;padding:1px 9px;border-radius:99px">#8</span>
+          <div class="gorani-avatar">
+            <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="36" cy="50" rx="18" ry="14" fill="#93C5FD"/>
+              <circle cx="36" cy="32" r="16" fill="#BFDBFE"/>
+              <ellipse cx="22" cy="20" rx="5" ry="8" fill="#93C5FD" transform="rotate(-15 22 20)"/>
+              <ellipse cx="22" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(-15 22 20)"/>
+              <ellipse cx="50" cy="20" rx="5" ry="8" fill="#93C5FD" transform="rotate(15 50 20)"/>
+              <ellipse cx="50" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(15 50 20)"/>
+              <circle cx="28" cy="30" r="4" fill="white"/>
+              <circle cx="44" cy="30" r="4" fill="white"/>
+              <circle cx="29" cy="31" r="2.2" fill="#1D4ED8"/>
+              <circle cx="45" cy="31" r="2.2" fill="#1D4ED8"/>
+              <circle cx="30" cy="30" r="0.8" fill="white"/>
+              <circle cx="46" cy="30" r="0.8" fill="white"/>
+              <ellipse cx="36" cy="37" rx="4" ry="3" fill="#FCA5A5"/>
+              <rect x="34" y="39" width="2" height="3" rx="1" fill="white"/>
+              <rect x="37" y="39" width="2" height="3" rx="1" fill="white"/>
+              <!-- 지도 핀들 -->
+              <circle cx="14" cy="52" r="4" fill="#1D4ED8"/>
+              <line x1="14" y1="56" x2="14" y2="61" stroke="#1D4ED8" stroke-width="1.5"/>
+              <circle cx="25" cy="57" r="3" fill="#93C5FD"/>
+              <line x1="25" y1="60" x2="25" y2="64" stroke="#93C5FD" stroke-width="1.5"/>
+              <!-- 국기 -->
+              <rect x="55" y="44" width="1.5" height="10" fill="#6B7280"/>
+              <rect x="56.5" y="44" width="7" height="5" fill="#DC2626"/>
+              <rect x="56.5" y="44" width="7" height="1.5" fill="white"/>
+              <rect x="56.5" y="47.5" width="7" height="1.5" fill="white"/>
+            </svg>
+          </div>
+          <span class="agent-badge" style="background:#DBEAFE;color:#1D4ED8">에이전트 #8</span>
+          <div class="agent-name">국가 매니저</div>
+          <div class="agent-sub">태국·일본·베트남 현지 이슈 분석<br>콘텐츠 소재 관점 브리핑 작성</div>
+          <div class="agent-tags-wrap">
+            <span class="agent-tag" style="background:#DBEAFE;color:#1D4ED8">태국 🇹🇭</span>
+            <span class="agent-tag" style="background:#DBEAFE;color:#1D4ED8">일본 🇯🇵</span>
+            <span class="agent-tag" style="background:#DBEAFE;color:#1D4ED8">베트남 🇻🇳</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipeline-arrow">↓</div>
+
+    <!-- Layer 2: 소재 기획 -->
+    <div class="pipeline-section">
+      <div class="pipeline-section-header">
+        <div class="pipeline-section-label">소재 기획</div>
+        <div class="pipeline-section-line"></div>
+      </div>
+      <div class="gorani-grid gorani-grid-1">
+        <div class="gorani-card card-trend">
+          <span style="position:absolute;top:-8px;right:12px;font-size:9px;font-weight:800;color:#fff;background:#C2410C;padding:1px 9px;border-radius:99px">#4</span>
+          <div class="gorani-avatar">
+            <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="36" cy="50" rx="18" ry="14" fill="#FDBA74"/>
+              <circle cx="36" cy="32" r="16" fill="#FED7AA"/>
+              <ellipse cx="22" cy="20" rx="5" ry="8" fill="#FDBA74" transform="rotate(-15 22 20)"/>
+              <ellipse cx="22" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(-15 22 20)"/>
+              <ellipse cx="50" cy="20" rx="5" ry="8" fill="#FDBA74" transform="rotate(15 50 20)"/>
+              <ellipse cx="50" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(15 50 20)"/>
+              <circle cx="28" cy="30" r="4" fill="white"/>
+              <circle cx="44" cy="30" r="4" fill="white"/>
+              <circle cx="29" cy="31" r="2.2" fill="#C2410C"/>
+              <circle cx="45" cy="31" r="2.2" fill="#C2410C"/>
+              <circle cx="30" cy="30" r="0.8" fill="white"/>
+              <circle cx="46" cy="30" r="0.8" fill="white"/>
+              <ellipse cx="36" cy="37" rx="4" ry="3" fill="#FCA5A5"/>
+              <rect x="34" y="39" width="2" height="3" rx="1" fill="white"/>
+              <rect x="37" y="39" width="2" height="3" rx="1" fill="white"/>
+              <!-- 돋보기 -->
+              <circle cx="16" cy="56" r="7" stroke="#C2410C" stroke-width="2" fill="rgba(254,215,170,0.5)"/>
+              <line x1="21" y1="61" x2="27" y2="67" stroke="#C2410C" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="16" cy="56" r="3.5" stroke="#FDBA74" stroke-width="1" fill="none"/>
+              <!-- 트렌드 차트 -->
+              <polyline points="44,65 48,58 52,61 56,53 60,50" stroke="#C2410C" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span class="agent-badge" style="background:#FFEDD5;color:#C2410C">에이전트 #4</span>
+          <div class="agent-name">트렌드 리서처</div>
+          <div class="agent-sub">이번 주 콘텐츠 소재 선정<br>중복 방지·공백국가 고려·PD 배분</div>
+          <div class="agent-tags-wrap">
+            <span class="agent-tag" style="background:#FFEDD5;color:#C2410C">오류대응형</span>
+            <span class="agent-tag" style="background:#FFEDD5;color:#C2410C">사용법가이드</span>
+            <span class="agent-tag" style="background:#FFEDD5;color:#C2410C">여행팁형</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 분기 화살표 -->
+    <div style="padding:6px 0;margin-bottom:14px">
+      <div style="display:flex;align-items:flex-end;height:28px">
+        <div style="flex:1;border-bottom:1.5px solid #DDD6FE;border-left:1.5px solid #DDD6FE;height:28px;border-radius:0 0 0 10px;margin-right:-1px"></div>
+        <div style="flex:1;border-bottom:1.5px solid #FECDD3;border-right:1.5px solid #FECDD3;height:28px;border-radius:0 0 10px 0;margin-left:-1px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;padding-top:0">
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <div style="width:1.5px;height:8px;background:#DDD6FE"></div>
+          <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #7000FC"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <div style="width:1.5px;height:8px;background:#FECDD3"></div>
+          <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #BE123C"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layer 3: 채널별 PD -->
+    <div class="pipeline-section">
+      <div class="dual-pipeline">
+
+        <!-- 메인채널 -->
+        <div class="channel-col">
+          <div class="channel-header"><span class="channel-chip chip-main">메인채널 official</span></div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+
+            <!-- #9 블로그 PD -->
+            <div class="gorani-card card-main" style="flex-direction:row;text-align:left;gap:12px;padding:12px 14px">
+              <span style="position:absolute;top:-8px;right:12px;font-size:9px;font-weight:800;color:#fff;background:#7000FC;padding:1px 9px;border-radius:99px">#9</span>
+              <div style="width:52px;height:52px;flex-shrink:0">
+                <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="26" cy="38" rx="13" ry="10" fill="#C4B5FD"/>
+                  <circle cx="26" cy="22" r="12" fill="#DDD6FE"/>
+                  <ellipse cx="17" cy="13" rx="3.5" ry="5.5" fill="#C4B5FD" transform="rotate(-15 17 13)"/>
+                  <ellipse cx="17" cy="13" rx="2" ry="3.5" fill="#FCA5A5" transform="rotate(-15 17 13)"/>
+                  <ellipse cx="35" cy="13" rx="3.5" ry="5.5" fill="#C4B5FD" transform="rotate(15 35 13)"/>
+                  <ellipse cx="35" cy="13" rx="2" ry="3.5" fill="#FCA5A5" transform="rotate(15 35 13)"/>
+                  <circle cx="21" cy="21" r="3" fill="white"/><circle cx="31" cy="21" r="3" fill="white"/>
+                  <circle cx="22" cy="22" r="1.6" fill="#7000FC"/><circle cx="32" cy="22" r="1.6" fill="#7000FC"/>
+                  <ellipse cx="26" cy="27" rx="3" ry="2" fill="#FCA5A5"/>
+                  <rect x="24.5" y="28.5" width="1.5" height="2" rx="0.7" fill="white"/>
+                  <rect x="26.5" y="28.5" width="1.5" height="2" rx="0.7" fill="white"/>
+                  <!-- 노트북 -->
+                  <rect x="34" y="36" width="14" height="10" rx="1.5" fill="#7000FC"/>
+                  <rect x="35" y="37" width="12" height="7" rx="1" fill="#DDD6FE"/>
+                  <line x1="37" y1="39" x2="44" y2="39" stroke="#7000FC" stroke-width="0.8"/>
+                  <line x1="37" y1="41" x2="44" y2="41" stroke="#7000FC" stroke-width="0.8"/>
+                  <line x1="37" y1="43" x2="41" y2="43" stroke="#7000FC" stroke-width="0.8"/>
+                </svg>
+              </div>
+              <div>
+                <span class="agent-badge" style="background:#EDE9FE;color:#7000FC;margin-bottom:4px;display:inline-block">에이전트 #9</span>
+                <div class="agent-name" style="font-size:12px">블로그 PD</div>
+                <div class="agent-sub" style="font-size:10px">네이버 블로그 롱폼 · 1100~1300자</div>
+              </div>
+            </div>
+
+            <!-- #10 인스타 PD -->
+            <div class="gorani-card card-main" style="flex-direction:row;text-align:left;gap:12px;padding:12px 14px">
+              <span style="position:absolute;top:-8px;right:12px;font-size:9px;font-weight:800;color:#fff;background:#7000FC;padding:1px 9px;border-radius:99px">#10</span>
+              <div style="width:52px;height:52px;flex-shrink:0">
+                <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="26" cy="38" rx="13" ry="10" fill="#C4B5FD"/>
+                  <circle cx="26" cy="22" r="12" fill="#DDD6FE"/>
+                  <ellipse cx="17" cy="13" rx="3.5" ry="5.5" fill="#C4B5FD" transform="rotate(-15 17 13)"/>
+                  <ellipse cx="17" cy="13" rx="2" ry="3.5" fill="#FCA5A5" transform="rotate(-15 17 13)"/>
+                  <ellipse cx="35" cy="13" rx="3.5" ry="5.5" fill="#C4B5FD" transform="rotate(15 35 13)"/>
+                  <ellipse cx="35" cy="13" rx="2" ry="3.5" fill="#FCA5A5" transform="rotate(15 35 13)"/>
+                  <!-- 선글라스 -->
+                  <rect x="17" y="19" width="7" height="5" rx="2.5" fill="#130D2A"/>
+                  <rect x="28" y="19" width="7" height="5" rx="2.5" fill="#130D2A"/>
+                  <line x1="24" y1="21" x2="28" y2="21" stroke="#130D2A" stroke-width="1.2"/>
+                  <ellipse cx="26" cy="27" rx="3" ry="2" fill="#FCA5A5"/>
+                  <rect x="24.5" y="28.5" width="1.5" height="2" rx="0.7" fill="white"/>
+                  <rect x="26.5" y="28.5" width="1.5" height="2" rx="0.7" fill="white"/>
+                  <!-- 카메라 -->
+                  <rect x="34" y="35" width="14" height="11" rx="2" fill="#7000FC"/>
+                  <circle cx="41" cy="41" r="4" stroke="white" stroke-width="1.5" fill="none"/>
+                  <circle cx="41" cy="41" r="1.8" fill="white"/>
+                  <rect x="36" y="33" width="4" height="2" rx="1" fill="#7000FC"/>
+                </svg>
+              </div>
+              <div>
+                <span class="agent-badge" style="background:#EDE9FE;color:#7000FC;margin-bottom:4px;display:inline-block">에이전트 #10</span>
+                <div class="agent-name" style="font-size:12px">인스타 비주얼 PD</div>
+                <div class="agent-sub" style="font-size:10px">카드뉴스 5장 · 캡션·해시태그</div>
+              </div>
+            </div>
+
+            <!-- #11 쇼츠 PD -->
+            <div class="gorani-card card-main" style="flex-direction:row;text-align:left;gap:12px;padding:12px 14px">
+              <span style="position:absolute;top:-8px;right:12px;font-size:9px;font-weight:800;color:#fff;background:#7000FC;padding:1px 9px;border-radius:99px">#11</span>
+              <div style="width:52px;height:52px;flex-shrink:0">
+                <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="26" cy="38" rx="13" ry="10" fill="#C4B5FD"/>
+                  <circle cx="26" cy="22" r="12" fill="#DDD6FE"/>
+                  <ellipse cx="17" cy="13" rx="3.5" ry="5.5" fill="#C4B5FD" transform="rotate(-15 17 13)"/>
+                  <ellipse cx="17" cy="13" rx="2" ry="3.5" fill="#FCA5A5" transform="rotate(-15 17 13)"/>
+                  <ellipse cx="35" cy="13" rx="3.5" ry="5.5" fill="#C4B5FD" transform="rotate(15 35 13)"/>
+                  <ellipse cx="35" cy="13" rx="2" ry="3.5" fill="#FCA5A5" transform="rotate(15 35 13)"/>
+                  <circle cx="21" cy="21" r="3" fill="white"/><circle cx="31" cy="21" r="3" fill="white"/>
+                  <circle cx="22" cy="22" r="1.6" fill="#7000FC"/><circle cx="32" cy="22" r="1.6" fill="#7000FC"/>
+                  <ellipse cx="26" cy="27" rx="3" ry="2" fill="#FCA5A5"/>
+                  <rect x="24.5" y="28.5" width="1.5" height="2" rx="0.7" fill="white"/>
+                  <rect x="26.5" y="28.5" width="1.5" height="2" rx="0.7" fill="white"/>
+                  <!-- 비디오 카메라 -->
+                  <rect x="32" y="36" width="10" height="8" rx="1.5" fill="#7000FC"/>
+                  <polygon points="42,37 47,39.5 42,42" fill="#5A00CC"/>
+                  <circle cx="37" cy="40" r="1.5" fill="white"/>
+                  <!-- 재생 버튼 -->
+                  <circle cx="9" cy="44" r="5" fill="#7000FC"/>
+                  <polygon points="7.5,42 7.5,46 11,44" fill="white"/>
+                </svg>
+              </div>
+              <div>
+                <span class="agent-badge" style="background:#EDE9FE;color:#7000FC;margin-bottom:4px;display:inline-block">에이전트 #11</span>
+                <div class="agent-name" style="font-size:12px">쇼츠 PD</div>
+                <div class="agent-sub" style="font-size:10px">유튜브 쇼츠 스크립트 · 30~60초</div>
+              </div>
+            </div>
+
+            <!-- #12 스레드 PD -->
+            <div class="gorani-card card-main" style="flex-direction:row;text-align:left;gap:12px;padding:12px 14px">
+              <span style="position:absolute;top:-8px;right:12px;font-size:9px;font-weight:800;color:#fff;background:#7000FC;padding:1px 9px;border-radius:99px">#12</span>
+              <div style="width:52px;height:52px;flex-shrink:0">
+                <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <ellipse cx="26" cy="38" rx="13" ry="10" fill="#C4B5FD"/>
+                  <circle cx="26" cy="22" r="12" fill="#DDD6FE"/>
+                  <ellipse cx="17" cy="13" rx="3.5" ry="5.5" fill="#C4B5FD" transform="rotate(-15 17 13)"/>
+                  <ellipse cx="17" cy="13" rx="2" ry="3.5" fill="#FCA5A5" transform="rotate(-15 17 13)"/>
+                  <ellipse cx="35" cy="13" rx="3.5" ry="5.5" fill="#C4B5FD" transform="rotate(15 35 13)"/>
+                  <ellipse cx="35" cy="13" rx="2" ry="3.5" fill="#FCA5A5" transform="rotate(15 35 13)"/>
+                  <circle cx="21" cy="21" r="3" fill="white"/><circle cx="31" cy="21" r="3" fill="white"/>
+                  <circle cx="22" cy="22" r="1.6" fill="#7000FC"/><circle cx="32" cy="22" r="1.6" fill="#7000FC"/>
+                  <ellipse cx="26" cy="27" rx="3" ry="2" fill="#FCA5A5"/>
+                  <rect x="24.5" y="28.5" width="1.5" height="2" rx="0.7" fill="white"/>
+                  <rect x="26.5" y="28.5" width="1.5" height="2" rx="0.7" fill="white"/>
+                  <!-- 스레드 @ 아이콘 -->
+                  <circle cx="41" cy="41" r="7" fill="#7000FC"/>
+                  <text x="41" y="44" text-anchor="middle" fill="white" font-size="8" font-weight="700">@</text>
+                  <!-- 폰 -->
+                  <rect x="8" y="32" width="9" height="14" rx="2" fill="#5A00CC"/>
+                  <rect x="9" y="34" width="7" height="9" rx="1" fill="#DDD6FE"/>
+                  <circle cx="12.5" cy="44" r="1" fill="#DDD6FE"/>
+                </svg>
+              </div>
+              <div>
+                <span class="agent-badge" style="background:#EDE9FE;color:#7000FC;margin-bottom:4px;display:inline-block">에이전트 #12</span>
+                <div class="agent-name" style="font-size:12px">스레드 PD</div>
+                <div class="agent-sub" style="font-size:10px">스레드 3종 버전 · 추천 1개 포함</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 서브채널 -->
+        <div class="channel-col">
+          <div class="channel-header"><span class="channel-chip chip-gorani">서브채널 gorani</span></div>
+          <div class="gorani-card card-gorani" style="height:calc(100% - 36px)">
+            <span style="position:absolute;top:-8px;right:12px;font-size:9px;font-weight:800;color:#fff;background:#BE123C;padding:1px 9px;border-radius:99px">#13</span>
+            <div class="gorani-avatar" style="width:88px;height:88px">
+              <svg viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="44" cy="64" rx="22" ry="17" fill="#FDA4AF"/>
+                <circle cx="44" cy="40" r="20" fill="#FECDD3"/>
+                <ellipse cx="28" cy="24" rx="6" ry="10" fill="#FDA4AF" transform="rotate(-20 28 24)"/>
+                <ellipse cx="28" cy="24" rx="3.5" ry="6.5" fill="#FCA5A5" transform="rotate(-20 28 24)"/>
+                <ellipse cx="60" cy="24" rx="6" ry="10" fill="#FDA4AF" transform="rotate(20 60 24)"/>
+                <ellipse cx="60" cy="24" rx="3.5" ry="6.5" fill="#FCA5A5" transform="rotate(20 60 24)"/>
+                <!-- 헝클어진 머리카락 -->
+                <path d="M38 18 Q36 10 32 12 Q34 8 38 12" fill="#130D2A"/>
+                <path d="M44 16 Q44 8 48 10 Q46 7 44 12" fill="#130D2A"/>
+                <path d="M50 18 Q52 9 56 12 Q53 8 50 13" fill="#130D2A"/>
+                <!-- 눈 (반짝반짝) -->
+                <circle cx="34" cy="38" r="5" fill="white"/>
+                <circle cx="54" cy="38" r="5" fill="white"/>
+                <circle cx="35" cy="39" r="2.8" fill="#BE123C"/>
+                <circle cx="55" cy="39" r="2.8" fill="#BE123C"/>
+                <circle cx="36" cy="37.5" r="1.2" fill="white"/>
+                <circle cx="56" cy="37.5" r="1.2" fill="white"/>
+                <!-- 찌질한 표정: 한쪽 눈 크게, 한쪽 ^^  -->
+                <path d="M31 45 Q38 52 44 46" stroke="#BE123C" stroke-width="1.5" fill="none"/>
+                <ellipse cx="44" cy="46" rx="5" ry="4" fill="#FCA5A5"/>
+                <rect x="42" y="49" width="2" height="3.5" rx="1" fill="white"/>
+                <rect x="45" y="49" width="2" height="3.5" rx="1" fill="white"/>
+                <!-- 붓 -->
+                <rect x="58" y="60" width="3" height="16" rx="1.5" fill="#92400E" transform="rotate(-30 58 60)"/>
+                <path d="M61 60 Q64 56 66 59" fill="#BE123C" transform="rotate(-30 61 60)"/>
+                <!-- 별 반짝임 -->
+                <text x="12" y="28" font-size="9" fill="#F43F5E">✦</text>
+                <text x="68" y="30" font-size="7" fill="#F43F5E">✦</text>
+                <text x="10" y="58" font-size="6" fill="#FDA4AF">✦</text>
+              </svg>
+            </div>
+            <span class="agent-badge" style="background:#FFE4E6;color:#BE123C">에이전트 #13</span>
+            <div class="agent-name">고라니 크리에이터</div>
+            <div class="agent-sub">고라니 캐릭터 콘텐츠<br>릴스·스레드·웹툰 제작</div>
+            <div style="font-size:11px;color:#9F1239;margin-top:4px;line-height:1.6;font-weight:600">
+              "찌질하지만 귀엽게 🦌"<br>공감형 · 드립형
+            </div>
+            <div class="agent-tags-wrap">
+              <span class="agent-tag" style="background:#FFE4E6;color:#BE123C">릴스 30초</span>
+              <span class="agent-tag" style="background:#FFE4E6;color:#BE123C">스레드 3문장</span>
+              <span class="agent-tag" style="background:#FFE4E6;color:#BE123C">웹툰</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 합류 화살표 -->
+    <div style="padding:6px 0 16px">
+      <div style="display:flex;align-items:flex-start;height:28px">
+        <div style="flex:1;border-top:1.5px solid #DDD6FE;border-left:1.5px solid #DDD6FE;height:28px;border-radius:10px 0 0 0;margin-right:-1px"></div>
+        <div style="flex:1;border-top:1.5px solid #FECDD3;border-right:1.5px solid #FECDD3;height:28px;border-radius:0 10px 0 0;margin-left:-1px"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div style="width:1.5px;height:8px;background:#C4B5FD"></div>
+        <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #7000FC"></div>
+      </div>
+    </div>
+
+    <!-- Layer 4: 검수 파이프라인 -->
+    <div class="pipeline-section">
+      <div class="pipeline-section-header">
+        <div class="pipeline-section-label">검수 파이프라인 (3-step)</div>
+        <div class="pipeline-section-line"></div>
+      </div>
+      <div class="guard-flow">
+
+        <!-- #1 팩트체커 -->
+        <div class="gorani-card card-guard" style="flex:1">
+          <span style="position:absolute;top:-8px;right:12px;font-size:9px;font-weight:800;color:#fff;background:#B45309;padding:1px 9px;border-radius:99px">#1</span>
+          <div class="gorani-avatar">
+            <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="36" cy="50" rx="18" ry="14" fill="#FDE68A"/>
+              <circle cx="36" cy="32" r="16" fill="#FEF3C7"/>
+              <ellipse cx="22" cy="20" rx="5" ry="8" fill="#FDE68A" transform="rotate(-15 22 20)"/>
+              <ellipse cx="22" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(-15 22 20)"/>
+              <ellipse cx="50" cy="20" rx="5" ry="8" fill="#FDE68A" transform="rotate(15 50 20)"/>
+              <ellipse cx="50" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(15 50 20)"/>
+              <!-- 엄격한 눈썹 -->
+              <path d="M24 26 Q28 24 32 26" stroke="#B45309" stroke-width="1.5" fill="none"/>
+              <path d="M40 26 Q44 24 48 26" stroke="#B45309" stroke-width="1.5" fill="none"/>
+              <circle cx="28" cy="30" r="3.5" fill="white"/><circle cx="44" cy="30" r="3.5" fill="white"/>
+              <circle cx="28.5" cy="30" r="2" fill="#B45309"/><circle cx="44.5" cy="30" r="2" fill="#B45309"/>
+              <ellipse cx="36" cy="37" rx="4" ry="3" fill="#FCA5A5"/>
+              <rect x="34" y="39" width="2" height="3" rx="1" fill="white"/>
+              <rect x="37" y="39" width="2" height="3" rx="1" fill="white"/>
+              <!-- 체크리스트 -->
+              <rect x="10" y="48" width="14" height="16" rx="2" fill="white" stroke="#B45309" stroke-width="1"/>
+              <line x1="13" y1="52" x2="20" y2="52" stroke="#B45309" stroke-width="0.8"/>
+              <line x1="13" y1="55" x2="20" y2="55" stroke="#B45309" stroke-width="0.8"/>
+              <path d="M12 52 L12.8 53 L14.5 51" stroke="#059669" stroke-width="1" fill="none"/>
+              <path d="M12 55 L12.8 56 L14.5 54" stroke="#DC2626" stroke-width="1" fill="none"/>
+              <line x1="13" y1="58" x2="20" y2="58" stroke="#B45309" stroke-width="0.8"/>
+            </svg>
+          </div>
+          <span class="agent-badge" style="background:#FEF3C7;color:#B45309">게이트 1</span>
+          <div class="agent-name" style="font-size:12px">팩트 체커</div>
+          <div class="agent-sub" style="font-size:10px">국가별 정확성<br>금칙어·수수료</div>
+          <div class="red-block">RED → 즉시 반려</div>
+        </div>
+
+        <div class="guard-arrow-h">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <line x1="2" y1="12" x2="18" y2="12" stroke="#FDE68A" stroke-width="2"/>
+            <polygon points="15,8 22,12 15,16" fill="#B45309"/>
+          </svg>
+        </div>
+
+        <!-- #2 역할혼입감지 -->
+        <div class="gorani-card card-guard" style="flex:1">
+          <span style="position:absolute;top:-8px;right:12px;font-size:9px;font-weight:800;color:#fff;background:#B45309;padding:1px 9px;border-radius:99px">#2</span>
+          <div class="gorani-avatar">
+            <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="36" cy="50" rx="18" ry="14" fill="#FDE68A"/>
+              <circle cx="36" cy="32" r="16" fill="#FEF3C7"/>
+              <ellipse cx="22" cy="20" rx="5" ry="8" fill="#FDE68A" transform="rotate(-15 22 20)"/>
+              <ellipse cx="22" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(-15 22 20)"/>
+              <ellipse cx="50" cy="20" rx="5" ry="8" fill="#FDE68A" transform="rotate(15 50 20)"/>
+              <ellipse cx="50" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(15 50 20)"/>
+              <!-- 탐정 모자 -->
+              <rect x="24" y="13" width="24" height="5" rx="1" fill="#B45309"/>
+              <ellipse cx="36" cy="14" rx="10" ry="4" fill="#92400E"/>
+              <circle cx="28" cy="30" r="4" fill="white"/><circle cx="44" cy="30" r="4" fill="white"/>
+              <circle cx="28.5" cy="30.5" r="2.2" fill="#B45309"/><circle cx="44.5" cy="30.5" r="2.2" fill="#B45309"/>
+              <ellipse cx="36" cy="37" rx="4" ry="3" fill="#FCA5A5"/>
+              <rect x="34" y="39" width="2" height="3" rx="1" fill="white"/>
+              <rect x="37" y="39" width="2" height="3" rx="1" fill="white"/>
+              <!-- 돋보기 탐정용 -->
+              <circle cx="14" cy="56" r="6" stroke="#B45309" stroke-width="2" fill="rgba(254,243,199,0.7)"/>
+              <line x1="19" y1="61" x2="24" y2="66" stroke="#B45309" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="agent-badge" style="background:#FEF3C7;color:#B45309">게이트 2</span>
+          <div class="agent-name" style="font-size:12px">역할 혼입 감지</div>
+          <div class="agent-sub" style="font-size:10px">채널 톤 교차 감지<br>캐릭터 이탈 여부</div>
+          <div class="red-block">RED → 즉시 반려</div>
+        </div>
+
+        <div class="guard-arrow-h">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <line x1="2" y1="12" x2="18" y2="12" stroke="#FDE68A" stroke-width="2"/>
+            <polygon points="15,8 22,12 15,16" fill="#B45309"/>
+          </svg>
+        </div>
+
+        <!-- #3 톤앤매너 -->
+        <div class="gorani-card card-guard" style="flex:1">
+          <span style="position:absolute;top:-8px;right:12px;font-size:9px;font-weight:800;color:#fff;background:#B45309;padding:1px 9px;border-radius:99px">#3</span>
+          <div class="gorani-avatar">
+            <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <ellipse cx="36" cy="50" rx="18" ry="14" fill="#FDE68A"/>
+              <circle cx="36" cy="32" r="16" fill="#FEF3C7"/>
+              <ellipse cx="22" cy="20" rx="5" ry="8" fill="#FDE68A" transform="rotate(-15 22 20)"/>
+              <ellipse cx="22" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(-15 22 20)"/>
+              <ellipse cx="50" cy="20" rx="5" ry="8" fill="#FDE68A" transform="rotate(15 50 20)"/>
+              <ellipse cx="50" cy="20" rx="3" ry="5" fill="#FCA5A5" transform="rotate(15 50 20)"/>
+              <!-- 판사 가운 -->
+              <rect x="23" y="49" width="26" height="14" rx="3" fill="#92400E"/>
+              <path d="M36 50 L32 64 M36 50 L40 64" stroke="white" stroke-width="1" fill="none"/>
+              <circle cx="28" cy="30" r="3.5" fill="white"/><circle cx="44" cy="30" r="3.5" fill="white"/>
+              <circle cx="28.5" cy="30.5" r="2" fill="#B45309"/><circle cx="44.5" cy="30.5" r="2" fill="#B45309"/>
+              <ellipse cx="36" cy="37" rx="4" ry="3" fill="#FCA5A5"/>
+              <!-- 엄격한 입 -->
+              <line x1="32" y1="40" x2="40" y2="40" stroke="#B45309" stroke-width="1.5"/>
+              <!-- 망치 -->
+              <rect x="54" y="52" width="3" height="12" rx="1.5" fill="#92400E" transform="rotate(-30 54 52)"/>
+              <rect x="51" y="52" width="8" height="4" rx="2" fill="#B45309" transform="rotate(-30 51 52)"/>
+            </svg>
+          </div>
+          <span class="agent-badge" style="background:#FEF3C7;color:#B45309">게이트 3</span>
+          <div class="agent-name" style="font-size:12px">톤앤매너 검수</div>
+          <div class="agent-sub" style="font-size:10px">브랜드·법적 리스크<br>과장·비방 표현</div>
+          <div class="red-block">RED → 즉시 반려</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pipeline-arrow">↓</div>
+
+    <!-- 출력 -->
+    <div class="output-grid">
+      <div class="output-card output-green">
+        <div style="font-size:10px;color:#86EFAC;margin-bottom:4px">GREEN ✓</div>
+        <div style="font-size:13px;font-weight:700;color:#fff">발행 가능</div>
+      </div>
+      <div class="output-card output-yellow">
+        <div style="font-size:10px;color:#FDE68A;margin-bottom:4px">YELLOW !</div>
+        <div style="font-size:13px;font-weight:700;color:#fff">담당자 검토 후 결정</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── 오른쪽: 사이드 패널 ── -->
+  <div class="side-panel">
+
+    <!-- 알림 & 리포트 에이전트 -->
+    <div class="side-card">
+      <div class="side-card-header">알림 & 리포트 파이프라인</div>
+
+      <!-- #5 긴급알림 -->
+      <div class="trigger-row">
+        <span class="trigger-badge" style="background:#FEE2E2;color:#DC2626">중요도 7+<br>즉시</span>
+        <span style="font-size:14px;color:#E4E1EE;flex-shrink:0">→</span>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="16" fill="#FEE2E2"/>
+              <ellipse cx="16" cy="22" rx="8" ry="6" fill="#FCA5A5"/>
+              <circle cx="16" cy="13" r="7" fill="#FECACA"/>
+              <ellipse cx="11" cy="8" rx="2.2" ry="3.5" fill="#FCA5A5" transform="rotate(-15 11 8)"/>
+              <ellipse cx="21" cy="8" rx="2.2" ry="3.5" fill="#FCA5A5" transform="rotate(15 21 8)"/>
+              <circle cx="13" cy="13" r="2" fill="white"/><circle cx="19" cy="13" r="2" fill="white"/>
+              <circle cx="13.5" cy="13.5" r="1.1" fill="#DC2626"/><circle cx="19.5" cy="13.5" r="1.1" fill="#DC2626"/>
+              <ellipse cx="16" cy="16" rx="2" ry="1.5" fill="#FCA5A5"/>
+              <!-- 사이렌 -->
+              <circle cx="23" cy="7" r="3" fill="#DC2626"/>
+              <circle cx="23" cy="7" r="1.5" fill="white"/>
+              <path d="M21 5 Q20 3 22 2" stroke="#DC2626" stroke-width="0.8" fill="none"/>
+              <path d="M25 5 Q26 3 24 2" stroke="#DC2626" stroke-width="0.8" fill="none"/>
+            </svg>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#130D2A">긴급 알림 에디터</div>
+              <div style="font-size:10px;color:#AAA7B8">Agent #5 · 상황/영향도/권고</div>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:10px;color:#059669;font-weight:600;background:#F0FDF4;padding:2px 8px;border-radius:99px;flex-shrink:0">이메일</span>
+      </div>
+
+      <!-- #6 일일리포트 -->
+      <div class="trigger-row">
+        <span class="trigger-badge" style="background:#EDE9FE;color:#7000FC">매일<br>08:00</span>
+        <span style="font-size:14px;color:#E4E1EE;flex-shrink:0">→</span>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="16" fill="#F5F3FF"/>
+              <ellipse cx="16" cy="22" rx="8" ry="6" fill="#C4B5FD"/>
+              <circle cx="16" cy="13" r="7" fill="#DDD6FE"/>
+              <ellipse cx="11" cy="8" rx="2.2" ry="3.5" fill="#C4B5FD" transform="rotate(-15 11 8)"/>
+              <ellipse cx="21" cy="8" rx="2.2" ry="3.5" fill="#C4B5FD" transform="rotate(15 21 8)"/>
+              <circle cx="13" cy="13" r="2" fill="white"/><circle cx="19" cy="13" r="2" fill="white"/>
+              <circle cx="13.5" cy="13.5" r="1.1" fill="#7000FC"/><circle cx="19.5" cy="13.5" r="1.1" fill="#7000FC"/>
+              <ellipse cx="16" cy="16" rx="2" ry="1.5" fill="#FCA5A5"/>
+              <!-- 커피컵 -->
+              <rect x="6" y="20" width="6" height="5" rx="1" fill="#7000FC"/>
+              <path d="M12 22 Q14 22 14 23 Q14 24 12 24" stroke="#7000FC" stroke-width="0.8" fill="none"/>
+              <rect x="6" y="25" width="6" height="1" rx="0.5" fill="#5A00CC"/>
+              <path d="M8 19 Q8 17 9 17" stroke="#C4B5FD" stroke-width="0.8" fill="none"/>
+              <path d="M10 19 Q10 16 11 16" stroke="#C4B5FD" stroke-width="0.8" fill="none"/>
+            </svg>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#130D2A">일일 리포트 에디터</div>
+              <div style="font-size:10px;color:#AAA7B8">Agent #6 · 전날 수집 전체 요약</div>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:10px;color:#059669;font-weight:600;background:#F0FDF4;padding:2px 8px;border-radius:99px;flex-shrink:0">이메일</span>
+      </div>
+
+      <!-- #7 주간리포트 -->
+      <div class="trigger-row">
+        <span class="trigger-badge" style="background:#F0FDF4;color:#15803D">매주<br>수동</span>
+        <span style="font-size:14px;color:#E4E1EE;flex-shrink:0">→</span>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="16" fill="#F0FDF4"/>
+              <ellipse cx="16" cy="22" rx="8" ry="6" fill="#86EFAC"/>
+              <circle cx="16" cy="13" r="7" fill="#BBF7D0"/>
+              <ellipse cx="11" cy="8" rx="2.2" ry="3.5" fill="#86EFAC" transform="rotate(-15 11 8)"/>
+              <ellipse cx="21" cy="8" rx="2.2" ry="3.5" fill="#86EFAC" transform="rotate(15 21 8)"/>
+              <circle cx="13" cy="13" r="2" fill="white"/><circle cx="19" cy="13" r="2" fill="white"/>
+              <circle cx="13.5" cy="13.5" r="1.1" fill="#15803D"/><circle cx="19.5" cy="13.5" r="1.1" fill="#15803D"/>
+              <ellipse cx="16" cy="16" rx="2" ry="1.5" fill="#FCA5A5"/>
+              <!-- 차트 -->
+              <polyline points="5,26 8,22 11,24 14,19 17,21" stroke="#15803D" stroke-width="1" fill="none" stroke-linecap="round"/>
+            </svg>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:#130D2A">주간 리포트 에디터</div>
+              <div style="font-size:10px;color:#AAA7B8">Agent #7 · 흐름 해석·방향</div>
+            </div>
+          </div>
+        </div>
+        <span style="font-size:10px;color:#059669;font-weight:600;background:#F0FDF4;padding:2px 8px;border-radius:99px;flex-shrink:0">이메일</span>
+      </div>
+    </div>
+
+    <!-- 에이전트 인덱스 -->
+    <div class="side-card">
+      <div class="side-card-header">에이전트 인덱스</div>
+      <div style="padding:8px 0">
+        <div class="index-row"><span class="index-num" style="background:#DBEAFE;color:#1D4ED8">#8</span><span style="font-size:12px;color:#130D2A;font-weight:500">국가 매니저</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">인텔리전스</span></div>
+        <div class="index-row"><span class="index-num" style="background:#FFEDD5;color:#C2410C">#4</span><span style="font-size:12px;color:#130D2A;font-weight:500">트렌드 리서처</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">소재 기획</span></div>
+        <div class="index-row"><span class="index-num" style="background:#EDE9FE;color:#7000FC">#9</span><span style="font-size:12px;color:#130D2A;font-weight:500">블로그 PD</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">메인채널</span></div>
+        <div class="index-row"><span class="index-num" style="background:#EDE9FE;color:#7000FC">#10</span><span style="font-size:12px;color:#130D2A;font-weight:500">인스타 비주얼 PD</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">메인채널</span></div>
+        <div class="index-row"><span class="index-num" style="background:#EDE9FE;color:#7000FC">#11</span><span style="font-size:12px;color:#130D2A;font-weight:500">쇼츠 PD</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">메인채널</span></div>
+        <div class="index-row"><span class="index-num" style="background:#EDE9FE;color:#7000FC">#12</span><span style="font-size:12px;color:#130D2A;font-weight:500">스레드 PD</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">메인채널</span></div>
+        <div class="index-row"><span class="index-num" style="background:#FFE4E6;color:#BE123C">#13</span><span style="font-size:12px;color:#130D2A;font-weight:500">고라니 크리에이터</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">서브채널</span></div>
+        <div style="height:0.5px;background:#F0EDF7;margin:4px 14px"></div>
+        <div class="index-row"><span class="index-num" style="background:#FEF3C7;color:#B45309">#1</span><span style="font-size:12px;color:#130D2A;font-weight:500">팩트 체커</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">검수 G1</span></div>
+        <div class="index-row"><span class="index-num" style="background:#FEF3C7;color:#B45309">#2</span><span style="font-size:12px;color:#130D2A;font-weight:500">역할 혼입 감지</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">검수 G2</span></div>
+        <div class="index-row"><span class="index-num" style="background:#FEF3C7;color:#B45309">#3</span><span style="font-size:12px;color:#130D2A;font-weight:500">톤앤매너 검수</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">검수 G3</span></div>
+        <div style="height:0.5px;background:#F0EDF7;margin:4px 14px"></div>
+        <div class="index-row"><span class="index-num" style="background:#FEE2E2;color:#DC2626">#5</span><span style="font-size:12px;color:#130D2A;font-weight:500">긴급 알림 에디터</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">중요도 7+</span></div>
+        <div class="index-row"><span class="index-num" style="background:#EDE9FE;color:#7000FC">#6</span><span style="font-size:12px;color:#130D2A;font-weight:500">일일 리포트 에디터</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">매일 08:00</span></div>
+        <div class="index-row"><span class="index-num" style="background:#F0FDF4;color:#15803D">#7</span><span style="font-size:12px;color:#130D2A;font-weight:500">주간 리포트 에디터</span><span style="font-size:10px;color:#AAA7B8;margin-left:auto">수동 발송</span></div>
+      </div>
+    </div>
+
+    <!-- 검수 판정 등급 -->
+    <div class="side-card">
+      <div class="side-card-header">검수 판정 등급</div>
+      <div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <span style="width:10px;height:10px;border-radius:50%;background:#059669;flex-shrink:0;margin-top:3px"></span>
+          <div><div style="font-size:12px;font-weight:700;color:#059669">GREEN</div><div style="font-size:11px;color:#5E5A71">사실 오류 없음 · 금칙 위반 없음<br>→ 발행 가능</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <span style="width:10px;height:10px;border-radius:50%;background:#D97706;flex-shrink:0;margin-top:3px"></span>
+          <div><div style="font-size:12px;font-weight:700;color:#D97706">YELLOW</div><div style="font-size:11px;color:#5E5A71">확인 권고 항목 있음<br>→ 담당자 검토 후 결정</div></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <span style="width:10px;height:10px;border-radius:50%;background:#DC2626;flex-shrink:0;margin-top:3px"></span>
+          <div><div style="font-size:12px;font-weight:700;color:#DC2626">RED</div><div style="font-size:11px;color:#5E5A71">하드 블로킹 → 즉시 반려<br>이후 단계 스킵</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

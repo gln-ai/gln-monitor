@@ -1,109 +1,123 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ post.title[:40] }} — GLN 마케팅 에이전트</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; }
-</style>
-</head>
-<body class="bg-gray-50 min-h-screen">
+{% extends 'base.html' %}
+{% block title %}{{ post.title[:40] }} — GLN 마케팅 에이전트{% endblock %}
 
-<div class="max-w-3xl mx-auto px-4 py-6">
-  <!-- 뒤로가기 -->
-  <a href="/" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 mb-4">
-    ← 목록으로
-  </a>
+{% block page_styles %}
+.post-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; padding: 20px 22px; margin-bottom: 12px; }
+.post-card h1 { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0 0 12px; }
+.post-meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.meta-line { font-size: 12px; color: #5E5A71; margin-bottom: 5px; }
+.meta-line span { color: #918DA0; }
+.ai-summary { background: #F6F5FF; border-radius: 10px; padding: 12px 14px; margin-top: 12px; }
+.ai-summary-label { font-size: 10px; font-weight: 600; color: #7000FC; margin-bottom: 4px; }
+.ai-summary-text { font-size: 13px; color: #374151; line-height: 1.65; }
+.reply-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; padding: 20px 22px; }
+.reply-card h2 { font-size: 13px; font-weight: 700; color: #130D2A; margin: 0 0 14px; }
+.reply-block { margin-bottom: 14px; }
+.reply-block:last-child { margin-bottom: 0; }
+.reply-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.reply-type-label { font-size: 11px; font-weight: 600; color: #918DA0; }
+.reply-text { background: #F9FAFB; border: 0.5px solid #E4E1EE; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #374151; line-height: 1.65; }
+.btn-copy-reply { font-size: 11px; color: #7000FC; background: #F5F3FF; border: 0.5px solid #DDD6FE; border-radius: 7px; padding: 3px 10px; cursor: pointer; }
+.btn-copy-reply:hover { background: #EDE9FE; }
+{% endblock %}
 
+{% block topbar_back %}
+<a href="/" class="btn btn-neutral btn-sm" style="text-decoration:none;margin-right:4px;">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+</a>
+{% endblock %}
+
+{% block topbar_title %}게시글 상세{% endblock %}
+{% block topbar_sub %}{{ post.cafe_name or '' }}{% endblock %}
+
+{% block content %}
+<div style="max-width:680px;">
   <!-- 게시글 정보 -->
-  <div class="bg-white rounded-xl border border-gray-100 p-5 mb-4">
-    <div class="flex items-start justify-between gap-3 mb-3">
-      <h1 class="text-base font-semibold text-gray-900">{{ post.title }}</h1>
+  <div class="post-card">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;">
+      <h1 style="margin:0;">{{ post.title }}</h1>
       {% if post.is_urgent %}
-      <span class="flex-shrink-0 text-xs px-2 py-1 bg-red-50 text-red-600 rounded-full font-medium">긴급</span>
+      <span class="badge badge-red" style="flex-shrink:0;">긴급</span>
       {% endif %}
     </div>
 
-    <div class="flex flex-wrap gap-2 mb-4">
+    <div class="post-meta-row">
       {% if post.sentiment %}
-      <span class="text-xs px-2 py-1 rounded-full font-medium
-        {% if post.sentiment == 'positive' %}bg-green-50 text-green-700
-        {% elif post.sentiment == 'negative' %}bg-red-50 text-red-700
-        {% else %}bg-gray-100 text-gray-600{% endif %}">
-        {% if post.sentiment == 'positive' %}긍정
-        {% elif post.sentiment == 'negative' %}부정
-        {% else %}중립{% endif %}
+      <span class="badge {% if post.sentiment == 'positive' %}badge-pos{% elif post.sentiment == 'negative' %}badge-neg{% else %}badge-neu{% endif %}">
+        {% if post.sentiment == 'positive' %}긍정{% elif post.sentiment == 'negative' %}부정{% else %}중립{% endif %}
       </span>
       {% endif %}
       {% if post.category %}
-      <span class="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-full font-medium">{{ post.category }}</span>
+      <span class="badge badge-cat">{{ post.category }}</span>
       {% endif %}
       {% if post.importance_score %}
-      <span class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-full">중요도 {{ post.importance_score }}/10</span>
+      <span class="badge badge-neutral">중요도 {{ post.importance_score }}/10</span>
       {% endif %}
     </div>
 
-    <div class="text-sm text-gray-600 space-y-1 mb-4">
-      <p><span class="text-gray-400">카페:</span> {{ post.cafe_name or '-' }}</p>
-      <p><span class="text-gray-400">키워드:</span> {{ post.keyword }}</p>
-      <p><span class="text-gray-400">수집:</span> {{ post.created_at[:16] }}</p>
+    <div style="margin-bottom:12px;">
+      {% if post.cafe_name %}
+      <p class="meta-line"><span>카페:</span> {{ post.cafe_name }}</p>
+      {% endif %}
+      <p class="meta-line"><span>키워드:</span> {{ post.keyword }}</p>
+      <p class="meta-line"><span>수집:</span> {{ post.created_at[:16] }}</p>
     </div>
 
     {% if post.summary %}
-    <div class="bg-gray-50 rounded-lg p-3">
-      <p class="text-xs text-gray-400 mb-1 font-medium">AI 요약</p>
-      <p class="text-sm text-gray-700">{{ post.summary }}</p>
+    <div class="ai-summary">
+      <div class="ai-summary-label">AI 요약</div>
+      <div class="ai-summary-text">{{ post.summary }}</div>
     </div>
     {% endif %}
 
     <a href="{{ post.link }}" target="_blank"
-       class="mt-3 inline-flex items-center text-xs text-blue-500 hover:underline">
-      원문 보기 →
+       style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#7000FC;margin-top:14px;">
+      원문 보기
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
     </a>
   </div>
 
-  <!-- 답변 초안 — 카페 게시글만 표시 -->
+  <!-- 답변 초안 -->
   {% if replies %}
-  <div class="bg-white rounded-xl border border-gray-100 p-5">
-    <h2 class="text-sm font-semibold text-gray-900 mb-4">AI 답변 초안</h2>
-
-    {% set labels = {'basic': ('공감형', 'gray'), 'polite': ('정보제공형', 'blue'), 'cs': ('응원형', 'orange')} %}
+  <div class="reply-card">
+    <h2>AI 답변 초안</h2>
+    {% set labels = {'basic': '공감형', 'polite': '정보제공형', 'cs': '응원형'} %}
     {% for reply in replies %}
-    {% set info = labels.get(reply.type, (reply.type, 'gray')) %}
-    <div class="mb-4 last:mb-0">
-      <div class="flex items-center justify-between mb-1.5">
-        <span class="text-xs font-medium text-gray-500">{{ info[0] }}</span>
-        <button onclick="copyText('reply-{{ loop.index }}')"
-                class="text-xs text-gray-400 hover:text-gray-600">복사</button>
+    <div class="reply-block">
+      <div class="reply-label-row">
+        <span class="reply-type-label">{{ labels.get(reply.type, reply.type) }}</span>
+        <button class="btn-copy-reply" onclick="copyReply('reply-{{ loop.index }}', this)">복사</button>
       </div>
-      <div id="reply-{{ loop.index }}"
-           class="bg-gray-50 rounded-lg p-3 text-sm text-gray-700 leading-relaxed">
-        {{ reply.content }}
-      </div>
+      <div id="reply-{{ loop.index }}" class="reply-text">{{ reply.content }}</div>
     </div>
     {% endfor %}
   </div>
   {% elif post.keyword and not post.keyword.startswith('블로그') and not post.keyword.startswith('뉴스') %}
-  <div class="bg-white rounded-xl border border-gray-100 p-5 text-center">
-    <p class="text-sm text-gray-400">답변 초안 생성 중...</p>
-    <button onclick="triggerProcess()"
-            class="mt-2 text-xs text-blue-500 hover:underline">지금 생성하기</button>
+  <div class="reply-card" style="text-align:center;padding:32px;">
+    <p style="font-size:13px;color:#918DA0;margin-bottom:8px;">답변 초안 생성 중...</p>
+    <button onclick="triggerProcess()" class="btn btn-ghost btn-sm">지금 생성하기</button>
   </div>
   {% endif %}
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-  function copyText(id) {
-    const text = document.getElementById(id).innerText;
-    navigator.clipboard.writeText(text).then(() => alert('복사됐습니다.'));
+async function copyReply(id, btn) {
+  const text = document.getElementById(id).innerText;
+  try {
+    await navigator.clipboard.writeText(text);
+    const orig = btn.textContent;
+    btn.textContent = '✓ 복사됨';
+    setTimeout(() => btn.textContent = orig, 2000);
+  } catch(e) {
+    alert('복사됐습니다.');
   }
+}
 
-  async function triggerProcess() {
-    await fetch('/api/process', {method:'POST'});
-    alert('분석 시작됨 — 10초 후 새로고침하세요');
-  }
+async function triggerProcess() {
+  await fetch('/api/process', {method:'POST'});
+  alert('분석 시작됨 — 10초 후 새로고침하세요');
+}
 </script>
-</body>
-</html>
+{% endblock %}

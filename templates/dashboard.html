@@ -1,527 +1,302 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GLN 마케팅 에이전트</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: #F6F5FF; margin: 0; }
-  .sidebar { width: 220px; min-height: 100vh; background: #130D2A; position: fixed; top: 0; left: 0; z-index: 20; display: flex; flex-direction: column; padding: 20px 14px; }
-  .sidebar-logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px; margin-bottom: 28px; }
-  .logo-mark { width: 28px; height: 28px; background: #7000FC; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0; }
-  .logo-title { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; }
-  .logo-sub { font-size: 10px; color: #5E5A71; }
-  .nav-section { margin-bottom: 20px; }
-  .nav-section-label { font-size: 9px; font-weight: 600; color: #5E5A71; letter-spacing: 0.1em; text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; cursor: pointer; text-decoration: none; margin-bottom: 2px; transition: background 0.15s; }
-  .nav-item:hover { background: rgba(255,255,255,0.06); }
-  .nav-item.active { background: #7000FC; }
-  .nav-item-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; opacity: 0.5; flex-shrink: 0; }
-  .nav-item.active .nav-item-icon { opacity: 1; }
-  .nav-item-text { font-size: 13px; color: rgba(255,255,255,0.55); font-weight: 500; }
-  .nav-item.active .nav-item-text { color: #fff; }
-  .nav-badge { margin-left: auto; background: #DC2626; color: #fff; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 99px; }
-  .nav-divider { border: none; border-top: 0.5px solid rgba(255,255,255,0.07); margin: 8px 0; }
-  .sidebar-bottom { margin-top: auto; }
-  .sidebar-info { background: rgba(112,0,252,0.15); border-radius: 10px; padding: 10px 12px; border: 0.5px solid rgba(112,0,252,0.3); }
-  .sidebar-info-text { font-size: 10px; color: #AAA7B8; line-height: 1.7; margin: 0; }
-  .main-wrap { margin-left: 220px; min-height: 100vh; display: flex; flex-direction: column; }
-  .topbar { background: #fff; border-bottom: 0.5px solid #E4E1EE; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-  .topbar-left h1 { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0; }
-  .topbar-left p { font-size: 11px; color: #918DA0; margin: 2px 0 0; }
-  .topbar-right { display: flex; align-items: center; gap: 8px; }
-  .btn-primary { background: #7000FC; color: #fff; border: none; border-radius: 10px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
-  .btn-primary:hover { background: #5A00CC; }
-  .btn-ghost { background: #F0EAFF; color: #7000FC; border: none; border-radius: 10px; padding: 8px 16px; font-size: 12px; font-weight: 600; cursor: pointer; }
-  .btn-ghost:hover { background: #E0D4FF; }
-  .status-toast { display: none; font-size: 11px; padding: 5px 10px; background: #F0EAFF; color: #7000FC; border-radius: 8px; font-weight: 500; }
-  .content { padding: 20px 24px 40px; }
-  .kpi-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
-  .kpi-card { background: #fff; border-radius: 14px; padding: 16px 18px; border: 0.5px solid #E4E1EE; }
-  .kpi-label { font-size: 11px; color: #918DA0; margin-bottom: 4px; }
-  .kpi-value { font-size: 26px; font-weight: 700; color: #130D2A; line-height: 1; }
-  .kpi-sub { font-size: 10px; color: #AAA7B8; margin-top: 4px; }
-  .date-bar { background: #fff; border-radius: 12px; border: 0.5px solid #E4E1EE; padding: 10px 16px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-  .date-bar-label { font-size: 11px; font-weight: 600; color: #918DA0; flex-shrink: 0; }
-  .date-input { border: 0.5px solid #DAD9EA; border-radius: 8px; padding: 5px 10px; font-size: 12px; color: #130D2A; background: #F6F5FF; }
-  .date-sep { font-size: 11px; color: #DAD9EA; }
-  .date-apply-btn { background: #7000FC; color: #fff; border: none; border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer; }
-  .date-apply-btn:hover { background: #5A00CC; }
-  .date-presets { margin-left: auto; display: flex; gap: 4px; }
-  .date-preset-btn { border: 0.5px solid #DAD9EA; border-radius: 8px; padding: 5px 10px; font-size: 11px; color: #5E5A71; background: #fff; cursor: pointer; }
-  .date-preset-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 600; }
-  .channel-tabs { display: flex; background: #fff; border-radius: 14px 14px 0 0; border: 0.5px solid #E4E1EE; border-bottom: none; padding: 0 4px; }
-  .channel-tab { display: flex; align-items: center; gap: 6px; padding: 11px 16px; font-size: 13px; color: #918DA0; border-bottom: 2px solid transparent; cursor: pointer; text-decoration: none; white-space: nowrap; }
-  .channel-tab:hover { color: #130D2A; }
-  .channel-tab.active { color: #7000FC; border-bottom-color: #7000FC; font-weight: 600; }
-  .channel-tab-count { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px; background: #F0EDF7; color: #918DA0; }
-  .channel-tab.active .channel-tab-count { background: #7000FC; color: #fff; }
-  .filter-bar { background: #fff; border: 0.5px solid #E4E1EE; border-top: none; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .filter-chip { font-size: 11px; padding: 4px 12px; border-radius: 99px; border: 0.5px solid #DAD9EA; color: #5E5A71; background: #fff; cursor: pointer; text-decoration: none; }
-  .filter-chip:hover { border-color: #7000FC; color: #7000FC; }
-  .filter-chip.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 500; }
-  .filter-chip.red { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
-  .filter-chip.amber { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
-  .filter-sep { width: 1px; height: 14px; background: #E4E1EE; margin: 0 2px; }
-  .posts-wrap { background: #fff; border: 0.5px solid #E4E1EE; border-top: none; border-radius: 0 0 14px 14px; }
-  .post-meta-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 0.5px solid #F0EDF7; }
-  .post-meta-bar span { font-size: 11px; color: #918DA0; }
-  .post-meta-bar strong { color: #130D2A; font-weight: 600; }
-  .post-item { border-bottom: 0.5px solid #F6F5FF; padding: 14px 16px; display: flex; gap: 12px; }
-  .post-item:last-child { border-bottom: none; }
-  .post-item:hover { background: #FDFCFF; }
-  .post-item.urgent { border-left: 3px solid #7000FC; }
-  .post-num { font-size: 11px; color: #DAD9EA; font-weight: 500; width: 20px; flex-shrink: 0; padding-top: 2px; text-align: right; }
-  .post-body { flex: 1; min-width: 0; }
-  .post-badges { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
-  .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }
-  .badge-urgent { background: #F0EAFF; color: #7000FC; }
-  .badge-neg { background: #FEF2F2; color: #DC2626; }
-  .badge-pos { background: #F0FDF4; color: #059669; }
-  .badge-neu { background: #F6F5FF; color: #918DA0; }
-  .badge-cat { background: #EFF6FF; color: #1D4ED8; }
-  .badge-country { background: #F3F4F6; color: #374151; border: 0.5px solid #E5E7EB; }
-  .filter-chip-country { font-size: 10px; padding: 3px 9px; border-radius: 99px; border: 0.5px solid #DAD9EA; color: #5E5A71; background: #fff; cursor: pointer; text-decoration: none; white-space: nowrap; }
-  .filter-chip-country:hover { border-color: #7000FC; color: #7000FC; }
-  .filter-chip-country.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 600; }
-  .score-high { font-size: 11px; font-weight: 700; color: #DC2626; }
-  .score-mid { font-size: 11px; font-weight: 700; color: #D97706; }
-  .score-low { font-size: 11px; font-weight: 700; color: #AAA7B8; }
-  .post-link-btn { font-size: 11px; color: #7000FC; text-decoration: none; flex-shrink: 0; }
-  .post-title { font-size: 13px; font-weight: 600; color: #130D2A; margin-bottom: 4px; text-decoration: none; display: block; }
-  .post-title:hover { color: #7000FC; }
-  .post-summary { font-size: 11px; color: #5E5A71; line-height: 1.65; margin-bottom: 8px; }
-  .post-summary.muted { color: #AAA7B8; font-style: italic; }
-  .post-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-  .post-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-  .post-meta-item { font-size: 10px; color: #AAA7B8; }
-  .post-meta-dot { font-size: 10px; color: #DAD9EA; }
-  .post-keyword { font-size: 10px; color: #7000FC; font-weight: 500; }
-  .status-btns { display: flex; gap: 3px; flex-shrink: 0; }
-  .status-btn { font-size: 10px; padding: 3px 8px; border-radius: 6px; border: 0.5px solid #E4E1EE; background: #fff; color: #AAA7B8; cursor: pointer; }
-  .status-btn.s-new.active { background: #F6F5FF; color: #5E5A71; border-color: #DAD9EA; font-weight: 600; }
-  .status-btn.s-check.active { background: #FFFBEB; color: #D97706; border-color: #FDE68A; font-weight: 600; }
-  .status-btn.s-done.active { background: #F0FDF4; color: #059669; border-color: #BBF7D0; font-weight: 600; }
-  .empty-state { padding: 60px 20px; text-align: center; }
-  .empty-state p { font-size: 13px; color: #AAA7B8; margin: 4px 0; }
-  /* 일괄 선택 */
-  .post-cb { width: 15px; height: 15px; accent-color: #7000FC; cursor: pointer; flex-shrink: 0; margin-top: 3px; }
-  .bulk-bar { display: none; align-items: center; gap: 8px; padding: 8px 16px; background: #F5F3FF; border-bottom: 0.5px solid #DDD6FE; flex-wrap: wrap; }
-  .bulk-bar.visible { display: flex; }
-  .bulk-count { font-size: 12px; font-weight: 600; color: #7000FC; }
-  .bulk-btn { font-size: 11px; padding: 4px 12px; border-radius: 8px; cursor: pointer; border: 0.5px solid; font-weight: 600; }
-  .bulk-btn-check  { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
-  .bulk-btn-done   { background: #F0FDF4; color: #059669; border-color: #BBF7D0; }
-  .bulk-btn-new    { background: #F6F5FF; color: #5E5A71; border-color: #DAD9EA; }
-  .bulk-btn-cancel { background: #fff; color: #AAA7B8; border-color: #E4E1EE; }
-  .select-all-wrap { display: flex; align-items: center; gap: 6px; padding: 8px 16px 0; }
-  .select-all-wrap label { font-size: 11px; color: #918DA0; cursor: pointer; }
-  .pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 16px; }
-  .page-btn { width: 30px; height: 30px; border-radius: 8px; border: 0.5px solid #E4E1EE; background: #fff; font-size: 12px; color: #5E5A71; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
-  .page-btn:hover { border-color: #7000FC; color: #7000FC; }
-  .page-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 700; }
-  .page-btn.disabled { opacity: 0.3; pointer-events: none; }
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(19,13,42,0.5); z-index: 50; align-items: center; justify-content: center; }
-  .modal-box { background: #fff; border-radius: 16px; padding: 24px; width: 380px; max-width: 92vw; }
-  .modal-title { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0 0 6px; }
-  .modal-sub { font-size: 12px; color: #918DA0; margin: 0 0 16px; }
-  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
-  @media (max-width: 768px) {
-    .sidebar { width: 60px; padding: 16px 8px; }
-    .logo-title, .nav-item-text, .sidebar-info, .nav-section-label, .logo-sub { display: none; }
-    .nav-item { justify-content: center; padding: 10px; }
-    .main-wrap { margin-left: 60px; }
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-    .content { padding: 16px; }
-  }
-</style>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<div class="sidebar">
-  <div style="padding:0 2px;margin-bottom:20px">
-    <img src="/static/img/mascot.jpg" alt="GLN" style="width:100%;border-radius:12px;display:block;margin-bottom:10px;object-fit:cover">
-    <div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-0.3px">GLN 마케팅 에이전트</div>
-    <div style="font-size:10px;color:#5E5A71;margin-top:2px">AI 기반 자동 수집 · 분석</div>
+{% block title %}수집 피드 — GLN{% endblock %}
+
+{% block page_styles %}
+.date-bar { background:#fff; border-radius:12px; border:0.5px solid #E4E1EE; padding:9px 16px; display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+.date-bar-label { font-size:11px; font-weight:600; color:#918DA0; flex-shrink:0; }
+.date-input { border:0.5px solid #DAD9EA; border-radius:8px; padding:5px 10px; font-size:12px; color:#130D2A; background:#F6F5FF; outline:none; font-family:inherit; }
+.date-input:focus { border-color:#7000FC; }
+.date-sep { font-size:11px; color:#DAD9EA; }
+.date-apply-btn { background:#7000FC; color:#fff; border:none; border-radius:8px; padding:5px 12px; font-size:11px; font-weight:600; cursor:pointer; }
+.date-apply-btn:hover { background:#5A00CC; }
+.date-presets { margin-left:auto; display:flex; gap:4px; }
+.date-preset-btn { border:0.5px solid #DAD9EA; border-radius:8px; padding:5px 10px; font-size:11px; color:#5E5A71; background:#fff; cursor:pointer; }
+.date-preset-btn.active { background:#7000FC; color:#fff; border-color:#7000FC; font-weight:600; }
+
+.filter-section-label { font-size:9px; font-weight:700; color:#C4C1D4; letter-spacing:0.08em; text-transform:uppercase; align-self:center; white-space:nowrap; }
+.filter-bar { background:#fff; border:0.5px solid #E4E1EE; border-top:none; padding:8px 16px; display:flex; flex-wrap:wrap; gap:5px; align-items:center; }
+.filter-bar-country { background:#fff; border:0.5px solid #E4E1EE; border-top:none; padding:7px 16px; display:flex; gap:5px; align-items:center; overflow-x:auto; flex-wrap:nowrap; }
+.filter-chip-country { font-size:10px; padding:3px 9px; border-radius:99px; border:0.5px solid #DAD9EA; color:#5E5A71; background:#fff; cursor:pointer; text-decoration:none; white-space:nowrap; }
+.filter-chip-country:hover { border-color:#7000FC; color:#7000FC; }
+.filter-chip-country.active { background:#7000FC; color:#fff; border-color:#7000FC; font-weight:600; }
+
+.posts-wrap { background:#fff; border:0.5px solid #E4E1EE; border-top:none; border-radius:0 0 14px 14px; }
+.post-meta-bar { display:flex; align-items:center; justify-content:space-between; padding:9px 16px; border-bottom:0.5px solid #F0EDF7; }
+.post-meta-bar span { font-size:11px; color:#918DA0; }
+.post-meta-bar strong { color:#130D2A; font-weight:600; }
+.post-item { border-bottom:0.5px solid #F6F5FF; padding:13px 16px; display:flex; gap:12px; }
+.post-item:last-child { border-bottom:none; }
+.post-item:hover { background:#FDFCFF; }
+.post-item.urgent { border-left:3px solid #7000FC; padding-left:13px; }
+.post-num { font-size:11px; color:#DAD9EA; font-weight:500; width:20px; flex-shrink:0; padding-top:2px; text-align:right; }
+.post-body { flex:1; min-width:0; }
+.post-badges { display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-bottom:6px; }
+.score-high { font-size:11px; font-weight:700; color:#DC2626; }
+.score-mid  { font-size:11px; font-weight:700; color:#D97706; }
+.score-low  { font-size:11px; font-weight:700; color:#AAA7B8; }
+.post-link-btn { font-size:11px; color:#918DA0; text-decoration:none; flex-shrink:0; }
+.post-link-btn:hover { color:#7000FC; }
+.post-title { font-size:13px; font-weight:600; color:#130D2A; margin-bottom:4px; text-decoration:none; display:block; }
+.post-title:hover { color:#7000FC; }
+.post-summary { font-size:11px; color:#5E5A71; line-height:1.65; margin-bottom:7px; }
+.post-summary.muted { color:#AAA7B8; font-style:italic; }
+.post-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+.post-meta { display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+.post-meta-item { font-size:10px; color:#AAA7B8; }
+.post-meta-dot { font-size:10px; color:#DAD9EA; }
+.post-keyword { font-size:10px; color:#7000FC; font-weight:500; }
+.status-btns { display:flex; gap:3px; flex-shrink:0; }
+.status-btn { font-size:10px; padding:3px 8px; border-radius:6px; border:0.5px solid #E4E1EE; background:#fff; color:#AAA7B8; cursor:pointer; }
+.status-btn.s-new.active   { background:#F6F5FF; color:#5E5A71; border-color:#DAD9EA; font-weight:600; }
+.status-btn.s-check.active { background:#FFFBEB; color:#D97706; border-color:#FDE68A; font-weight:600; }
+.status-btn.s-done.active  { background:#F0FDF4; color:#059669; border-color:#BBF7D0; font-weight:600; }
+.post-cb { width:15px; height:15px; accent-color:#7000FC; cursor:pointer; flex-shrink:0; margin-top:3px; }
+.bulk-bar { display:none; align-items:center; gap:8px; padding:8px 16px; background:#F5F3FF; border-bottom:0.5px solid #DDD6FE; flex-wrap:wrap; }
+.bulk-bar.visible { display:flex; }
+.bulk-count { font-size:12px; font-weight:600; color:#7000FC; }
+.bulk-btn { font-size:11px; padding:4px 12px; border-radius:8px; cursor:pointer; border:0.5px solid; font-weight:600; }
+.bulk-btn-check  { background:#FFFBEB; color:#D97706; border-color:#FDE68A; }
+.bulk-btn-done   { background:#F0FDF4; color:#059669; border-color:#BBF7D0; }
+.bulk-btn-new    { background:#F6F5FF; color:#5E5A71; border-color:#DAD9EA; }
+.bulk-btn-cancel { background:#fff; color:#AAA7B8; border-color:#E4E1EE; }
+.select-all-wrap { display:flex; align-items:center; gap:6px; }
+.select-all-wrap label { font-size:11px; color:#918DA0; cursor:pointer; }
+{% endblock %}
+
+{% block topbar_title %}GLN 모니터링{% endblock %}
+{% block topbar_sub %}<span id="last-updated"></span>{% endblock %}
+
+{% block topbar_actions %}
+<span id="status-badge" class="status-toast"></span>
+<button onclick="openKwModal()" class="btn btn-neutral btn-sm">⚙ 키워드</button>
+<button onclick="openRecipientModal()" class="btn btn-neutral btn-sm">👥 알림 대상</button>
+<button onclick="triggerCollect()" class="btn btn-ghost btn-sm">수집 실행</button>
+<button onclick="openReportModal()" class="btn btn-primary btn-sm">리포트 발송</button>
+{% endblock %}
+
+{% block content %}
+<div class="kpi-grid-4">
+  <div class="kpi-card">
+    <div class="kpi-label">오늘 수집</div>
+    <div class="kpi-value">{{ stats.today }}</div>
+    <div class="kpi-sub">카페 {{ channel_counts['카페'] }} · 블로그 {{ channel_counts['블로그'] }} · 뉴스 {{ channel_counts['뉴스'] }}</div>
   </div>
-  <div class="nav-section">
-    <div class="nav-section-label">메뉴</div>
-    <a href="/insights" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span><span class="nav-item-text">인사이트</span></a>
-    <a href="/" class="nav-item active"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="nav-item-text">GLN 모니터링</span></a>
-    <a href="/content" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span><span class="nav-item-text">콘텐츠 <span style="background:#7000FC;color:#fff;font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;vertical-align:middle;letter-spacing:0.03em">Beta</span></span></a>
-    <a href="/pr" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span><span class="nav-item-text">보도자료</span></a>
-    <a href="/reports" class="nav-item"><span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span><span class="nav-item-text">보고서 아카이브</span></a>
+  <div class="kpi-card">
+    <div class="kpi-label">긴급 알림</div>
+    <div class="kpi-value" style="color:{% if stats.urgent > 0 %}#DC2626{% else %}#130D2A{% endif %}">{{ stats.urgent }}</div>
+    <div class="kpi-sub">중요도 7↑ 또는 부정 감성</div>
   </div>
-  <hr class="nav-divider">
-  <div class="nav-section">
-    <div class="nav-section-label">빠른 필터</div>
-    <a href="?urgent=1&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}" class="nav-item {% if filters.urgent == '1' %}active{% endif %}">
-      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
-      <span class="nav-item-text">긴급</span>
-      {% if stats.urgent > 0 %}<span class="nav-badge">{{ stats.urgent }}</span>{% endif %}
-    </a>
-    <a href="?reply_status=미확인&date_from={{ filters.date_from }}&date_to={{ filters.date_to }}" class="nav-item {% if filters.reply_status == '미확인' %}active{% endif %}">
-      <span class="nav-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
-      <span class="nav-item-text">미확인</span>
-    </a>
+  <div class="kpi-card">
+    <div class="kpi-label">부정 감성</div>
+    <div class="kpi-value">{{ stats.negative }}</div>
+    <div class="kpi-sub">전체 {{ stats.total }}건 중</div>
   </div>
-  <div class="sidebar-bottom">
-    <div class="sidebar-info">
-      <p class="sidebar-info-text">외부 공개 글만 수집<br>카페 작성일 미제공<br>답변 초안은 카페 전용</p>
-    </div>
+  <div class="kpi-card">
+    <div class="kpi-label">전체 수집</div>
+    <div class="kpi-value" style="color:#7000FC">{{ stats.total }}</div>
+    <div class="kpi-sub">누적 전체</div>
   </div>
 </div>
 
-<div class="main-wrap">
-  <div class="topbar">
-    <div class="topbar-left">
-      <h1>GLN 모니터링</h1>
-      <p id="last-updated"></p>
-    </div>
-    <div class="topbar-right">
-      <span id="status-badge" class="status-toast"></span>
-      <button onclick="openKwModal()" class="btn-ghost" title="수집 키워드 설정">⚙ 수집 키워드 설정</button>
-      <button onclick="openRecipientModal()" class="btn-ghost">👥 알림 대상자 설정</button>
-      <button onclick="triggerCollect()" class="btn-ghost">수집 실행</button>
-      <button onclick="openReportModal()" class="btn-primary">리포트 발송</button>
-    </div>
-  </div>
-
-  <div class="content">
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">오늘 수집</div>
-        <div class="kpi-value">{{ stats.today }}</div>
-        <div class="kpi-sub">카페 {{ channel_counts['카페'] }} · 블로그 {{ channel_counts['블로그'] }} · 뉴스 {{ channel_counts['뉴스'] }}</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">긴급 알림</div>
-        <div class="kpi-value" style="color:{% if stats.urgent > 0 %}#DC2626{% else %}#130D2A{% endif %}">{{ stats.urgent }}</div>
-        <div class="kpi-sub">중요도 7↑ 또는 부정 감성</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">부정 감성</div>
-        <div class="kpi-value">{{ stats.negative }}</div>
-        <div class="kpi-sub">전체 {{ stats.total }}건 중</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">전체 수집</div>
-        <div class="kpi-value" style="color:#7000FC">{{ stats.total }}</div>
-        <div class="kpi-sub">누적 전체</div>
-      </div>
-    </div>
-
-    <div class="date-bar">
-      <span class="date-bar-label">수집일</span>
-      <input type="date" id="date_from" value="{{ filters.date_from }}" class="date-input">
-      <span class="date-sep">~</span>
-      <input type="date" id="date_to" value="{{ filters.date_to }}" class="date-input">
-      <button onclick="applyDateRange()" class="date-apply-btn">조회</button>
-      <div class="date-presets">
-        <button onclick="setRange(0,0)"  class="date-preset-btn {% if filters.date_from == today_str and filters.date_to == today_str %}active{% endif %}">오늘</button>
-        <button onclick="setRange(6,0)"  class="date-preset-btn">7일</button>
-        <button onclick="setRange(29,0)" class="date-preset-btn">30일</button>
-        <button onclick="setRange(89,0)" class="date-preset-btn">전체</button>
-      </div>
-    </div>
-
-    <div>
-      {% set _fbase = "date_from=" ~ filters.date_from ~ "&date_to=" ~ filters.date_to %}
-      {% set _fall  = _fbase ~ "&sentiment=" ~ filters.sentiment ~ "&category=" ~ filters.category ~ "&urgent=" ~ filters.urgent ~ "&reply_status=" ~ filters.reply_status ~ "&country=" ~ filters.country %}
-      {% set _fchan = _fbase ~ "&sentiment=" ~ filters.sentiment ~ "&category=" ~ filters.category ~ "&urgent=" ~ filters.urgent ~ "&reply_status=" ~ filters.reply_status ~ "&country=" ~ filters.country ~ "&channel=" ~ filters.channel %}
-      <div class="channel-tabs">
-        <a href="?{{ _fall }}" class="channel-tab {% if not filters.channel %}active{% endif %}">전체 <span class="channel-tab-count">{{ stats.today }}</span></a>
-        <a href="?channel=카페&{{ _fall }}" class="channel-tab {% if filters.channel == '카페' %}active{% endif %}">카페 <span class="channel-tab-count">{{ channel_counts['카페'] }}</span></a>
-        <a href="?channel=블로그&{{ _fall }}" class="channel-tab {% if filters.channel == '블로그' %}active{% endif %}">블로그 <span class="channel-tab-count">{{ channel_counts['블로그'] }}</span></a>
-        <a href="?channel=뉴스&{{ _fall }}" class="channel-tab {% if filters.channel == '뉴스' %}active{% endif %}">뉴스 <span class="channel-tab-count">{{ channel_counts['뉴스'] }}</span></a>
-      </div>
-      <div class="filter-bar">
-        <a href="?{{ _fbase }}&channel={{ filters.channel }}" class="filter-chip {% if not filters.sentiment and not filters.urgent and not filters.category and not filters.reply_status and not filters.country %}active{% endif %}">전체</a>
-        <a href="?urgent=1&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}" class="filter-chip {% if filters.urgent == '1' %}active{% else %}red{% endif %}">긴급</a>
-        <a href="?sentiment=negative&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}" class="filter-chip {% if filters.sentiment == 'negative' %}active{% endif %}">부정</a>
-        <a href="?sentiment=positive&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}" class="filter-chip {% if filters.sentiment == 'positive' %}active{% endif %}">긍정</a>
-        <a href="?category=문의&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}" class="filter-chip {% if filters.category == '문의' %}active{% endif %}">문의</a>
-        <a href="?category=불만&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}" class="filter-chip {% if filters.category == '불만' %}active{% endif %}">불만</a>
-        <a href="?category=후기&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}" class="filter-chip {% if filters.category == '후기' %}active{% endif %}">후기</a>
-        <div class="filter-sep"></div>
-        <a href="?reply_status=미확인&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}" class="filter-chip {% if filters.reply_status == '미확인' %}active{% else %}amber{% endif %}">미확인</a>
-        <a href="?reply_status=확인완료&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}" class="filter-chip {% if filters.reply_status == '확인완료' %}active{% endif %}">확인완료</a>
-        <a href="?reply_status=답변완료&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}" class="filter-chip {% if filters.reply_status == '답변완료' %}active{% endif %}">답변완료</a>
-      </div>
-      <!-- 국가 필터 바 -->
-      <div class="filter-bar" style="overflow-x:auto;flex-wrap:nowrap;padding:8px 16px;gap:5px;border-top:0.5px solid #F0EDF7">
-        <span style="font-size:10px;font-weight:700;color:#918DA0;white-space:nowrap;align-self:center;margin-right:2px">국가</span>
-        <div class="filter-sep"></div>
-        {% set _clist = [('vietnam','🇻🇳 베트남'),('china','🇨🇳 중국'),('hongkong','🇭🇰 홍콩'),('macau','🇲🇴 마카오'),('philippines','🇵🇭 필리핀'),('thailand','🇹🇭 태국'),('laos','🇱🇦 라오스'),('japan','🇯🇵 일본'),('taiwan','🇹🇼 대만'),('mongolia','🇲🇳 몽골'),('singapore','🇸🇬 싱가포르'),('cambodia','🇰🇭 캄보디아'),('guam_saipan','🏝️ 괌사이판')] %}
-        {% for code, label in _clist %}
-        <a href="?country={{ code }}&{{ _fchan }}"
-           class="filter-chip-country {% if filters.country == code %}active{% endif %}">{{ label }}</a>
-        {% endfor %}
-        {% if filters.country %}
-        <a href="?{{ _fchan | replace('country=' ~ filters.country, 'country=') }}" class="filter-chip-country" style="color:#DC2626;border-color:#FECACA">✕ 해제</a>
-        {% endif %}
-      </div>
-      <div class="posts-wrap">
-        <!-- 일괄 액션 바 -->
-        <div class="bulk-bar" id="bulkBar">
-          <span class="bulk-count" id="bulkCount">0건 선택</span>
-          <button class="bulk-btn bulk-btn-check" onclick="bulkUpdate('확인완료')">✓ 확인완료</button>
-          <button class="bulk-btn bulk-btn-done"  onclick="bulkUpdate('답변완료')">✓ 답변완료</button>
-          <button class="bulk-btn bulk-btn-new"   onclick="bulkUpdate('미확인')">↩ 미확인</button>
-          <button class="bulk-btn bulk-btn-cancel" onclick="clearSelection()">선택 해제</button>
-        </div>
-        <div class="post-meta-bar">
-          <div class="select-all-wrap" style="padding:0">
-            <input type="checkbox" id="selectAll" class="post-cb" onchange="toggleSelectAll(this.checked)">
-            <label for="selectAll">전체선택</label>
-            <span style="color:#DAD9EA;margin:0 4px">|</span>
-            <span>전체 <strong>{{ total }}</strong>건</span>
-          </div>
-          <span>{{ page }} / {{ total_pages }} 페이지</span>
-        </div>
-        {% for post in posts %}
-        {% set s = post.reply_status or '미확인' %}
-        <div class="post-item {% if post.is_urgent %}urgent{% endif %}">
-          <input type="checkbox" class="post-cb post-check" data-id="{{ post.id }}" onchange="onCheckChange()">
-          <div class="post-num">{{ (page - 1) * 50 + loop.index }}</div>
-          <div class="post-body">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
-              <div class="post-badges">
-                <span class="badge badge-country">{{ country_emoji.get(post.country, '🌐') }} {{ country_label.get(post.country, '공통') }}</span>
-                {% if post.is_urgent %}<span class="badge badge-urgent">긴급</span>{% endif %}
-                {% if post.sentiment == 'positive' %}<span class="badge badge-pos">긍정</span>
-                {% elif post.sentiment == 'negative' %}<span class="badge badge-neg">부정</span>
-                {% elif post.sentiment %}<span class="badge badge-neu">중립</span>{% endif %}
-                {% if post.category %}<span class="badge badge-cat">{{ post.category }}</span>{% endif %}
-                {% if post.importance_score %}<span class="{% if post.importance_score >= 7 %}score-high{% elif post.importance_score >= 4 %}score-mid{% else %}score-low{% endif %}">{{ post.importance_score }}/10</span>{% endif %}
-              </div>
-              <a href="{{ post.link }}" target="_blank" class="post-link-btn">원문보기 →</a>
-            </div>
-            <a href="/post/{{ post.id }}" class="post-title">{{ post.title }}</a>
-            {% if post.summary %}<p class="post-summary">{{ post.summary }}</p>
-            {% else %}<p class="post-summary muted">분석 중...</p>{% endif %}
-            <div class="post-footer">
-              <div class="post-meta">
-                <span class="post-meta-item">{{ post.cafe_name or '-' }}</span>
-                {% if post.post_date and post.post_date|length >= 8 and post.post_date[:4].isdigit() %}
-                  <span class="post-meta-dot">·</span><span class="post-meta-item">작성 {{ post.post_date[:10] }}</span>
-                {% endif %}
-                <span class="post-meta-dot">·</span>
-                <span class="post-meta-item">수집 {{ post.created_at[:16] }}</span>
-                <span class="post-meta-dot">·</span>
-                <span class="post-keyword">{{ post.keyword }}</span>
-                {% if post.status_updated_at %}<span class="post-meta-dot">·</span><span class="post-meta-item">처리 {{ post.status_updated_at }}</span>{% endif %}
-              </div>
-              <div class="status-btns" id="status-{{ post.id }}">
-                <button onclick="updateStatus({{ post.id }}, '미확인')" class="status-btn s-new {% if s == '미확인' %}active{% endif %}">미확인</button>
-                <button onclick="updateStatus({{ post.id }}, '확인완료')" class="status-btn s-check {% if s == '확인완료' %}active{% endif %}">확인완료</button>
-                <button onclick="updateStatus({{ post.id }}, '답변완료')" class="status-btn s-done {% if s == '답변완료' %}active{% endif %}">답변완료</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        {% else %}
-        <div class="empty-state">
-          <p>수집된 게시글이 없습니다.</p>
-          <p style="font-size:12px">날짜를 변경하거나 수집을 실행해보세요.</p>
-        </div>
-        {% endfor %}
-        {% if total_pages > 1 %}
-        <div class="pagination">
-          {% if page > 1 %}<a href="?page={{ page - 1 }}&{{ _fchan }}" class="page-btn">←</a>{% endif %}
-          {% for p in range(1, total_pages + 1) %}
-            {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
-              <a href="?page={{ p }}&{{ _fchan }}" class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
-            {% elif p == page - 3 or p == page + 3 %}<span class="page-btn disabled">…</span>{% endif %}
-          {% endfor %}
-          {% if page < total_pages %}<a href="?page={{ page + 1 }}&{{ _fchan }}" class="page-btn">→</a>{% endif %}
-        </div>
-        {% endif %}
-      </div>
-    </div>
+<!-- 날짜 필터 -->
+<div class="date-bar">
+  <span class="date-bar-label">수집일</span>
+  <input type="date" id="date_from" value="{{ filters.date_from }}" class="date-input">
+  <span class="date-sep">~</span>
+  <input type="date" id="date_to"   value="{{ filters.date_to }}"   class="date-input">
+  <button onclick="applyDateRange()" class="date-apply-btn">조회</button>
+  <div class="date-presets">
+    <button onclick="setRange(0,0)"  class="date-preset-btn {% if filters.date_from == today_str and filters.date_to == today_str %}active{% endif %}">오늘</button>
+    <button onclick="setRange(6,0)"  class="date-preset-btn">7일</button>
+    <button onclick="setRange(29,0)" class="date-preset-btn">30일</button>
+    <button onclick="setRange(89,0)" class="date-preset-btn">전체</button>
   </div>
 </div>
 
+{% set _fbase = "date_from=" ~ filters.date_from ~ "&date_to=" ~ filters.date_to %}
+{% set _fall  = _fbase ~ "&sentiment=" ~ filters.sentiment ~ "&category=" ~ filters.category ~ "&urgent=" ~ filters.urgent ~ "&reply_status=" ~ filters.reply_status ~ "&country=" ~ filters.country %}
+{% set _fchan = _fall ~ "&channel=" ~ filters.channel %}
+
+<!-- 채널 탭 -->
+<div class="tab-bar" style="margin-bottom:0">
+  <a href="?{{ _fall }}"               class="tab-item {% if not filters.channel %}active{% endif %}">전체 <span class="tab-count">{{ stats.today }}</span></a>
+  <a href="?channel=카페&{{ _fall }}"   class="tab-item {% if filters.channel == '카페' %}active{% endif %}">카페 <span class="tab-count">{{ channel_counts['카페'] }}</span></a>
+  <a href="?channel=블로그&{{ _fall }}" class="tab-item {% if filters.channel == '블로그' %}active{% endif %}">블로그 <span class="tab-count">{{ channel_counts['블로그'] }}</span></a>
+  <a href="?channel=뉴스&{{ _fall }}"   class="tab-item {% if filters.channel == '뉴스' %}active{% endif %}">뉴스 <span class="tab-count">{{ channel_counts['뉴스'] }}</span></a>
+</div>
+
+<!-- 감성 / 긴급 필터 -->
+<div class="filter-bar" style="border-top:0.5px solid #F0EDF7">
+  <span class="filter-section-label">감성</span>
+  <a href="?{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip {% if not filters.sentiment and not filters.urgent and not filters.category and not filters.reply_status %}active{% endif %}">전체</a>
+  <a href="?urgent=1&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip chip-red {% if filters.urgent == '1' %}active{% endif %}">🔴 긴급</a>
+  <a href="?sentiment=negative&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip chip-red {% if filters.sentiment == 'negative' %}active{% endif %}">부정</a>
+  <a href="?sentiment=positive&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip chip-green {% if filters.sentiment == 'positive' %}active{% endif %}">긍정</a>
+  <a href="?sentiment=neutral&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip {% if filters.sentiment == 'neutral' %}active{% endif %}">중립</a>
+  <div class="filter-sep"></div>
+  <span class="filter-section-label">카테고리</span>
+  <a href="?category=불만&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip chip-red {% if filters.category == '불만' %}active{% endif %}">불만</a>
+  <a href="?category=문의&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip chip-amber {% if filters.category == '문의' %}active{% endif %}">문의</a>
+  <a href="?category=후기&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip chip-green {% if filters.category == '후기' %}active{% endif %}">후기</a>
+  <a href="?category=정보공유&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip chip-blue {% if filters.category == '정보공유' %}active{% endif %}">정보공유</a>
+  <a href="?category=기타&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip {% if filters.category == '기타' %}active{% endif %}">기타</a>
+  <div class="filter-sep"></div>
+  <span class="filter-section-label">처리</span>
+  <a href="?reply_status=미확인&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip chip-amber {% if filters.reply_status == '미확인' %}active{% endif %}">미확인</a>
+  <a href="?reply_status=확인완료&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip {% if filters.reply_status == '확인완료' %}active{% endif %}">확인완료</a>
+  <a href="?reply_status=답변완료&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip chip-green {% if filters.reply_status == '답변완료' %}active{% endif %}">답변완료</a>
+</div>
+
+<!-- 국가 필터 -->
+<div class="filter-bar-country">
+  <span class="filter-section-label" style="color:#C4C1D4;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap">국가</span>
+  <div style="width:1px;height:14px;background:#E4E1EE;flex-shrink:0"></div>
+  {% set _clist = [('vietnam','🇻🇳 베트남'),('china','🇨🇳 중국'),('hongkong','🇭🇰 홍콩'),('macau','🇲🇴 마카오'),('philippines','🇵🇭 필리핀'),('thailand','🇹🇭 태국'),('laos','🇱🇦 라오스'),('japan','🇯🇵 일본'),('taiwan','🇹🇼 대만'),('mongolia','🇲🇳 몽골'),('singapore','🇸🇬 싱가포르'),('cambodia','🇰🇭 캄보디아'),('guam_saipan','🏝️ 괌·사이판')] %}
+  {% for code, label in _clist %}
+  <a href="?country={{ code }}&{{ _fchan }}" class="filter-chip-country {% if filters.country == code %}active{% endif %}">{{ label }}</a>
+  {% endfor %}
+  {% if filters.country %}
+  <a href="?{{ _fchan | replace('country=' ~ filters.country, 'country=') }}" class="filter-chip-country" style="color:#DC2626;border-color:#FECACA">✕ 해제</a>
+  {% endif %}
+</div>
+
+<!-- 게시글 목록 -->
+<div class="posts-wrap">
+  <div class="bulk-bar" id="bulkBar">
+    <span class="bulk-count" id="bulkCount">0건 선택</span>
+    <button class="bulk-btn bulk-btn-check"  onclick="bulkUpdate('확인완료')">✓ 확인완료</button>
+    <button class="bulk-btn bulk-btn-done"   onclick="bulkUpdate('답변완료')">✓ 답변완료</button>
+    <button class="bulk-btn bulk-btn-new"    onclick="bulkUpdate('미확인')">↩ 미확인</button>
+    <button class="bulk-btn bulk-btn-cancel" onclick="clearSelection()">선택 해제</button>
+  </div>
+  <div class="post-meta-bar">
+    <div class="select-all-wrap">
+      <input type="checkbox" id="selectAll" class="post-cb" onchange="toggleSelectAll(this.checked)">
+      <label for="selectAll">전체선택</label>
+      <span style="color:#DAD9EA;margin:0 4px">|</span>
+      <span>전체 <strong>{{ total }}</strong>건</span>
+    </div>
+    <span>{{ page }} / {{ total_pages }} 페이지</span>
+  </div>
+  {% for post in posts %}
+  {% set s = post.reply_status or '미확인' %}
+  <div class="post-item {% if post.is_urgent %}urgent{% endif %}">
+    <input type="checkbox" class="post-cb post-check" data-id="{{ post.id }}" onchange="onCheckChange()">
+    <div class="post-num">{{ (page - 1) * 50 + loop.index }}</div>
+    <div class="post-body">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+        <div class="post-badges">
+          <span class="badge badge-country">{{ country_emoji.get(post.country, '🌐') }} {{ country_label.get(post.country, '공통') }}</span>
+          {% if post.is_urgent %}<span class="badge badge-urgent">긴급</span>{% endif %}
+          {% if post.sentiment == 'positive' %}<span class="badge badge-pos">긍정</span>
+          {% elif post.sentiment == 'negative' %}<span class="badge badge-neg">부정</span>
+          {% elif post.sentiment %}<span class="badge badge-neu">중립</span>{% endif %}
+          {% if post.category %}<span class="badge badge-cat">{{ post.category }}</span>{% endif %}
+          {% if post.importance_score %}
+          <span class="{% if post.importance_score >= 7 %}score-high{% elif post.importance_score >= 4 %}score-mid{% else %}score-low{% endif %}">{{ post.importance_score }}/10</span>
+          {% endif %}
+        </div>
+        <a href="{{ post.link }}" target="_blank" class="post-link-btn">원문 →</a>
+      </div>
+      <a href="/post/{{ post.id }}" class="post-title">{{ post.title }}</a>
+      {% if post.summary %}<p class="post-summary">{{ post.summary }}</p>
+      {% else %}<p class="post-summary muted">분석 중...</p>{% endif %}
+      <div class="post-footer">
+        <div class="post-meta">
+          <span class="post-meta-item">{{ post.cafe_name or '-' }}</span>
+          {% if post.post_date and post.post_date|length >= 8 and post.post_date[:4].isdigit() %}
+          <span class="post-meta-dot">·</span><span class="post-meta-item">작성 {{ post.post_date[:10] }}</span>
+          {% endif %}
+          <span class="post-meta-dot">·</span>
+          <span class="post-meta-item">수집 {{ post.created_at[:16] }}</span>
+          <span class="post-meta-dot">·</span>
+          <span class="post-keyword">{{ post.keyword }}</span>
+          {% if post.status_updated_at %}
+          <span class="post-meta-dot">·</span><span class="post-meta-item">처리 {{ post.status_updated_at }}</span>
+          {% endif %}
+        </div>
+        <div class="status-btns" id="status-{{ post.id }}">
+          <button onclick="updateStatus({{ post.id }}, '미확인')"   class="status-btn s-new   {% if s == '미확인' %}active{% endif %}">미확인</button>
+          <button onclick="updateStatus({{ post.id }}, '확인완료')" class="status-btn s-check {% if s == '확인완료' %}active{% endif %}">확인완료</button>
+          <button onclick="updateStatus({{ post.id }}, '답변완료')" class="status-btn s-done  {% if s == '답변완료' %}active{% endif %}">답변완료</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>수집된 게시글이 없습니다.</p>
+    <p style="font-size:12px">날짜를 변경하거나 수집을 실행해보세요.</p>
+  </div>
+  {% endfor %}
+  {% if total_pages > 1 %}
+  <div class="pagination">
+    {% if page > 1 %}<a href="?page={{ page - 1 }}&{{ _fchan }}" class="page-btn">←</a>{% endif %}
+    {% for p in range(1, total_pages + 1) %}
+      {% if p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+        <a href="?page={{ p }}&{{ _fchan }}" class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+      {% elif p == page - 3 or p == page + 3 %}<span class="page-btn disabled">…</span>{% endif %}
+    {% endfor %}
+    {% if page < total_pages %}<a href="?page={{ page + 1 }}&{{ _fchan }}" class="page-btn">→</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block modals %}
+<!-- 리포트 발송 모달 -->
 <div id="report-modal" class="modal-overlay">
   <div class="modal-box">
     <h3 class="modal-title">리포트 발송</h3>
     <p class="modal-sub">수신자를 선택하거나 직접 입력하세요</p>
     <div id="recipient-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px"></div>
     <div style="display:flex;gap:6px">
-      <input type="email" id="custom-email" placeholder="직접 입력 (이메일 주소)"
-             style="flex:1;font-size:12px;border:0.5px solid #DAD9EA;border-radius:10px;padding:8px 12px;color:#130D2A;">
-      <button onclick="addCustomEmail()" class="btn-ghost" style="padding:8px 12px;font-size:12px">추가</button>
+      <input type="email" id="custom-email" placeholder="직접 입력 (이메일 주소)" class="input-base" style="flex:1;font-size:12px">
+      <button onclick="addCustomEmail()" class="btn btn-ghost btn-sm">추가</button>
     </div>
     <div class="modal-footer">
-      <button onclick="closeReportModal()" style="font-size:12px;padding:8px 16px;border:0.5px solid #DAD9EA;border-radius:10px;background:#fff;cursor:pointer;color:#5E5A71">취소</button>
-      <button onclick="sendReport()" class="btn-primary" style="padding:8px 20px">발송</button>
+      <button onclick="closeReportModal()" class="btn btn-neutral btn-sm">취소</button>
+      <button onclick="sendReport()" class="btn btn-primary btn-sm">발송</button>
     </div>
   </div>
 </div>
 
-<script>
-  const todayStr = '{{ today_str }}';
-  document.getElementById('last-updated').textContent = '마지막 업데이트: ' + new Date().toLocaleString('ko-KR');
-  function showStatus(msg) {
-    const el = document.getElementById('status-badge');
-    el.textContent = msg; el.style.display = 'inline-block';
-    setTimeout(() => el.style.display = 'none', 3000);
-  }
-  async function triggerCollect() {
-    showStatus('수집 중...');
-    await fetch('/api/collect', {method:'POST'});
-    showStatus('수집 시작됨');
-    setTimeout(() => location.reload(), 5000);
-  }
-  function applyDateRange() {
-    const params = new URLSearchParams(window.location.search);
-    params.set('page', 1);
-    params.set('date_from', document.getElementById('date_from').value);
-    params.set('date_to',   document.getElementById('date_to').value);
-    window.location.search = params.toString();
-  }
-  function setRange(fromDaysAgo, toDaysAgo) {
-    const fmt = d => d.toISOString().split('T')[0];
-    const to   = new Date(); to.setDate(to.getDate() - toDaysAgo);
-    const from = new Date(); from.setDate(from.getDate() - fromDaysAgo);
-    document.getElementById('date_from').value = fmt(from);
-    document.getElementById('date_to').value   = fmt(to);
-    applyDateRange();
-  }
-  // Enter 키로 조회
-  ['date_from','date_to'].forEach(id => {
-    document.getElementById(id)?.addEventListener('keydown', e => { if(e.key==='Enter') applyDateRange(); });
-  });
-  async function updateStatus(postId, status) {
-    const res = await fetch('/api/status/' + postId, {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({status})
-    });
-    const data = await res.json();
-    if (data.status) {
-      const container = document.getElementById('status-' + postId);
-      container.querySelectorAll('button').forEach(btn => {
-        if (btn.textContent.trim() === status) btn.classList.add('active');
-        else btn.classList.remove('active');
-      });
-    }
-  }
-
-  // ── 일괄 선택 ──────────────────────────────────────────────
-  function getChecked() {
-    return [...document.querySelectorAll('.post-check:checked')].map(el => parseInt(el.dataset.id));
-  }
-  function onCheckChange() {
-    const ids = getChecked();
-    const bar = document.getElementById('bulkBar');
-    document.getElementById('bulkCount').textContent = ids.length + '건 선택';
-    if (ids.length > 0) bar.classList.add('visible');
-    else bar.classList.remove('visible');
-    // 전체선택 체크박스 상태 동기화
-    const all = document.querySelectorAll('.post-check');
-    document.getElementById('selectAll').checked = all.length > 0 && ids.length === all.length;
-  }
-  function toggleSelectAll(checked) {
-    document.querySelectorAll('.post-check').forEach(el => el.checked = checked);
-    onCheckChange();
-  }
-  function clearSelection() {
-    document.querySelectorAll('.post-check').forEach(el => el.checked = false);
-    document.getElementById('selectAll').checked = false;
-    document.getElementById('bulkBar').classList.remove('visible');
-  }
-  async function bulkUpdate(status) {
-    const ids = getChecked();
-    if (!ids.length) return;
-    const res  = await fetch('/api/status/bulk', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ids, status})
-    });
-    const data = await res.json();
-    if (data.updated) {
-      // UI 즉시 반영
-      ids.forEach(id => {
-        const container = document.getElementById('status-' + id);
-        if (container) {
-          container.querySelectorAll('button').forEach(btn => {
-            if (btn.textContent.trim() === status) btn.classList.add('active');
-            else btn.classList.remove('active');
-          });
-        }
-      });
-      showStatus(data.updated + '건 ' + status + ' 처리 완료');
-      clearSelection();
-    }
-  }
-  let selectedRecipients = new Set();
-  function openReportModal() {
-    const list = document.getElementById('recipient-list');
-    list.innerHTML = ''; selectedRecipients = new Set();
-    const defaults = ('{{ report_to }}').split(',').map(e => e.trim()).filter(Boolean);
-    defaults.forEach(email => { addRecipientRow(email, true); selectedRecipients.add(email); });
-    document.getElementById('report-modal').style.display = 'flex';
-  }
-  function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
-  function addRecipientRow(email, checked) {
-    const list = document.getElementById('recipient-list');
-    const row = document.createElement('label');
-    row.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#130D2A;padding:4px 0;';
-    row.innerHTML = '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleRecipient(\'' + email + '\', this.checked)" style="width:14px;height:14px;accent-color:#7000FC;cursor:pointer;"> ' + email;
-    list.appendChild(row);
-  }
-  function toggleRecipient(email, checked) {
-    if (checked) selectedRecipients.add(email); else selectedRecipients.delete(email);
-  }
-  function addCustomEmail() {
-    const input = document.getElementById('custom-email');
-    const email = input.value.trim();
-    if (!email || !email.includes('@')) { alert('올바른 이메일 주소를 입력하세요'); return; }
-    addRecipientRow(email, true); selectedRecipients.add(email); input.value = '';
-  }
-  async function sendReport() {
-    if (selectedRecipients.size === 0) { alert('수신자를 1명 이상 선택하세요'); return; }
-    closeReportModal(); showStatus('발송 중...');
-    await fetch('/api/report', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({to: [...selectedRecipients].join(',')})
-    });
-    showStatus('발송 완료!');
-  }
-  document.getElementById('report-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeReportModal();
-  });
-</script>
-
-<!-- 키워드 관리 모달 -->
+<!-- 키워드 모달 -->
 <div id="kw-modal" class="modal-overlay" onclick="if(event.target===this)closeKwModal()">
   <div style="background:#fff;border-radius:16px;width:460px;max-width:94vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden">
-    <!-- 헤더 -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:0.5px solid #F0EDF7">
       <div>
         <div style="font-size:15px;font-weight:700;color:#130D2A">⚙ 키워드 관리</div>
-        <div style="font-size:11px;color:#918DA0;margin-top:2px">수집 대상 키워드 — 활성 키워드만 모니터링에 사용됩니다</div>
+        <div style="font-size:11px;color:#918DA0;margin-top:2px">활성 키워드만 모니터링에 사용됩니다</div>
       </div>
-      <button onclick="closeKwModal()" style="background:#F6F5FF;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:13px;color:#5E5A71;display:flex;align-items:center;justify-content:center">✕</button>
+      <button onclick="closeKwModal()" class="btn btn-neutral btn-xs">✕</button>
     </div>
-    <!-- 키워드 목록 -->
     <div id="kw-list-wrap" style="flex:1;overflow-y:auto;padding:10px 20px">
       <div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">불러오는 중...</div>
     </div>
-    <!-- 추가 입력 -->
     <div style="padding:14px 20px;border-top:0.5px solid #F0EDF7;display:flex;gap:8px">
-      <input id="kw-input" type="text" placeholder="새 키워드 입력 후 Enter"
-        style="flex:1;border:0.5px solid #DAD9EA;border-radius:10px;padding:8px 12px;font-size:13px;outline:none;color:#130D2A"
-        onkeydown="if(event.key==='Enter')addKeyword()"
-        onfocus="this.style.borderColor='#7000FC'" onblur="this.style.borderColor='#DAD9EA'">
-      <button onclick="addKeyword()"
-        style="background:#7000FC;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">+ 추가</button>
+      <input id="kw-input" type="text" placeholder="새 키워드 입력 후 Enter" class="input-base" style="flex:1"
+        onkeydown="if(event.key==='Enter')addKeyword()">
+      <button onclick="addKeyword()" class="btn btn-primary btn-sm">+ 추가</button>
     </div>
   </div>
 </div>
 
-<!-- 알림 대상자 설정 모달 -->
+<!-- 알림 대상자 모달 -->
 <div id="recipient-settings-modal" class="modal-overlay" onclick="if(event.target===this)closeRecipientModal()" style="display:none">
   <div style="background:#fff;border-radius:16px;width:480px;max-width:94vw;max-height:86vh;display:flex;flex-direction:column;overflow:hidden">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px 14px;border-bottom:0.5px solid #F0EDF7">
@@ -529,178 +304,199 @@
         <div style="font-size:15px;font-weight:700;color:#130D2A">👥 알림 대상자 설정</div>
         <div style="font-size:11px;color:#918DA0;margin-top:2px">리포트 및 긴급 알림을 받을 이메일 주소를 관리합니다</div>
       </div>
-      <button onclick="closeRecipientModal()" style="background:#F6F5FF;border:none;border-radius:8px;width:28px;height:28px;cursor:pointer;font-size:13px;color:#5E5A71;display:flex;align-items:center;justify-content:center">✕</button>
+      <button onclick="closeRecipientModal()" class="btn btn-neutral btn-xs">✕</button>
     </div>
     <div style="flex:1;overflow-y:auto;padding:16px 20px">
-      <!-- 일일 리포트 수신자 -->
-      <div style="margin-bottom:20px">
-        <div style="font-size:12px;font-weight:700;color:#130D2A;margin-bottom:4px">일일 리포트 수신자 ☕</div>
-        <div style="font-size:11px;color:#918DA0;margin-bottom:10px">AI퍼플이의 아침 브리핑 (매일 오전 8시)</div>
-        <div id="rs-daily-tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:10px"></div>
+      {% for type_id, label, sub in [('daily','일일 리포트 수신자 ☕','매일 오전 8시 아침 브리핑'),('report','주간 리포트 수신자','주간 인사이트 리포트'),('urgent','긴급 알림 수신자','스파이크·긴급 게시글 알림')] %}
+      <div style="{% if not loop.first %}border-top:0.5px solid #F0EDF7;padding-top:18px;{% endif %}margin-bottom:20px">
+        <div style="font-size:12px;font-weight:700;color:#130D2A;margin-bottom:4px">{{ label }}</div>
+        <div style="font-size:11px;color:#918DA0;margin-bottom:10px">{{ sub }}</div>
+        <div id="rs-{{ type_id }}-tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:10px"></div>
         <div style="display:flex;gap:6px">
-          <input id="rs-daily-input" type="email" placeholder="이메일 입력 후 추가"
-            style="flex:1;border:0.5px solid #DAD9EA;border-radius:10px;padding:8px 12px;font-size:12px;outline:none;color:#130D2A"
-            onfocus="this.style.borderColor='#7000FC'" onblur="this.style.borderColor='#DAD9EA'"
-            onkeydown="if(event.key==='Enter')rsAddEmail('daily')">
-          <button onclick="rsAddEmail('daily')" style="background:#7000FC;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">+ 추가</button>
+          <input id="rs-{{ type_id }}-input" type="email" placeholder="이메일 입력 후 추가" class="input-base" style="flex:1;font-size:12px"
+            onkeydown="if(event.key==='Enter')rsAddEmail('{{ type_id }}')">
+          <button onclick="rsAddEmail('{{ type_id }}')" class="btn btn-primary btn-sm">+ 추가</button>
         </div>
       </div>
-      <!-- 주간 리포트 수신자 -->
-      <div style="border-top:0.5px solid #F0EDF7;padding-top:18px;margin-bottom:20px">
-        <div style="font-size:12px;font-weight:700;color:#130D2A;margin-bottom:4px">주간 리포트 수신자</div>
-        <div style="font-size:11px;color:#918DA0;margin-bottom:10px">주간 인사이트 리포트 이메일을 받을 대상</div>
-        <div id="rs-report-tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:10px"></div>
-        <div style="display:flex;gap:6px">
-          <input id="rs-report-input" type="email" placeholder="이메일 입력 후 추가"
-            style="flex:1;border:0.5px solid #DAD9EA;border-radius:10px;padding:8px 12px;font-size:12px;outline:none;color:#130D2A"
-            onfocus="this.style.borderColor='#7000FC'" onblur="this.style.borderColor='#DAD9EA'"
-            onkeydown="if(event.key==='Enter')rsAddEmail('report')">
-          <button onclick="rsAddEmail('report')" style="background:#7000FC;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">+ 추가</button>
-        </div>
-      </div>
-      <!-- 긴급 알림 수신자 -->
-      <div style="border-top:0.5px solid #F0EDF7;padding-top:18px">
-        <div style="font-size:12px;font-weight:700;color:#130D2A;margin-bottom:4px">긴급 알림 수신자</div>
-        <div style="font-size:11px;color:#918DA0;margin-bottom:10px">스파이크·긴급 게시글 알림을 받을 대상</div>
-        <div id="rs-urgent-tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:10px"></div>
-        <div style="display:flex;gap:6px">
-          <input id="rs-urgent-input" type="email" placeholder="이메일 입력 후 추가"
-            style="flex:1;border:0.5px solid #DAD9EA;border-radius:10px;padding:8px 12px;font-size:12px;outline:none;color:#130D2A"
-            onfocus="this.style.borderColor='#7000FC'" onblur="this.style.borderColor='#DAD9EA'"
-            onkeydown="if(event.key==='Enter')rsAddEmail('urgent')">
-          <button onclick="rsAddEmail('urgent')" style="background:#7000FC;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">+ 추가</button>
-        </div>
-      </div>
+      {% endfor %}
     </div>
     <div style="padding:14px 20px;border-top:0.5px solid #F0EDF7;display:flex;justify-content:flex-end;gap:8px">
-      <button onclick="closeRecipientModal()" style="font-size:12px;padding:8px 16px;border:0.5px solid #DAD9EA;border-radius:10px;background:#fff;cursor:pointer;color:#5E5A71">취소</button>
-      <button onclick="rsSave()" style="background:#7000FC;color:#fff;border:none;border-radius:10px;padding:8px 20px;font-size:12px;font-weight:600;cursor:pointer">저장</button>
+      <button onclick="closeRecipientModal()" class="btn btn-neutral btn-sm">취소</button>
+      <button onclick="rsSave()" class="btn btn-primary btn-sm">저장</button>
     </div>
   </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-function openKwModal() {
-  document.getElementById('kw-modal').style.display = 'flex';
-  loadKeywords();
-}
-function closeKwModal() {
-  document.getElementById('kw-modal').style.display = 'none';
-}
+const todayStr = '{{ today_str }}';
+document.getElementById('last-updated').textContent = '업데이트 ' + new Date().toLocaleString('ko-KR', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
 
-// ── 알림 대상자 설정 ──────────────────────────────────────
-const _rsEmails = {daily: [], report: [], urgent: []};
-
-async function openRecipientModal() {
-  document.getElementById('recipient-settings-modal').style.display = 'flex';
-  const res  = await fetch('/api/settings');
+function showStatus(msg) {
+  const el = document.getElementById('status-badge');
+  el.textContent = msg; el.style.display = 'inline-block';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+async function triggerCollect() {
+  showStatus('수집 중...');
+  await fetch('/api/collect', {method:'POST'});
+  showStatus('수집 시작됨');
+  setTimeout(() => location.reload(), 5000);
+}
+function applyDateRange() {
+  const params = new URLSearchParams(window.location.search);
+  params.set('page', 1);
+  params.set('date_from', document.getElementById('date_from').value);
+  params.set('date_to',   document.getElementById('date_to').value);
+  window.location.search = params.toString();
+}
+function setRange(fromDaysAgo, toDaysAgo) {
+  const fmt = d => d.toISOString().split('T')[0];
+  const to   = new Date(); to.setDate(to.getDate() - toDaysAgo);
+  const from = new Date(); from.setDate(from.getDate() - fromDaysAgo);
+  document.getElementById('date_from').value = fmt(from);
+  document.getElementById('date_to').value   = fmt(to);
+  applyDateRange();
+}
+['date_from','date_to'].forEach(id => {
+  document.getElementById(id)?.addEventListener('keydown', e => { if(e.key==='Enter') applyDateRange(); });
+});
+async function updateStatus(postId, status) {
+  const res  = await fetch('/api/status/' + postId, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status})});
   const data = await res.json();
-  _rsEmails.daily  = (data.daily_report_to_list || '').split(',').map(e => e.trim()).filter(Boolean);
-  _rsEmails.report = (data.report_to_list || '').split(',').map(e => e.trim()).filter(Boolean);
-  _rsEmails.urgent = (data.urgent_alert_to_list || '').split(',').map(e => e.trim()).filter(Boolean);
-  _rsRenderTags('daily');
-  _rsRenderTags('report');
-  _rsRenderTags('urgent');
-}
-function closeRecipientModal() {
-  document.getElementById('recipient-settings-modal').style.display = 'none';
-}
-function _rsRenderTags(type) {
-  const container = document.getElementById(`rs-${type}-tags`);
-  if (!container) return;
-  container.innerHTML = _rsEmails[type].length
-    ? _rsEmails[type].map(email => `
-        <span style="display:inline-flex;align-items:center;gap:5px;background:#F5F3FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:99px;padding:4px 10px;font-size:11px;font-weight:500">
-          ${email}
-          <button onclick="rsRemoveEmail('${type}','${email}')" style="background:none;border:none;cursor:pointer;color:#7000FC;font-size:13px;line-height:1;padding:0">×</button>
-        </span>`).join('')
-    : '<span style="font-size:11px;color:#AAA7B8">등록된 이메일이 없습니다</span>';
-}
-function rsAddEmail(type) {
-  const input = document.getElementById(`rs-${type}-input`);
-  const email = (input.value || '').trim().toLowerCase();
-  if (!email || !email.includes('@')) { input.focus(); return; }
-  if (!_rsEmails[type].includes(email)) {
-    _rsEmails[type].push(email);
-    _rsRenderTags(type);
+  if (data.status) {
+    const c = document.getElementById('status-' + postId);
+    c.querySelectorAll('button').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.trim() === status);
+    });
   }
-  input.value = '';
-  input.focus();
 }
-function rsRemoveEmail(type, email) {
-  _rsEmails[type] = _rsEmails[type].filter(e => e !== email);
-  _rsRenderTags(type);
+function getChecked() { return [...document.querySelectorAll('.post-check:checked')].map(el => parseInt(el.dataset.id)); }
+function onCheckChange() {
+  const ids = getChecked();
+  document.getElementById('bulkCount').textContent = ids.length + '건 선택';
+  document.getElementById('bulkBar').classList.toggle('visible', ids.length > 0);
+  const all = document.querySelectorAll('.post-check');
+  document.getElementById('selectAll').checked = all.length > 0 && ids.length === all.length;
 }
-async function rsSave() {
-  const res = await fetch('/api/settings', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({
-      daily_report_to_list: _rsEmails.daily.join(','),
-      report_to_list:       _rsEmails.report.join(','),
-      urgent_alert_to_list: _rsEmails.urgent.join(','),
-    })
-  });
-  if (res.ok) {
-    closeRecipientModal();
-    showStatus('알림 대상자 저장 완료');
+function toggleSelectAll(checked) { document.querySelectorAll('.post-check').forEach(el => el.checked = checked); onCheckChange(); }
+function clearSelection() {
+  document.querySelectorAll('.post-check').forEach(el => el.checked = false);
+  document.getElementById('selectAll').checked = false;
+  document.getElementById('bulkBar').classList.remove('visible');
+}
+async function bulkUpdate(status) {
+  const ids = getChecked(); if (!ids.length) return;
+  const res  = await fetch('/api/status/bulk', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ids, status})});
+  const data = await res.json();
+  if (data.updated) {
+    ids.forEach(id => {
+      const c = document.getElementById('status-' + id);
+      if (c) c.querySelectorAll('button').forEach(btn => btn.classList.toggle('active', btn.textContent.trim() === status));
+    });
+    showStatus(data.updated + '건 ' + status + ' 처리 완료');
+    clearSelection();
   }
 }
 
+// 리포트 발송
+let selectedRecipients = new Set();
+function openReportModal() {
+  const list = document.getElementById('recipient-list');
+  list.innerHTML = ''; selectedRecipients = new Set();
+  const defaults = ('{{ report_to }}').split(',').map(e => e.trim()).filter(Boolean);
+  defaults.forEach(email => { addRecipientRow(email, true); selectedRecipients.add(email); });
+  document.getElementById('report-modal').style.display = 'flex';
+}
+function closeReportModal() { document.getElementById('report-modal').style.display = 'none'; }
+function addRecipientRow(email, checked) {
+  const list = document.getElementById('recipient-list');
+  const row  = document.createElement('label');
+  row.style.cssText = 'display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:#130D2A;padding:4px 0;';
+  row.innerHTML = '<input type="checkbox" ' + (checked ? 'checked' : '') + ' onchange="toggleRecipient(\'' + email + '\',this.checked)" style="width:14px;height:14px;accent-color:#7000FC;cursor:pointer;"> ' + email;
+  list.appendChild(row);
+}
+function toggleRecipient(email, checked) { if(checked) selectedRecipients.add(email); else selectedRecipients.delete(email); }
+function addCustomEmail() {
+  const input = document.getElementById('custom-email');
+  const email = input.value.trim();
+  if (!email || !email.includes('@')) { alert('올바른 이메일 주소를 입력하세요'); return; }
+  addRecipientRow(email, true); selectedRecipients.add(email); input.value = '';
+}
+async function sendReport() {
+  if (selectedRecipients.size === 0) { alert('수신자를 1명 이상 선택하세요'); return; }
+  closeReportModal(); showStatus('발송 중...');
+  await fetch('/api/report', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({to:[...selectedRecipients].join(',')})});
+  showStatus('발송 완료!');
+}
+document.getElementById('report-modal').addEventListener('click', function(e) { if(e.target===this) closeReportModal(); });
+
+// 키워드 모달
+function openKwModal() { document.getElementById('kw-modal').style.display='flex'; loadKeywords(); }
+function closeKwModal() { document.getElementById('kw-modal').style.display='none'; }
 async function loadKeywords() {
   const wrap = document.getElementById('kw-list-wrap');
   wrap.innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">불러오는 중...</div>';
   const res  = await fetch('/api/keywords');
   const list = await res.json();
-  if (!list.length) {
-    wrap.innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">등록된 키워드가 없습니다</div>';
-    return;
-  }
+  if (!list.length) { wrap.innerHTML = '<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">등록된 키워드가 없습니다</div>'; return; }
   wrap.innerHTML = list.map(kw => `
     <div id="kwrow_${kw.id}" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid #F6F5FF">
       <div style="flex:1;font-size:13px;font-weight:500;color:#130D2A">${escKw(kw.keyword)}</div>
-      <button onclick="toggleKeyword(${kw.id}, ${kw.is_active})"
-        style="font-size:10px;font-weight:600;padding:3px 10px;border-radius:99px;border:0.5px solid ${kw.is_active ? '#BBF7D0' : '#DAD9EA'};
-               background:${kw.is_active ? '#F0FDF4' : '#F6F5FF'};color:${kw.is_active ? '#059669' : '#918DA0'};cursor:pointer"
-        id="kwtoggle_${kw.id}">${kw.is_active ? '● 활성' : '○ 비활성'}</button>
+      <button onclick="toggleKeyword(${kw.id},${kw.is_active})" id="kwtoggle_${kw.id}"
+        style="font-size:10px;font-weight:600;padding:3px 10px;border-radius:99px;border:0.5px solid ${kw.is_active?'#BBF7D0':'#DAD9EA'};background:${kw.is_active?'#F0FDF4':'#F6F5FF'};color:${kw.is_active?'#059669':'#918DA0'};cursor:pointer">
+        ${kw.is_active?'● 활성':'○ 비활성'}</button>
       <button onclick="deleteKeyword(${kw.id})"
         style="font-size:11px;padding:3px 8px;border-radius:6px;border:0.5px solid #FECACA;background:#FEF2F2;color:#DC2626;cursor:pointer">삭제</button>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
-
 async function addKeyword() {
   const input = document.getElementById('kw-input');
-  const kw = input.value.trim();
-  if (!kw) return;
-  const res = await fetch('/api/keywords', {
-    method: 'POST', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({keyword: kw})
-  });
-  if (res.ok) { input.value = ''; loadKeywords(); }
-  else {
-    const d = await res.json();
-    alert(d.error || '추가 실패 (중복 키워드일 수 있습니다)');
-  }
+  const kw = input.value.trim(); if (!kw) return;
+  const res = await fetch('/api/keywords', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({keyword:kw})});
+  if (res.ok) { input.value=''; loadKeywords(); }
+  else { const d=await res.json(); alert(d.error||'추가 실패'); }
 }
-
 async function toggleKeyword(id, current) {
-  const newVal = current ? 0 : 1;
-  await fetch(`/api/keywords/${id}`, {
-    method: 'PATCH', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({is_active: newVal})
-  });
+  await fetch(`/api/keywords/${id}`, {method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({is_active:current?0:1})});
   loadKeywords();
 }
-
 async function deleteKeyword(id) {
-  if (!confirm('이 키워드를 삭제하시겠습니까?')) return;
-  await fetch(`/api/keywords/${id}`, {method: 'DELETE'});
-  loadKeywords();
+  if(!confirm('이 키워드를 삭제하시겠습니까?')) return;
+  await fetch(`/api/keywords/${id}`, {method:'DELETE'}); loadKeywords();
 }
+function escKw(str) { return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function escKw(str) {
-  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+// 알림 대상자
+const _rsEmails = {daily:[], report:[], urgent:[]};
+async function openRecipientModal() {
+  document.getElementById('recipient-settings-modal').style.display = 'flex';
+  const res  = await fetch('/api/settings');
+  const data = await res.json();
+  _rsEmails.daily  = (data.daily_report_to_list||'').split(',').map(e=>e.trim()).filter(Boolean);
+  _rsEmails.report = (data.report_to_list||'').split(',').map(e=>e.trim()).filter(Boolean);
+  _rsEmails.urgent = (data.urgent_alert_to_list||'').split(',').map(e=>e.trim()).filter(Boolean);
+  ['daily','report','urgent'].forEach(_rsRenderTags);
+}
+function closeRecipientModal() { document.getElementById('recipient-settings-modal').style.display='none'; }
+function _rsRenderTags(type) {
+  const c = document.getElementById(`rs-${type}-tags`); if(!c) return;
+  c.innerHTML = _rsEmails[type].length
+    ? _rsEmails[type].map(email=>`<span style="display:inline-flex;align-items:center;gap:5px;background:#F5F3FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:99px;padding:4px 10px;font-size:11px;font-weight:500">${email}<button onclick="rsRemoveEmail('${type}','${email}')" style="background:none;border:none;cursor:pointer;color:#7000FC;font-size:13px;line-height:1;padding:0">×</button></span>`).join('')
+    : '<span style="font-size:11px;color:#AAA7B8">등록된 이메일 없음</span>';
+}
+function rsAddEmail(type) {
+  const input = document.getElementById(`rs-${type}-input`);
+  const email = (input.value||'').trim().toLowerCase();
+  if (!email||!email.includes('@')) { input.focus(); return; }
+  if (!_rsEmails[type].includes(email)) { _rsEmails[type].push(email); _rsRenderTags(type); }
+  input.value=''; input.focus();
+}
+function rsRemoveEmail(type, email) { _rsEmails[type]=_rsEmails[type].filter(e=>e!==email); _rsRenderTags(type); }
+async function rsSave() {
+  const res = await fetch('/api/settings', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({daily_report_to_list:_rsEmails.daily.join(','), report_to_list:_rsEmails.report.join(','), urgent_alert_to_list:_rsEmails.urgent.join(',')})});
+  if(res.ok) { closeRecipientModal(); showStatus('저장 완료'); }
 }
 </script>
-</body>
-</html>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}서비스 현황 관리 — GLN{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css">
+{% endblock %}
+
+{% block page_styles %}
+:root {
+  --color-text-primary: #130D2A;
+  --color-text-secondary: #5E5A71;
+  --color-text-tertiary: #918DA0;
+  --color-text-success: #059669;
+  --color-text-info: #7000FC;
+  --color-text-danger: #DC2626;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #F6F5FF;
+  --color-border-primary: #E4E1EE;
+  --color-border-secondary: #DAD9EA;
+  --color-border-tertiary: #F0EDF7;
+  --color-border-success: #BBF7D0;
+  --color-border-info: #C4B5FD;
+  --color-border-danger: #FECACA;
+  --font-mono: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+}
+#app-root { min-height: 200px; }
+{% endblock %}
+
+{% block topbar_title %}서비스 현황 관리{% endblock %}
+{% block topbar_sub %}GLN 지원 국가 설정 · 팩트체크 프롬프트 생성{% endblock %}
+
+{% block content %}
+<div id="app-root"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel" src="{{ url_for('static', filename='js/fact_checker.jsx') }}" data-presets="react"></script>
+{% endblock %}

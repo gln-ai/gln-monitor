@@ -1,5 +1,7 @@
 .env
+.env.save
 *.db
 __pycache__/
 *.pyc
 .DS_Store
+reports/

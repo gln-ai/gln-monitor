@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}GLN 마케팅 에이전트{% endblock %}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+{% block extra_head %}{% endblock %}
+<style>
+/* ── Reset & Base ── */
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; background: #F6F5FF; margin: 0; color: #130D2A; }
+a { text-decoration: none; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px; min-height: 100vh; background: #130D2A;
+  position: fixed; top: 0; left: 0; z-index: 20;
+  display: flex; flex-direction: column; padding: 14px 12px;
+  overflow-y: auto; overflow-x: hidden;
+}
+.sidebar-brand { padding: 2px 6px; margin-bottom: 14px; }
+.mascot-img { width: 100%; border-radius: 10px; display: block; margin-bottom: 8px; object-fit: cover; }
+.brand-title { font-size: 14px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+.brand-sub   { font-size: 10px; color: #4A4465; margin-top: 2px; }
+
+.nav-section { margin-bottom: 2px; }
+.nav-section-label {
+  font-size: 8.5px; font-weight: 700; color: #3D3560;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 0 10px; margin-bottom: 1px; margin-top: 10px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px; border-radius: 10px;
+  cursor: pointer; text-decoration: none; margin-bottom: 1px;
+  transition: background 0.12s;
+}
+.nav-item:hover { background: rgba(255,255,255,0.07); }
+.nav-item.active { background: #7000FC; }
+.nav-icon {
+  width: 17px; height: 17px; display: flex; align-items: center;
+  justify-content: center; opacity: 0.4; flex-shrink: 0;
+}
+.nav-item.active .nav-icon { opacity: 1; }
+.nav-item-text { font-size: 13px; color: rgba(255,255,255,0.48); font-weight: 500; flex: 1; }
+.nav-item.active .nav-item-text { color: #fff; font-weight: 600; }
+.nav-badge {
+  background: #DC2626; color: #fff;
+  font-size: 9px; font-weight: 700; padding: 1px 6px;
+  border-radius: 99px; margin-left: auto;
+}
+.nav-beta {
+  background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6);
+  font-size: 8px; font-weight: 700; padding: 1px 5px;
+  border-radius: 4px; letter-spacing: 0.05em; margin-left: auto;
+}
+.nav-item.active .nav-beta { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.9); }
+.nav-divider { border: none; border-top: 0.5px solid rgba(255,255,255,0.06); margin: 8px 0; }
+.sidebar-bottom { margin-top: auto; padding-top: 12px; }
+.sidebar-status {
+  background: rgba(112,0,252,0.1); border-radius: 8px;
+  padding: 8px 10px; border: 0.5px solid rgba(112,0,252,0.2);
+  font-size: 10px; color: #4A4465; line-height: 1.65;
+}
+
+/* ── Main Layout ── */
+.main-wrap { margin-left: 220px; min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Topbar ── */
+.topbar {
+  background: #fff; border-bottom: 0.5px solid #E4E1EE;
+  padding: 11px 24px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 10;
+  gap: 12px;
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.topbar-title { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0; }
+.topbar-sub   { font-size: 11px; color: #918DA0; margin: 2px 0 0; }
+.topbar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+/* ── Buttons ── */
+.btn {
+  border-radius: 10px; padding: 7px 14px; font-size: 12px;
+  font-weight: 600; cursor: pointer; border: none;
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: filter 0.13s; white-space: nowrap;
+}
+.btn:hover { filter: brightness(0.93); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; }
+.btn-primary { background: #7000FC; color: #fff; }
+.btn-ghost   { background: #F0EAFF; color: #7000FC; border: 0.5px solid #DDD6FE; }
+.btn-neutral { background: #F6F5FF; color: #5E5A71; border: 0.5px solid #DAD9EA; }
+.btn-danger  { background: #FEF2F2; color: #DC2626; border: 0.5px solid #FECACA; }
+.btn-gorani  { background: #FFF7ED; color: #EA580C; border: 0.5px solid #FED7AA; }
+.btn-sm { padding: 5px 11px; font-size: 11px; border-radius: 8px; }
+.btn-xs { padding: 3px 8px; font-size: 10px; border-radius: 7px; }
+
+/* ── Status toast ── */
+.status-toast { display: none; font-size: 11px; padding: 5px 12px; background: #F0EAFF; color: #7000FC; border-radius: 8px; font-weight: 500; }
+
+/* ── Page content wrapper ── */
+.page-content { padding: 20px 24px 40px; }
+
+/* ── Cards ── */
+.card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; }
+.card-header { padding: 13px 18px; border-bottom: 0.5px solid #F0EDF7; display: flex; align-items: center; justify-content: space-between; }
+.card-title  { font-size: 13px; font-weight: 700; color: #130D2A; margin: 0; }
+.card-body   { padding: 16px 18px; }
+
+/* ── KPI Cards ── */
+.kpi-grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 14px; }
+.kpi-grid-6 { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; margin-bottom: 14px; }
+.kpi-card { background: #fff; border-radius: 14px; padding: 15px 17px; border: 0.5px solid #E4E1EE; }
+.kpi-label { font-size: 10.5px; color: #918DA0; margin-bottom: 4px; }
+.kpi-value { font-size: 26px; font-weight: 700; color: #130D2A; line-height: 1; }
+.kpi-sub   { font-size: 10px; color: #AAA7B8; margin-top: 4px; }
+
+/* ── Badges ── */
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 600; }
+.badge-purple  { background: #F0EAFF; color: #7000FC; }
+.badge-red     { background: #FEF2F2; color: #DC2626; }
+.badge-green   { background: #F0FDF4; color: #059669; }
+.badge-neutral { background: #F6F5FF; color: #918DA0; }
+.badge-blue    { background: #EFF6FF; color: #1D4ED8; }
+.badge-country { background: #F3F4F6; color: #374151; border: 0.5px solid #E5E7EB; }
+.badge-urgent  { background: #F0EAFF; color: #7000FC; }
+.badge-neg     { background: #FEF2F2; color: #DC2626; }
+.badge-pos     { background: #F0FDF4; color: #059669; }
+.badge-neu     { background: #F6F5FF; color: #918DA0; }
+.badge-cat     { background: #EFF6FF; color: #1D4ED8; }
+
+/* ── Filter chips ── */
+.filter-row  { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.filter-chip {
+  font-size: 11px; padding: 4px 11px; border-radius: 99px;
+  border: 0.5px solid #DAD9EA; color: #5E5A71; background: #fff;
+  cursor: pointer; text-decoration: none; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 4px;
+}
+.filter-chip:hover { border-color: #7000FC; color: #7000FC; }
+.filter-chip.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 600; }
+.filter-chip.chip-red    { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
+.filter-chip.chip-amber  { background: #FFFBEB; color: #D97706; border-color: #FDE68A; }
+.filter-chip.chip-green  { background: #F0FDF4; color: #059669; border-color: #BBF7D0; }
+.filter-chip.chip-blue   { background: #EFF6FF; color: #1D4ED8; border-color: #BFDBFE; }
+.filter-chip.chip-red.active    { background: #DC2626; color: #fff; border-color: #DC2626; }
+.filter-chip.chip-amber.active  { background: #D97706; color: #fff; border-color: #D97706; }
+.filter-chip.chip-green.active  { background: #059669; color: #fff; border-color: #059669; }
+.filter-sep { width: 1px; height: 14px; background: #E4E1EE; margin: 0 2px; flex-shrink: 0; }
+
+/* ── Tab bar ── */
+.tab-bar { display: flex; background: #fff; border-radius: 14px 14px 0 0; border: 0.5px solid #E4E1EE; border-bottom: none; padding: 0 4px; }
+.tab-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 16px; font-size: 13px; color: #918DA0;
+  border-bottom: 2px solid transparent; cursor: pointer;
+  text-decoration: none; white-space: nowrap; transition: color 0.12s;
+}
+.tab-item:hover { color: #130D2A; }
+.tab-item.active { color: #7000FC; border-bottom-color: #7000FC; font-weight: 600; }
+.tab-count { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 99px; background: #F0EDF7; color: #918DA0; }
+.tab-item.active .tab-count { background: #7000FC; color: #fff; }
+
+/* ── Modal ── */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(19,13,42,0.48); z-index: 50; align-items: center; justify-content: center; }
+.modal-box { background: #fff; border-radius: 16px; padding: 24px; width: 400px; max-width: 94vw; }
+.modal-title { font-size: 15px; font-weight: 700; color: #130D2A; margin: 0 0 5px; }
+.modal-sub   { font-size: 12px; color: #918DA0; margin: 0 0 16px; }
+.modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+/* ── Grade chips ── */
+.grade-green  { background: #F0FDF4; color: #059669; border: 0.5px solid #BBF7D0; }
+.grade-yellow { background: #FFFBEB; color: #D97706; border: 0.5px solid #FDE68A; }
+.grade-red    { background: #FEF2F2; color: #DC2626; border: 0.5px solid #FECACA; }
+
+/* ── Empty state ── */
+.empty-state { padding: 56px 20px; text-align: center; }
+.empty-state p { font-size: 13px; color: #AAA7B8; margin: 4px 0; }
+
+/* ── Pagination ── */
+.pagination { display: flex; align-items: center; justify-content: center; gap: 4px; padding: 16px; }
+.page-btn { width: 30px; height: 30px; border-radius: 8px; border: 0.5px solid #E4E1EE; background: #fff; font-size: 12px; color: #5E5A71; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.page-btn:hover { border-color: #7000FC; color: #7000FC; }
+.page-btn.active { background: #7000FC; color: #fff; border-color: #7000FC; font-weight: 700; }
+.page-btn.disabled { opacity: 0.3; pointer-events: none; }
+
+/* ── Form inputs ── */
+.input-base { border: 0.5px solid #DAD9EA; border-radius: 10px; padding: 8px 12px; font-size: 13px; color: #130D2A; outline: none; font-family: inherit; background: #fff; }
+.input-base:focus { border-color: #7000FC; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .sidebar { width: 60px; padding: 12px 8px; }
+  .brand-title, .brand-sub, .sidebar-status, .nav-section-label, .nav-item-text, .nav-badge, .nav-beta { display: none; }
+  .mascot-img { width: 36px; height: 36px; object-fit: cover; border-radius: 8px; }
+  .nav-item { justify-content: center; padding: 9px 6px; }
+  .nav-icon { opacity: 0.55; width: 20px; height: 20px; }
+  .nav-item.active .nav-icon { opacity: 1; }
+  .main-wrap { margin-left: 60px; }
+  .kpi-grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .kpi-grid-6 { grid-template-columns: repeat(3, 1fr); }
+  .page-content { padding: 14px 14px 30px; }
+}
+{% block page_styles %}{% endblock %}
+</style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<div class="sidebar">
+  <div class="sidebar-brand">
+    <img src="/static/img/mascot.jpg" alt="GLN" class="mascot-img">
+    <div class="brand-title">GLN 마케팅 에이전트</div>
+    <div class="brand-sub">AI 기반 자동 수집 · 분석</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Overview</div>
+    <a href="/insights" class="nav-item {% if request.endpoint == 'monitor.insights' %}active{% endif %}">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+      <span class="nav-item-text">인사이트</span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Listen</div>
+    <a href="/" class="nav-item {% if request.endpoint in ['monitor.dashboard', 'monitor.post_detail'] %}active{% endif %}">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+      <span class="nav-item-text">수집 피드</span>
+      {% if sidebar_urgent > 0 %}<span class="nav-badge">{{ sidebar_urgent }}</span>{% endif %}
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Create</div>
+    <a href="/content" class="nav-item {% if request.endpoint and request.endpoint.startswith('content.') %}active{% endif %}">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span>
+      <span class="nav-item-text">콘텐츠</span>
+      <span class="nav-beta">Beta</span>
+    </a>
+    <a href="/pr" class="nav-item {% if request.endpoint and request.endpoint.startswith('pr.') %}active{% endif %}">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/></svg></span>
+      <span class="nav-item-text">보도자료</span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">Report</div>
+    <a href="/reports" class="nav-item {% if request.endpoint == 'reports.reports_index' %}active{% endif %}">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span>
+      <span class="nav-item-text">리포트 아카이브</span>
+    </a>
+  </div>
+
+  <hr class="nav-divider">
+
+  <div class="nav-section">
+    <div class="nav-section-label">Operations</div>
+    <a href="/admin/agent-map" class="nav-item {% if request.endpoint == 'admin.agent_map' %}active{% endif %}">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><path d="M12 7v4M5 17l5-6M19 17l-5-6"/></svg></span>
+      <span class="nav-item-text">에이전트 맵</span>
+    </a>
+    <a href="/admin/fact-checker" class="nav-item {% if request.endpoint == 'admin.fact_checker' %}active{% endif %}">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+      <span class="nav-item-text">서비스 현황</span>
+    </a>
+    <a href="/keywords" class="nav-item {% if request.endpoint == 'keywords.keywords_page' %}active{% endif %}">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></span>
+      <span class="nav-item-text">설정</span>
+    </a>
+  </div>
+
+  {% block sidebar_extra %}{% endblock %}
+
+  <div class="sidebar-bottom">
+    {% block sidebar_bottom %}
+    <div class="sidebar-status">
+      자동 수집: 1h 주기<br>
+      아침 브리핑: 08:00<br>
+      콘텐츠 생성: 09:00
+    </div>
+    {% endblock %}
+  </div>
+</div>
+
+<!-- ── Main ── -->
+<div class="main-wrap">
+  <div class="topbar">
+    <div class="topbar-left">
+      {% block topbar_back %}{% endblock %}
+      <div>
+        <h1 class="topbar-title">{% block topbar_title %}GLN{% endblock %}</h1>
+        <p class="topbar-sub">{% block topbar_sub %}{% endblock %}</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      {% block topbar_actions %}{% endblock %}
+    </div>
+  </div>
+  <div class="page-content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+{% block modals %}{% endblock %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

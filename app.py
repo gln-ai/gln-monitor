@@ -17,7 +17,7 @@ import config  # noqa: F401 (side-effect: .env load, sys.path update)
 from flask import Flask
 
 from db import init_db, get_setting
-from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp
+from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp, admin_bp
 from services.naver import collect_all
 from services.email_svc import send_daily_report
 from services.pipeline import run_content_pipeline
@@ -46,11 +46,33 @@ def _daily_weekend():
         print("[일일리포트] 주말 수신자 미설정 — 스킵")
 
 app = Flask(__name__)
+
+
+@app.context_processor
+def inject_sidebar_globals():
+    from db import get_db
+    try:
+        conn = get_db()
+        row = conn.execute("""
+            SELECT COUNT(*) AS cnt FROM posts p
+            LEFT JOIN ai_analysis a ON p.id = a.post_id
+            WHERE (p.reply_status IS NULL OR p.reply_status = '미확인')
+            AND (a.importance_score >= 7 OR a.sentiment = 'negative')
+            AND date(p.created_at) = date('now', 'localtime')
+        """).fetchone()
+        conn.close()
+        count = row["cnt"] if row else 0
+    except Exception:
+        count = 0
+    return dict(sidebar_urgent=count)
+
+
 app.register_blueprint(monitor_bp)
 app.register_blueprint(content_bp)
 app.register_blueprint(pr_bp)
 app.register_blueprint(reports_bp)
 app.register_blueprint(keywords_bp)
+app.register_blueprint(admin_bp)
 
 # ── DB 초기화 + 스케줄러 (gunicorn/직접 실행 모두 동작) ───────────────────────
 from apscheduler.schedulers.background import BackgroundScheduler
