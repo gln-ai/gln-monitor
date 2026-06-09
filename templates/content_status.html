@@ -412,60 +412,59 @@ const CHECKLIST = {
   cartoon:        ['일러스트 제작 (컷 구성 참고)', '대사 검토', '캡션 작성'],
 };
 
+// 복사할 텍스트를 id로 보관 — onclick 속성에 큰따옴표 넣지 않기 위해
+const _cpReg = {};
+
 function escHtml(str) {
   return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 function fixNl(text) {
-  // 리터럴 \n → 실제 줄바꿈
   return (text || '').replace(/\\n/g, '\n');
 }
 
 function renderMd(raw) {
   if (!raw) return '';
   let t = escHtml(fixNl(raw));
-  // 헤더
   t = t.replace(/^### (.+)$/gm, '<h4>$1</h4>');
   t = t.replace(/^## (.+)$/gm,  '<h3>$1</h3>');
   t = t.replace(/^# (.+)$/gm,   '<h2>$1</h2>');
-  // 굵게/기울임
   t = t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   t = t.replace(/\*(.+?)\*/g,     '<em>$1</em>');
-  // 구분선
   t = t.replace(/^---$/gm, '<hr>');
-  // 인용
   t = t.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
-  // 목록
-  t = t.replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>');
-  t = t.replace(/^[-*] (.+)$/gm,    '<li>$1</li>');
-  // 문단 나누기 (빈 줄)
+  t = t.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  t = t.replace(/^[-*] (.+)$/gm,  '<li>$1</li>');
   t = t.replace(/\n\n/g, '<div class="md-p"></div>');
   t = t.replace(/\n/g, '<br>');
   return t;
 }
 
+function _doCopy(id) { copyText(_cpReg[id], id); }
+
 function pkgSection(label, text, extraClass) {
   if (!text || text === 'null' || !text.trim() || text === 'None' || text === '없음') return '';
-  const display = fixNl(text);
-  const id = 'copy_' + Math.random().toString(36).slice(2);
+  const id = 'cp' + Math.random().toString(36).slice(2);
+  _cpReg[id] = text;
   return `
     <div class="pkg-section">
       <div class="pkg-label-row">
         <span class="pkg-label">${label}</span>
-        <button class="btn-copy" id="${id}" onclick="copyText(${JSON.stringify(text)}, '${id}')">복사</button>
+        <button class="btn-copy" id="${id}" onclick="_doCopy('${id}')">복사</button>
       </div>
-      <pre class="modal-pre${extraClass ? ' ' + extraClass : ''}">${escHtml(display)}</pre>
+      <pre class="modal-pre${extraClass ? ' ' + extraClass : ''}">${escHtml(fixNl(text))}</pre>
     </div>`;
 }
 
 function bodySection(label, text) {
   if (!text || text === 'null' || !text.trim() || text === 'None' || text === '없음') return '';
-  const id = 'copy_' + Math.random().toString(36).slice(2);
+  const id = 'cp' + Math.random().toString(36).slice(2);
+  _cpReg[id] = text;
   return `
     <div class="pkg-section">
       <div class="pkg-label-row">
         <span class="pkg-label">${label}</span>
-        <button class="btn-copy" id="${id}" onclick="copyText(${JSON.stringify(text)}, '${id}')">복사</button>
+        <button class="btn-copy" id="${id}" onclick="_doCopy('${id}')">복사</button>
       </div>
       <div class="modal-md-body">${renderMd(text)}</div>
     </div>`;
