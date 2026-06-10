@@ -89,7 +89,7 @@
   </div>
 </div>
 
-<!-- 리포트 수신자 관리 -->
+<!-- 알림설정 -->
 <div class="card">
   <!-- 이메일 발송 환경 안내 배너 -->
   <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;">
@@ -99,23 +99,54 @@
       <div style="font-size:11px;color:#A16207;line-height:1.5">Railway 환경에서는 수신자 설정과 무관하게 발송이 비활성화됩니다.</div>
     </div>
   </div>
-  <div style="font-size:13px;font-weight:700;color:#130D2A;margin-bottom:4px">일일 리포트 수신자 관리</div>
-  <div style="font-size:11px;color:#918DA0;margin-bottom:16px">개별 발송 (1인 1통) · 줄바꿈 또는 쉼표로 구분</div>
+  <div style="font-size:13px;font-weight:700;color:#130D2A;margin-bottom:4px">알림설정</div>
+  <div style="font-size:11px;color:#918DA0;margin-bottom:16px">개별 발송 (1인 1통) · 줄바꿈 또는 쉼표로 구분 · 발송 시간은 저장 후 즉시 반영</div>
+
+  <div style="font-size:10px;font-weight:700;color:#918DA0;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">일일 리포트</div>
 
   <div style="margin-bottom:14px">
     <div style="font-size:12px;font-weight:600;color:#130D2A;margin-bottom:6px">📅 평일 수신자 (월~금)</div>
-    <textarea id="inp-report_to_weekday" rows="5"
+    <textarea id="inp-report_to_weekday" rows="3"
       placeholder="email@example.com&#10;email2@example.com"
       style="width:100%;box-sizing:border-box;border:0.5px solid #DAD9EA;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:vertical;outline:none;color:#130D2A"></textarea>
     <div id="weekday-count" style="font-size:10px;color:#918DA0;margin-top:4px"></div>
+    <button id="expand-weekday" style="font-size:11px;color:#7000FC;background:none;border:none;cursor:pointer;padding:2px 0;display:none"></button>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+      <span style="font-size:11px;color:#918DA0">발송 시간</span>
+      <input type="number" id="inp-report_weekday_hour" class="alert-input" min="0" max="23" value="8">
+      <span style="font-size:11px;color:#918DA0">시</span>
+    </div>
   </div>
 
-  <div style="margin-bottom:16px">
+  <div style="margin-bottom:14px">
     <div style="font-size:12px;font-weight:600;color:#130D2A;margin-bottom:6px">🏖️ 주말 수신자 (토~일)</div>
     <textarea id="inp-report_to_weekend" rows="3"
       placeholder="email@example.com"
       style="width:100%;box-sizing:border-box;border:0.5px solid #DAD9EA;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:vertical;outline:none;color:#130D2A"></textarea>
     <div id="weekend-count" style="font-size:10px;color:#918DA0;margin-top:4px"></div>
+    <button id="expand-weekend" style="font-size:11px;color:#7000FC;background:none;border:none;cursor:pointer;padding:2px 0;display:none"></button>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+      <span style="font-size:11px;color:#918DA0">발송 시간</span>
+      <input type="number" id="inp-report_weekend_hour" class="alert-input" min="0" max="23" value="8">
+      <span style="font-size:11px;color:#918DA0">시</span>
+    </div>
+  </div>
+
+  <div style="border-top:0.5px solid #F6F5FF;margin:4px 0 14px"></div>
+  <div style="font-size:10px;font-weight:700;color:#918DA0;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">주간 리포트</div>
+
+  <div style="margin-bottom:16px">
+    <div style="font-size:12px;font-weight:600;color:#130D2A;margin-bottom:6px">📊 수신자 (월요일 발송)</div>
+    <textarea id="inp-report_to_weekly" rows="3"
+      placeholder="email@example.com"
+      style="width:100%;box-sizing:border-box;border:0.5px solid #DAD9EA;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:vertical;outline:none;color:#130D2A"></textarea>
+    <div id="weekly-count" style="font-size:10px;color:#918DA0;margin-top:4px"></div>
+    <button id="expand-weekly" style="font-size:11px;color:#7000FC;background:none;border:none;cursor:pointer;padding:2px 0;display:none"></button>
+    <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+      <span style="font-size:11px;color:#918DA0">발송 시간 (월요일)</span>
+      <input type="number" id="inp-report_weekly_hour" class="alert-input" min="0" max="23" value="8">
+      <span style="font-size:11px;color:#918DA0">시</span>
+    </div>
   </div>
 
   <div style="text-align:right">
@@ -162,7 +193,7 @@
 
 <!-- 알림 설정 -->
 <div class="card">
-  <div style="font-size:13px;font-weight:700;color:#130D2A;margin-bottom:4px">알림 설정</div>
+  <div style="font-size:13px;font-weight:700;color:#130D2A;margin-bottom:4px">이벤트 알림</div>
   <div style="font-size:11px;color:#918DA0;margin-bottom:16px">토글은 즉시 반영 · 수치는 저장 버튼 클릭</div>
 
   <div class="alert-row">
@@ -368,40 +399,80 @@ function _updateCount(fieldId, countId) {
   const ta = document.getElementById(fieldId);
   const ct = document.getElementById(countId);
   if (!ta || !ct) return;
-  const n = _parseEmails(ta.value).length;
-  ct.textContent = n > 0 ? `${n}명` : '';
-  ta.addEventListener('input', () => {
-    ct.textContent = _parseEmails(ta.value).length > 0 ? `${_parseEmails(ta.value).length}명` : '';
+  function update() { ct.textContent = _parseEmails(ta.value).length > 0 ? `${_parseEmails(ta.value).length}명` : ''; }
+  update();
+  ta.addEventListener('input', update);
+}
+
+function initExpandToggle(textareaId, btnId) {
+  const ta  = document.getElementById(textareaId);
+  const btn = document.getElementById(btnId);
+  if (!ta || !btn) return;
+  function refresh() {
+    const n = _parseEmails(ta.value).length;
+    if (n > 3) {
+      btn.style.display = 'inline-block';
+      if (ta.rows !== 10) btn.textContent = `더보기 (${n}명)`;
+    } else {
+      btn.style.display = 'none';
+      ta.rows = 3;
+    }
+  }
+  btn.addEventListener('click', () => {
+    if (ta.rows === 3) { ta.rows = 10; btn.textContent = '접기'; }
+    else { ta.rows = 3; btn.textContent = `더보기 (${_parseEmails(ta.value).length}명)`; }
   });
+  ta.addEventListener('input', refresh);
+  refresh();
 }
 
 async function loadReportRecipients() {
   try {
     const res  = await fetch('/api/settings');
     const data = await res.json();
-    const wday = document.getElementById('inp-report_to_weekday');
-    const wend = document.getElementById('inp-report_to_weekend');
-    if (wday && data.report_to_weekday)
-      wday.value = _parseEmails(data.report_to_weekday).join('\n');
-    if (wend && data.report_to_weekend)
-      wend.value = _parseEmails(data.report_to_weekend).join('\n');
-    _updateCount('inp-report_to_weekday', 'weekday-count');
-    _updateCount('inp-report_to_weekend', 'weekend-count');
+    const fields = [
+      ['report_to_weekday', 'inp-report_to_weekday', 'weekday-count', 'expand-weekday'],
+      ['report_to_weekend', 'inp-report_to_weekend', 'weekend-count', 'expand-weekend'],
+      ['report_to_weekly',  'inp-report_to_weekly',  'weekly-count',  'expand-weekly'],
+    ];
+    for (const [key, taId, ctId, btnId] of fields) {
+      const ta = document.getElementById(taId);
+      if (ta && data[key]) ta.value = _parseEmails(data[key]).join('\n');
+      _updateCount(taId, ctId);
+      initExpandToggle(taId, btnId);
+    }
+    for (const key of ['report_weekday_hour', 'report_weekend_hour', 'report_weekly_hour']) {
+      const el = document.getElementById(`inp-${key}`);
+      if (el && data[key] !== undefined) el.value = data[key];
+    }
   } catch(e) { console.warn('수신자 로드 실패:', e); }
 }
 
 async function saveReportRecipients() {
-  const wday = _parseEmails(document.getElementById('inp-report_to_weekday').value).join(',');
-  const wend = _parseEmails(document.getElementById('inp-report_to_weekend').value).join(',');
-  const res  = await fetch('/api/settings', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ report_to_weekday: wday, report_to_weekend: wend })
-  });
-  if (res.ok) {
+  const wday   = _parseEmails(document.getElementById('inp-report_to_weekday').value).join(',');
+  const wend   = _parseEmails(document.getElementById('inp-report_to_weekend').value).join(',');
+  const weekly = _parseEmails(document.getElementById('inp-report_to_weekly').value).join(',');
+  const [res, schedRes] = await Promise.all([
+    fetch('/api/settings', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ report_to_weekday: wday, report_to_weekend: wend, report_to_weekly: weekly })
+    }),
+    fetch('/api/settings/schedule', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        report_weekday_hour: document.getElementById('inp-report_weekday_hour').value,
+        report_weekend_hour: document.getElementById('inp-report_weekend_hour').value,
+        report_weekly_hour:  document.getElementById('inp-report_weekly_hour').value,
+      })
+    })
+  ]);
+  if (res.ok && schedRes.ok) {
     const wn = _parseEmails(wday).length;
     const en = _parseEmails(wend).length;
-    showToast(`저장됨 — 평일 ${wn}명 / 주말 ${en}명`);
+    const kn = _parseEmails(weekly).length;
+    showToast(`저장됨 — 평일 ${wn}명 / 주말 ${en}명 / 주간 ${kn}명`);
   } else {
     showToast('저장 실패');
   }

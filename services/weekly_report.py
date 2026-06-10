@@ -314,7 +314,7 @@ def build_weekly_report():
 
 def send_weekly_report(to: str = ""):
     if not to:
-        to = get_setting("report_to_list") or os.getenv("REPORT_TO", "")
+        to = get_setting("report_to_weekly") or os.getenv("REPORT_TO", "")
     if not to:
         print("[주간 리포트] 수신자 없음 — 스킵")
         return

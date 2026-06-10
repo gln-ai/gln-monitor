@@ -103,3 +103,35 @@ def api_settings_save():
     conn.commit()
     conn.close()
     return jsonify({"status": "saved", "keys": list(data.keys())})
+
+
+@keywords_bp.route("/api/settings/schedule", methods=["POST"])
+def api_settings_schedule():
+    from flask import current_app
+    data = request.get_json(silent=True) or {}
+    conn = get_db()
+    for key in ("report_weekday_hour", "report_weekend_hour", "report_weekly_hour"):
+        if key in data:
+            conn.execute(
+                """INSERT INTO app_settings (key, value, updated_at)
+                   VALUES (?, ?, datetime('now','localtime'))
+                   ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=excluded.updated_at""",
+                (key, str(data[key]))
+            )
+    conn.commit()
+    conn.close()
+    sched = getattr(current_app, "_scheduler", None)
+    if sched:
+        try:
+            if "report_weekday_hour" in data:
+                sched.reschedule_job("daily_weekday", trigger="cron",
+                    day_of_week="mon-fri", hour=int(data["report_weekday_hour"]), minute=0)
+            if "report_weekend_hour" in data:
+                sched.reschedule_job("daily_weekend", trigger="cron",
+                    day_of_week="sat,sun", hour=int(data["report_weekend_hour"]), minute=0)
+            if "report_weekly_hour" in data:
+                sched.reschedule_job("weekly_report", trigger="cron",
+                    day_of_week="mon", hour=int(data["report_weekly_hour"]), minute=0)
+        except Exception as e:
+            print(f"[스케줄 변경 오류] {e}")
+    return jsonify({"status": "rescheduled", "applied": list(data.keys())})

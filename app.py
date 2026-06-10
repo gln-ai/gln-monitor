@@ -86,7 +86,7 @@ _scheduler.add_job(_daily_weekend,       "cron", day_of_week="sat,sun",  hour=8,
 _scheduler.add_job(run_content_pipeline, "cron", hour=9,  minute=0, id="content_pipeline")
 # _scheduler.add_job(send_sla_reminder,    "cron", hour=17, minute=0, id="sla_reminder")
 # _scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
-# _scheduler.add_job(send_weekly_report,   "cron", day_of_week="mon", hour=8, minute=0,  id="weekly_report")
+_scheduler.add_job(send_weekly_report,   "cron", day_of_week="mon", hour=8, minute=0,  id="weekly_report")
 _scheduler.add_job(save_daily_report,    "cron", hour=23, minute=55,                   id="log_daily")
 _scheduler.add_job(save_weekly_log,      "cron", day_of_week="mon", hour=8, minute=5,  id="log_weekly")
 _scheduler.add_job(save_monthly_report,  "cron", day=1,  hour=8, minute=10,            id="log_monthly")
@@ -94,7 +94,8 @@ _scheduler.add_job(update_tourism,       "cron", day=1,  hour=9, minute=30,     
 _scheduler.add_job(fetch_jnto,           "cron", day=15, hour=10, minute=0,            id="jnto_monthly")
 _scheduler.add_job(fetch_kto_total,      "cron", day=5,  hour=10, minute=30,           id="kto_monthly")
 _scheduler.start()
-print("[스케줄러] 수집 1h / 아침브리핑 08:00(평일) / 콘텐츠 09:00 / 로그저장 23:55")
+app._scheduler = _scheduler
+print("[스케줄러] 수집 1h / 아침브리핑 08:00(평일) / 주간리포트 월08:00 / 콘텐츠 09:00 / 로그저장 23:55")
 
 if __name__ == "__main__":
     print("\n✅ GLN 모니터링 시작!")
