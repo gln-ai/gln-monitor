@@ -35,6 +35,7 @@
 .kw-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 0.5px solid #F6F5FF; font-size: 12px; }
 .kw-bar-wrap { flex: 1; margin: 0 12px; height: 5px; background: #F6F5FF; border-radius: 99px; overflow: hidden; }
 .kw-bar { height: 100%; background: #7000FC; border-radius: 99px; }
+.hidden-more { display: none !important; }
 {% endblock %}
 
 {% block sidebar_bottom %}
@@ -66,11 +67,11 @@
   월간 보고서 <span class="badge">{{ monthly|length }}건</span>
 </div>
 {% if monthly %}
-<div class="report-grid" style="margin-bottom:28px">
+<div class="report-grid" id="monthlyGrid">
   {% for r in monthly %}
   {% set hs = r.health_score %}
   {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
-  <div class="report-card" onclick="showReport('monthly','{{ r.filename }}')">
+  <div class="report-card{% if loop.index > 5 %} hidden-more{% endif %}" onclick="showReport('monthly','{{ r.filename }}')">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
       <div class="report-card-type">Monthly</div>
       <div style="font-size:11px;font-weight:700;color:{{ hc }};background:{{ hc }}18;padding:2px 9px;border-radius:99px;white-space:nowrap">{{ hs }}</div>
@@ -88,6 +89,13 @@
   </div>
   {% endfor %}
 </div>
+{% if monthly|length > 5 %}
+<div id="monthlyMoreBtn" style="text-align:center;margin-top:8px;margin-bottom:28px">
+  <button onclick="showMore('monthlyGrid','monthlyMoreBtn')" style="font-size:12px;color:#7000FC;background:#F6F5FF;border:0.5px solid #DDD6FE;border-radius:10px;padding:6px 20px;cursor:pointer;font-weight:600">더보기 ({{ monthly|length - 5 }}건 더)</button>
+</div>
+{% else %}
+<div style="margin-bottom:28px"></div>
+{% endif %}
 {% else %}
 <div class="empty-card">월간 보고서 없음 (매월 1일 09:10 자동 저장)</div>
 {% endif %}
@@ -97,11 +105,11 @@
   주간 보고서 <span class="badge">{{ weekly|length }}건</span>
 </div>
 {% if weekly %}
-<div class="report-grid" style="margin-bottom:28px">
+<div class="report-grid" id="weeklyGrid">
   {% for r in weekly %}
   {% set hs = r.health_score %}
   {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
-  <div class="report-card">
+  <div class="report-card{% if loop.index > 5 %} hidden-more{% endif %}">
     <div onclick="showReport('weekly','{{ r.filename }}')" style="cursor:pointer">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
         <div class="report-card-type">Weekly</div>
@@ -124,6 +132,13 @@
   </div>
   {% endfor %}
 </div>
+{% if weekly|length > 5 %}
+<div id="weeklyMoreBtn" style="text-align:center;margin-top:8px;margin-bottom:28px">
+  <button onclick="showMore('weeklyGrid','weeklyMoreBtn')" style="font-size:12px;color:#7000FC;background:#F6F5FF;border:0.5px solid #DDD6FE;border-radius:10px;padding:6px 20px;cursor:pointer;font-weight:600">더보기 ({{ weekly|length - 5 }}건 더)</button>
+</div>
+{% else %}
+<div style="margin-bottom:28px"></div>
+{% endif %}
 {% else %}
 <div class="empty-card">주간 보고서 없음 (매주 월요일 09:05 자동 저장)</div>
 {% endif %}
@@ -144,7 +159,7 @@
   {% for r in daily %}
   {% set hs = r.health_score %}
   {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
-  <div class="report-card">
+  <div class="report-card{% if loop.index > 5 %} hidden-more{% endif %}">
     <div onclick="showReport('daily','{{ r.filename }}')" style="cursor:pointer">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
         <div class="report-card-type">Daily</div>
@@ -168,11 +183,11 @@
   {% endfor %}
 </div>
 
-<div id="dailyListView" style="display:none;margin-bottom:28px">
+<div id="dailyListView" style="display:none">
   {% for r in daily %}
   {% set hs = r.health_score %}
   {% set hc = '#059669' if hs >= 80 else ('#D97706' if hs >= 60 else '#DC2626') %}
-  <div class="daily-row" onclick="showReport('daily','{{ r.filename }}')">
+  <div class="daily-row{% if loop.index > 5 %} hidden-more{% endif %}" onclick="showReport('daily','{{ r.filename }}')">
     <div class="daily-date">{{ r.period_start[5:7] }}/{{ r.period_start[8:10] }}</div>
     <div class="daily-total">{{ r.total }}건</div>
     <div style="width:60px;flex-shrink:0">
@@ -195,6 +210,13 @@
   </div>
   {% endfor %}
 </div>
+{% if daily|length > 5 %}
+<div id="dailyMoreBtn" style="text-align:center;margin-top:8px;margin-bottom:28px">
+  <button onclick="showMore('dailyGridView','dailyMoreBtn','dailyListView')" style="font-size:12px;color:#7000FC;background:#F6F5FF;border:0.5px solid #DDD6FE;border-radius:10px;padding:6px 20px;cursor:pointer;font-weight:600">더보기 ({{ daily|length - 5 }}건 더)</button>
+</div>
+{% else %}
+<div style="margin-bottom:28px"></div>
+{% endif %}
 {% else %}
 <div class="empty-card">일간 보고서 없음 (매일 23:55 자동 저장)</div>
 {% endif %}
@@ -371,6 +393,15 @@ function _showToast(msg) {
 }
 
 document.addEventListener('DOMContentLoaded', loadEmailLog);
+
+function showMore(gridId, btnContainerId, ...extraIds) {
+  [gridId, ...extraIds].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.querySelectorAll('.hidden-more').forEach(item => item.classList.remove('hidden-more'));
+  });
+  const btn = document.getElementById(btnContainerId);
+  if (btn) btn.style.display = 'none';
+}
 
 function setDailyView(type) {
   document.getElementById('dailyGridView').style.display = type === 'grid' ? '' : 'none';
