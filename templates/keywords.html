@@ -118,39 +118,44 @@
     </div>
   </div>
 
-  <div style="margin-bottom:14px">
-    <div style="font-size:12px;font-weight:600;color:#130D2A;margin-bottom:6px">🏖️ 주말 수신자 (토~일)</div>
-    <textarea id="inp-report_to_weekend" rows="3"
-      placeholder="email@example.com"
-      style="width:100%;box-sizing:border-box;border:0.5px solid #DAD9EA;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:vertical;outline:none;color:#130D2A"></textarea>
-    <div id="weekend-count" style="font-size:10px;color:#918DA0;margin-top:4px"></div>
-    <button id="expand-weekend" style="font-size:11px;color:#7000FC;background:none;border:none;cursor:pointer;padding:2px 0;display:none"></button>
-    <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
-      <span style="font-size:11px;color:#918DA0">발송 시간</span>
-      <input type="number" id="inp-report_weekend_hour" class="alert-input" min="0" max="23" value="8">
-      <span style="font-size:11px;color:#918DA0">시</span>
+  <button id="alert-more-btn" onclick="toggleAlertMore()"
+    style="font-size:11px;color:#7000FC;background:none;border:none;cursor:pointer;padding:2px 0;margin-bottom:4px">더보기 ▾</button>
+
+  <div id="alert-more-section" style="display:none">
+    <div style="margin-bottom:14px">
+      <div style="font-size:12px;font-weight:600;color:#130D2A;margin-bottom:6px">🏖️ 주말 수신자 (토~일)</div>
+      <textarea id="inp-report_to_weekend" rows="3"
+        placeholder="email@example.com"
+        style="width:100%;box-sizing:border-box;border:0.5px solid #DAD9EA;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:vertical;outline:none;color:#130D2A"></textarea>
+      <div id="weekend-count" style="font-size:10px;color:#918DA0;margin-top:4px"></div>
+      <button id="expand-weekend" style="font-size:11px;color:#7000FC;background:none;border:none;cursor:pointer;padding:2px 0;display:none"></button>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+        <span style="font-size:11px;color:#918DA0">발송 시간</span>
+        <input type="number" id="inp-report_weekend_hour" class="alert-input" min="0" max="23" value="8">
+        <span style="font-size:11px;color:#918DA0">시</span>
+      </div>
     </div>
-  </div>
 
-  <div style="border-top:0.5px solid #F6F5FF;margin:4px 0 14px"></div>
-  <div style="font-size:10px;font-weight:700;color:#918DA0;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">주간 리포트</div>
+    <div style="border-top:0.5px solid #F6F5FF;margin:4px 0 14px"></div>
+    <div style="font-size:10px;font-weight:700;color:#918DA0;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">주간 리포트</div>
 
-  <div style="margin-bottom:16px">
-    <div style="font-size:12px;font-weight:600;color:#130D2A;margin-bottom:6px">📊 수신자 (월요일 발송)</div>
-    <textarea id="inp-report_to_weekly" rows="3"
-      placeholder="email@example.com"
-      style="width:100%;box-sizing:border-box;border:0.5px solid #DAD9EA;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:vertical;outline:none;color:#130D2A"></textarea>
-    <div id="weekly-count" style="font-size:10px;color:#918DA0;margin-top:4px"></div>
-    <button id="expand-weekly" style="font-size:11px;color:#7000FC;background:none;border:none;cursor:pointer;padding:2px 0;display:none"></button>
-    <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
-      <span style="font-size:11px;color:#918DA0">발송 시간 (월요일)</span>
-      <input type="number" id="inp-report_weekly_hour" class="alert-input" min="0" max="23" value="8">
-      <span style="font-size:11px;color:#918DA0">시</span>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:600;color:#130D2A;margin-bottom:6px">📊 수신자 (월요일 발송)</div>
+      <textarea id="inp-report_to_weekly" rows="3"
+        placeholder="email@example.com"
+        style="width:100%;box-sizing:border-box;border:0.5px solid #DAD9EA;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:vertical;outline:none;color:#130D2A"></textarea>
+      <div id="weekly-count" style="font-size:10px;color:#918DA0;margin-top:4px"></div>
+      <button id="expand-weekly" style="font-size:11px;color:#7000FC;background:none;border:none;cursor:pointer;padding:2px 0;display:none"></button>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+        <span style="font-size:11px;color:#918DA0">발송 시간 (월요일)</span>
+        <input type="number" id="inp-report_weekly_hour" class="alert-input" min="0" max="23" value="8">
+        <span style="font-size:11px;color:#918DA0">시</span>
+      </div>
     </div>
-  </div>
 
-  <div style="text-align:right">
-    <button class="btn btn-primary btn-sm" onclick="saveReportRecipients()">저장</button>
+    <div style="text-align:right">
+      <button class="btn btn-primary btn-sm" onclick="saveReportRecipients()">저장</button>
+    </div>
   </div>
 </div>
 
@@ -475,6 +480,18 @@ async function saveReportRecipients() {
     showToast(`저장됨 — 평일 ${wn}명 / 주말 ${en}명 / 주간 ${kn}명`);
   } else {
     showToast('저장 실패');
+  }
+}
+
+function toggleAlertMore() {
+  const sec = document.getElementById('alert-more-section');
+  const btn = document.getElementById('alert-more-btn');
+  const open = sec.style.display === 'none';
+  sec.style.display = open ? '' : 'none';
+  btn.textContent = open ? '접기 ▴' : '더보기 ▾';
+  if (open) {
+    initExpandToggle('inp-report_to_weekend', 'expand-weekend');
+    initExpandToggle('inp-report_to_weekly',  'expand-weekly');
   }
 }
 
