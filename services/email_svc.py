@@ -141,6 +141,11 @@ def send_email(to: str, subject: str, html_body: str, report_type: str = "",
     images = {"cid명": "/절대/경로/파일.jpg"} 형식으로 전달하면
     HTML 내 <img src="cid:cid명"> 으로 인라인 임베딩됨 (로컬 IP 문제 해결).
     """
+    # Railway 환경에서는 이메일 발송 차단 (로컬 맥미니에서만 발송)
+    if os.getenv("RAILWAY_ENVIRONMENT"):
+        print(f"[이메일] Railway 환경 감지 — 발송 스킵 (수신: {to[:40]})", flush=True)
+        return
+
     from email.header import Header
     from email.utils import formataddr
     _raw = os.getenv("REPORT_FROM", "glninternational.ai@gmail.com")
