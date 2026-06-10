@@ -143,7 +143,7 @@ def send_email(to: str, subject: str, html_body: str, report_type: str = "",
     """
     # Railway 환경에서는 이메일 발송 차단 (로컬 맥미니에서만 발송)
     if os.getenv("RAILWAY_ENVIRONMENT"):
-        print(f"[이메일] Railway 환경 감지 — 발송 스킵 (수신: {to[:40]})", flush=True)
+        print("⚠️ [이메일 발송 비활성화] Railway 환경에서는 이메일 발송이 차단됩니다. 실제 발송은 로컬 맥미니 서버에서만 실행됩니다.", flush=True)
         return
 
     from email.header import Header
