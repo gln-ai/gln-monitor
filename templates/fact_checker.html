@@ -8,7 +8,7 @@
     --font-sans: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
     --font-mono: 'SF Mono', 'Menlo', monospace;
     --color-background-primary: #ffffff;
-    --color-background-secondary: #F6F5FF;
+    --color-background-secondary: #EDE9FE;
     --color-background-info: #EFF6FF;
     --color-text-primary: #130D2A;
     --color-text-secondary: #5E5A71;
@@ -17,7 +17,7 @@
     --color-text-success: #059669;
     --color-text-info: #1D4ED8;
     --color-border-tertiary: #E4E1EE;
-    --color-border-secondary: #DAD9EA;
+    --color-border-secondary: #C4B5FD;
     --color-border-danger: #FECACA;
     --color-border-success: #BBF7D0;
     --color-border-info: #BFDBFE;
@@ -82,23 +82,12 @@
   .fc-app-cell { display: flex; align-items: center; gap: 8px; }
   .fc-app-name { font-size: 12px; font-weight: 600; color: #130D2A; }
 
-  /* 지원 뱃지 */
-  .fc-qr {
-    display: inline-flex; align-items: center;
-    padding: 1px 7px; border-radius: 99px;
-    font-size: 10px; font-weight: 700;
-    background: #F0EAFF; color: #7000FC;
-  }
-  .fc-atm {
-    display: inline-flex; align-items: center;
-    padding: 1px 7px; border-radius: 99px;
-    font-size: 10px; font-weight: 700;
-    background: #F0FDF4; color: #059669;
-  }
-  .fc-both {
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-  }
-  .fc-none { color: #DAD9EA; font-size: 15px; line-height: 1; }
+  /* 지원 점 */
+  .fc-dot { display:inline-block; width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .fc-dot-qr  { background:#7000FC; }
+  .fc-dot-atm { background:#10B981; }
+  .fc-dot-none { background:#E4E1EE; }
+  .fc-dots { display:inline-flex; gap:3px; align-items:center; }
 
   /* 범례 */
   .fc-legend {
@@ -110,6 +99,33 @@
     display: inline-flex; align-items: center; gap: 5px;
     font-size: 10.5px; color: #5E5A71;
   }
+
+  /* ── 국가별 관리 탭 ──────────────────────────────────── */
+  /* 국가 카드 */
+  #root .fc-country-wrap > div {
+    box-shadow: 0 1px 4px rgba(112,0,252,0.08);
+  }
+  /* 국가 추가 input */
+  #root input[type='text'] {
+    border: 0.5px solid #DAD9EA;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    background: #fff;
+    color: #130D2A;
+    outline: none;
+    transition: border-color .15s;
+  }
+  #root input[type='text']:focus { border-color: #7000FC; }
+  /* 추가 버튼 */
+  #root button.fc-add-btn {
+    background: #7000FC; color: #fff;
+    border: none; border-radius: 8px;
+    padding: 6px 14px; font-size: 12px;
+    font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  #root button.fc-add-btn:hover { background: #5800CC; }
 </style>
 <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
@@ -270,7 +286,7 @@ function App() {
       {/* 국가별 관리 */}
       {view==="country" && (
         <div>
-          <div style={{display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(148px,1fr))", gap:7, marginBottom:"1.25rem"}}>
+          <div className="fc-country-wrap" style={{display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(148px,1fr))", gap:7, marginBottom:"1.25rem"}}>
             {countries.map(c=>(
               <div key={c.id} style={{
                 background:"var(--color-background-primary)",
@@ -300,7 +316,7 @@ function App() {
               <label style={{display:"flex",alignItems:"center",gap:5,fontSize:12,color:"var(--color-text-secondary)",cursor:"pointer"}}>
                 <input type="checkbox" checked={newAtm} onChange={e=>setNewAtm(e.target.checked)} style={{width:13,height:13}}/>ATM
               </label>
-              <button onClick={add} style={{fontSize:12,padding:"5px 12px"}}>
+              <button onClick={add} className="fc-add-btn">
                 <i className="ti ti-plus" aria-hidden="true" style={{marginRight:4}}/>추가
               </button>
             </div>
@@ -335,10 +351,10 @@ function App() {
                         return (
                           <td key={c.id}>
                             {hasQ&&hasA
-                              ? <div className="fc-both"><span className="fc-qr">QR</span><span className="fc-atm">ATM</span></div>
-                              : hasQ ? <span className="fc-qr">QR</span>
-                              : hasA ? <span className="fc-atm">ATM</span>
-                              : <span className="fc-none">&#x2014;</span>}
+                              ? <span className="fc-dots"><span className="fc-dot fc-dot-qr"/><span className="fc-dot fc-dot-atm"/></span>
+                              : hasQ ? <span className="fc-dot fc-dot-qr"/>
+                              : hasA ? <span className="fc-dot fc-dot-atm"/>
+                              : <span className="fc-dot fc-dot-none"/>}
                           </td>
                         );
                       })}
@@ -348,10 +364,10 @@ function App() {
               </table>
             </div>
             <div className="fc-legend">
-              <span className="fc-legend-item"><span className="fc-qr">QR</span> QR결제</span>
-              <span className="fc-legend-item"><span className="fc-atm">ATM</span> ATM출금</span>
-              <span className="fc-legend-item"><span className="fc-qr">QR</span>&nbsp;+&nbsp;<span className="fc-atm">ATM</span> QR+ATM</span>
-              <span className="fc-legend-item"><span className="fc-none">&#x2014;</span> 미지원</span>
+              <span className="fc-legend-item"><span className="fc-dot fc-dot-qr"/>&nbsp;QR결제</span>
+              <span className="fc-legend-item"><span className="fc-dot fc-dot-atm"/>&nbsp;ATM출금</span>
+              <span className="fc-legend-item"><span className="fc-dots"><span className="fc-dot fc-dot-qr"/><span className="fc-dot fc-dot-atm"/></span>&nbsp;QR+ATM</span>
+              <span className="fc-legend-item"><span className="fc-dot fc-dot-none"/>&nbsp;미지원</span>
             </div>
           </div>
         </div>
