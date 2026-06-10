@@ -490,6 +490,15 @@ def send_daily_report(to: str = ""):
   <!-- 본문 -->
   <div style="padding:20px 24px">
 
+    <!-- 안내 문구 -->
+    <div style="background:#F9F7FF;border-left:3px solid #7000FC;border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:20px">
+      <p style="margin:0;font-size:12px;color:#4B4B6B;line-height:1.7">
+        본 메일은 GLN 관련 온라인 언급 내용을 공유드리는 일일 모니터링 리포트입니다.<br>
+        고객 반응과 문의 흐름을 함께 확인하기 위한 목적이며, 모든 항목이 즉시 조치 요청 사항은 아닙니다.<br>
+        필요 시 대응이 필요한 건은 별도로 확인 후 협의드리겠습니다.
+      </p>
+    </div>
+
     <!-- 요약 카드 -->
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px">
       <tr>
