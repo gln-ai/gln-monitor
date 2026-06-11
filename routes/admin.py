@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, make_response, render_template, request
 
@@ -205,3 +205,104 @@ def api_agent_map_stats():
         },
         "keywords": keywords,
     })
+
+
+# ── 채널 성과 ingest (marketing-dashboard → gln-monitor) ────────────────
+
+@admin_bp.route("/api/performance/ingest", methods=["POST"])
+def performance_ingest():
+    """marketing-dashboard sync.js 실행 후 채널 성과 데이터를 저장."""
+    data      = request.get_json(silent=True) or {}
+    date      = data.get("date") or datetime.now(KST).strftime("%Y-%m-%d")
+    platforms = data.get("platforms", {})
+
+    if not platforms:
+        return jsonify({"error": "platforms 데이터 없음"}), 400
+
+    PLATFORM_COLS = {
+        "youtube":   ("subscribers", "total_views", "video_count", "avg_eng_rate"),
+        "ga4":       ("sessions", "users", "conv_rate", "bounce_rate", "avg_duration"),
+        "instagram": ("followers", "media_count", "reach", "impressions", "engagement_rate"),
+        "blog":      ("total_posts", "total_views_blog", "avg_comments"),
+    }
+
+    conn    = get_db()
+    saved   = []
+    for platform, metrics in platforms.items():
+        if platform not in PLATFORM_COLS:
+            continue
+        cols = PLATFORM_COLS[platform]
+        vals = {c: metrics.get(c) for c in cols}
+        conn.execute(
+            f"""INSERT INTO channel_performance
+                    (platform, metric_date,
+                     subscribers, total_views, video_count, avg_eng_rate,
+                     sessions, users, conv_rate, bounce_rate, avg_duration,
+                     followers, media_count, reach, impressions, engagement_rate,
+                     total_posts, total_views_blog, avg_comments,
+                     raw_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(platform, metric_date) DO UPDATE SET
+                    subscribers     = excluded.subscribers,
+                    total_views     = excluded.total_views,
+                    video_count     = excluded.video_count,
+                    avg_eng_rate    = excluded.avg_eng_rate,
+                    sessions        = excluded.sessions,
+                    users           = excluded.users,
+                    conv_rate       = excluded.conv_rate,
+                    bounce_rate     = excluded.bounce_rate,
+                    avg_duration    = excluded.avg_duration,
+                    followers       = excluded.followers,
+                    media_count     = excluded.media_count,
+                    reach           = excluded.reach,
+                    impressions     = excluded.impressions,
+                    engagement_rate = excluded.engagement_rate,
+                    total_posts     = excluded.total_posts,
+                    total_views_blog= excluded.total_views_blog,
+                    avg_comments    = excluded.avg_comments,
+                    raw_json        = excluded.raw_json,
+                    synced_at       = datetime('now','localtime')""",
+            (
+                platform, date,
+                vals.get("subscribers"),    vals.get("total_views"),
+                vals.get("video_count"),    vals.get("avg_eng_rate"),
+                vals.get("sessions"),       vals.get("users"),
+                vals.get("conv_rate"),      vals.get("bounce_rate"),
+                vals.get("avg_duration"),
+                vals.get("followers"),      vals.get("media_count"),
+                vals.get("reach"),          vals.get("impressions"),
+                vals.get("engagement_rate"),
+                vals.get("total_posts"),    vals.get("total_views_blog"),
+                vals.get("avg_comments"),
+                json.dumps(metrics, ensure_ascii=False),
+            ),
+        )
+        saved.append(platform)
+    conn.commit()
+    conn.close()
+
+    print(f"[성과 ingest] {date} — {', '.join(saved)}", flush=True)
+    return jsonify({"ok": True, "date": date, "saved": saved})
+
+
+@admin_bp.route("/api/performance", methods=["GET"])
+def performance_get():
+    """채널 성과 데이터 조회. ?days=30&platform=youtube"""
+    days     = min(int(request.args.get("days", 30)), 365)
+    platform = request.args.get("platform")
+    since    = (datetime.now(KST) - timedelta(days=days)).strftime("%Y-%m-%d")
+
+    conn = get_db()
+    if platform:
+        rows = conn.execute(
+            "SELECT * FROM channel_performance WHERE platform=? AND metric_date>=? ORDER BY metric_date",
+            (platform, since),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            "SELECT * FROM channel_performance WHERE metric_date>=? ORDER BY platform, metric_date",
+            (since,),
+        ).fetchall()
+    conn.close()
+
+    return jsonify({"data": [dict(r) for r in rows], "days": days, "platform": platform})

@@ -32,46 +32,42 @@
     border-radius: 14px;
     margin-bottom: 1rem;
   }
-  .fc-table-wrap { overflow-x: auto; border-radius: 14px 14px 0 0; }
+  .fc-table-wrap { border-radius: 14px 14px 0 0; }
   .fc-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 12px;
-    white-space: nowrap;
     font-family: var(--font-sans);
   }
   .fc-table thead th {
     background: #F6F5FF;
+    font-size: 16px;
+    padding: 8px 4px;
+    border-bottom: 0.5px solid #E4E1EE;
+    text-align: center;
+    min-width: 36px;
+  }
+  .fc-table thead th:first-child {
+    text-align: left;
     font-size: 10px;
     font-weight: 700;
     color: #918DA0;
     text-transform: uppercase;
     letter-spacing: 0.4px;
-    padding: 10px 10px;
-    border-bottom: 0.5px solid #E4E1EE;
-    text-align: center;
-  }
-  .fc-table thead th:first-child {
-    text-align: left;
-    position: sticky;
-    left: 0;
-    z-index: 2;
-    background: #F6F5FF;
+    padding: 8px 14px;
     border-right: 0.5px solid #E4E1EE;
-    min-width: 130px;
+    min-width: 120px;
   }
   .fc-table tbody td {
-    padding: 8px 10px;
+    padding: 7px 4px;
     border-bottom: 0.5px solid #F0EDF7;
     text-align: center;
     vertical-align: middle;
   }
   .fc-table tbody td:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 1;
     background: #fff;
     text-align: left;
+    padding: 7px 14px;
     border-right: 0.5px solid #E4E1EE;
   }
   .fc-table tbody tr:last-child td { border-bottom: none; }
@@ -764,7 +760,7 @@ function App() {
                 <thead>
                   <tr>
                     <th style={{textAlign:"left",minWidth:130}}>앱</th>
-                    {active.map(c=>(<th key={c.id}>{c.name}</th>))}
+                    {active.map(c=>(<th key={c.id} title={c.name}>{FLAG_MAP[c.name]||"🌐"}</th>))}
                   </tr>
                 </thead>
                 <tbody>

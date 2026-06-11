@@ -79,7 +79,9 @@
 .report-arrow { font-size: 11px; color: #C4B5FD; flex-shrink: 0; }
 .report-agent-name { font-size: 12px; font-weight: 700; color: #130D2A; flex: 1; min-width: 0; }
 .report-out-badge { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 99px; flex-shrink: 0; }
-.report-item-desc { font-size: 10px; color: #918DA0; padding-left: 2px; line-height: 1.5; }
+.report-item-desc { display: flex; flex-direction: column; gap: 3px; padding-left: 2px; }
+.report-item-desc span { font-size: 10px; color: #918DA0; line-height: 1.5; display: flex; align-items: baseline; gap: 5px; }
+.report-item-desc span::before { content: "›"; color: #C4B5FD; font-size: 11px; flex-shrink: 0; }
 
 /* ── 인덱스 ── */
 .trigger-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
@@ -677,7 +679,10 @@
           <span class="report-agent-name">#5 긴급 알림 에디터</span>
           <span class="report-out-badge" style="background:#DCFCE7;color:#15803D">이메일</span>
         </div>
-        <div class="report-item-desc">중요도 7+ 게시글 감지 시 즉각 발송<br>상황 요약 · 영향도 · 권고 조치 포함</div>
+        <div class="report-item-desc">
+          <span>중요도 7+ 게시글 감지 시 즉각 발송</span>
+          <span>상황 요약 · 영향도 · 권고 조치 포함</span>
+        </div>
       </div>
 
       <!-- #6 일일리포트 -->
@@ -688,7 +693,10 @@
           <span class="report-agent-name">#6 일일 리포트 에디터</span>
           <span class="report-out-badge" style="background:#DCFCE7;color:#15803D">이메일</span>
         </div>
-        <div class="report-item-desc">전날 수집 전체 요약 · 평일 자동 발송</div>
+        <div class="report-item-desc">
+          <span>전날 수집 전체 요약</span>
+          <span>평일(월~금) 오전 8시 자동 발송</span>
+        </div>
       </div>
 
       <!-- #7 주간리포트 -->
@@ -699,7 +707,10 @@
           <span class="report-agent-name">#7 주간 리포트 에디터</span>
           <span class="report-out-badge" style="background:#DCFCE7;color:#15803D">이메일</span>
         </div>
-        <div class="report-item-desc">주간 트렌드 흐름 해석 · 다음 주 방향 제시</div>
+        <div class="report-item-desc">
+          <span>주간 트렌드 흐름 해석</span>
+          <span>다음 주 콘텐츠 방향 제시</span>
+        </div>
       </div>
     </div>
 

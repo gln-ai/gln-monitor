@@ -5,6 +5,7 @@ import hashlib
 import os
 import sqlite3
 import threading
+import time
 
 import requests
 
@@ -46,13 +47,25 @@ def fetch_naver_posts(keyword: str, channel: str = "카페", display: int = 30) 
         "X-Naver-Client-Secret": os.getenv("NAVER_CLIENT_SECRET"),
     }
     params = {"query": keyword, "display": display, "sort": "date"}
-    try:
-        res = requests.get(url, headers=headers, params=params, timeout=10)
-        res.raise_for_status()
-        return res.json().get("items", [])
-    except Exception as e:
-        print(f"[수집 오류] {channel}/{keyword}: {e}")
-        return []
+
+    # 최대 3회 재시도 (1s → 2s → 4s 지수 백오프)
+    for attempt in range(3):
+        try:
+            res = requests.get(url, headers=headers, params=params, timeout=10)
+            res.raise_for_status()
+            return res.json().get("items", [])
+        except requests.exceptions.HTTPError as e:
+            # 4xx는 재시도해도 의미 없음 (인증 오류, 할당량 초과 등)
+            print(f"[수집 오류] {channel}/{keyword}: HTTP {e.response.status_code} — 재시도 안 함")
+            return []
+        except Exception as e:
+            if attempt < 2:
+                wait = 2 ** attempt
+                print(f"[수집 재시도 {attempt + 1}/3] {channel}/{keyword}: {e} — {wait}s 후 재시도")
+                time.sleep(wait)
+            else:
+                print(f"[수집 실패] {channel}/{keyword}: {e}")
+    return []
 
 
 def _get_keywords() -> list[str]:

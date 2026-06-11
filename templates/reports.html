@@ -257,7 +257,7 @@
 </div>
 
 <!-- 상세 모달 -->
-<div class="report-modal-overlay" id="reportModal" onclick="if(event.target===this)closeModal()" style="display:flex">
+<div class="report-modal-overlay" id="reportModal" onclick="if(event.target===this)closeModal()" style="display:none">
   <div class="report-modal-box">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div id="modalHeader" style="margin-bottom:20px"></div>
@@ -296,21 +296,76 @@ async function loadEmailLog(force=false) {
     const statusStyle = { ok: 'color:#059669;font-weight:700', error: 'color:#DC2626;font-weight:700', skip: 'color:#AAA7B8' };
     const statusLabel = { ok: '✓ 발송', error: '✗ 오류', skip: '— 스킵' };
 
-    list.innerHTML = logs.map(log => {
-      const tb = typeBadge[log.report_type] || 'background:#F6F5FF;color:#918DA0';
-      const tl = typeLabel[log.report_type] || log.report_type;
-      const ss = statusStyle[log.status] || '';
-      const sl = statusLabel[log.status] || log.status;
-      const dt = (log.sent_at || '').slice(0, 16);
-      const subj = (log.subject || '').length > 40 ? log.subject.slice(0, 40) + '…' : (log.subject || '-');
-      const recip = (log.recipients || '').split(',').filter(Boolean);
-      const recipText = recip.length > 2 ? recip[0] + ' 외 ' + (recip.length - 1) + '명' : recip.join(', ');
-      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;border:0.5px solid #E4E1EE;border-radius:10px;margin-bottom:4px">
-        <span style="font-size:11px;color:#AAA7B8;white-space:nowrap;width:90px;flex-shrink:0">${dt}</span>
-        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0;${tb}">${tl}</span>
-        <span style="flex:1;font-size:12px;color:#130D2A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${subj}</span>
-        <span style="font-size:11px;color:#AAA7B8;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis">${recipText}</span>
-        <span style="font-size:11px;white-space:nowrap;${ss}">${sl}</span>
+    // 같은 report_type + 같은 분(minute) 내 발송 → 1개 그룹으로 묶기
+    const groups = [];
+    const keyMap = new Map();
+    for (const log of logs) {
+      const minute = (log.sent_at || '').slice(0, 16);
+      const key = `${log.report_type}|${minute}`;
+      if (keyMap.has(key)) {
+        keyMap.get(key).items.push(log);
+      } else {
+        const g = { key, report_type: log.report_type, subject: log.subject, sent_at: log.sent_at, items: [log] };
+        keyMap.set(key, g);
+        groups.push(g);
+      }
+    }
+    // 그룹 대표 상태: 하나라도 error면 error, 모두 ok면 ok
+    for (const g of groups) {
+      if (g.items.some(i => i.status === 'error')) g.status = 'error';
+      else if (g.items.every(i => i.status === 'ok')) g.status = 'ok';
+      else g.status = g.items[0].status;
+    }
+
+    list.innerHTML = groups.map((g, gi) => {
+      const tb   = typeBadge[g.report_type] || 'background:#F6F5FF;color:#918DA0';
+      const tl   = typeLabel[g.report_type] || g.report_type;
+      const ss   = statusStyle[g.status] || '';
+      const sl   = statusLabel[g.status] || g.status;
+      const dt   = (g.sent_at || '').slice(0, 16);
+      const subj = (g.subject || '').length > 38 ? g.subject.slice(0, 38) + '…' : (g.subject || '-');
+
+      if (g.items.length === 1) {
+        const log = g.items[0];
+        const recip = (log.recipients || '').split(',').filter(Boolean);
+        const recipText = recip.length > 2 ? recip[0] + ' 외 ' + (recip.length - 1) + '명' : recip.join(', ');
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;border:0.5px solid #E4E1EE;border-radius:10px;margin-bottom:4px">
+          <span style="font-size:11px;color:#AAA7B8;white-space:nowrap;width:90px;flex-shrink:0">${dt}</span>
+          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0;${tb}">${tl}</span>
+          <span style="flex:1;font-size:12px;color:#130D2A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${subj}</span>
+          <span style="font-size:11px;color:#AAA7B8;white-space:nowrap;max-width:140px;overflow:hidden;text-overflow:ellipsis">${recipText}</span>
+          <span style="font-size:11px;white-space:nowrap;${ss}">${sl}</span>
+        </div>`;
+      }
+
+      // 묶음 행 (수신자 여러 명)
+      const allRecip = [...new Set(g.items.flatMap(i => (i.recipients||'').split(',').filter(Boolean)))];
+      const okCnt  = g.items.filter(i => i.status === 'ok').length;
+      const errCnt = g.items.filter(i => i.status === 'error').length;
+      const groupId = `egroup-${gi}`;
+      const subRows = g.items.map(log => {
+        const addr = (log.recipients || '-').split(',')[0].trim();
+        const ls = statusStyle[log.status] || '';
+        const ll = statusLabel[log.status] || log.status;
+        return `<div style="display:flex;align-items:center;gap:10px;padding:5px 12px 5px 32px;background:#FAFAFE;border-top:0.5px solid #F0EDF7;font-size:11px">
+          <span style="flex:1;color:#5E5A71;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${addr}</span>
+          <span style="white-space:nowrap;${ls}">${ll}</span>
+        </div>`;
+      }).join('');
+      const summaryText = errCnt > 0
+        ? `${allRecip.length}명 · <span style="color:#DC2626;font-weight:700">오류 ${errCnt}건</span>`
+        : `${allRecip.length}명 발송 완료`;
+      return `<div style="border:0.5px solid #E4E1EE;border-radius:10px;margin-bottom:4px;overflow:hidden">
+        <div onclick="(function(el){var sub=document.getElementById('${groupId}');var open=sub.style.display!=='none';sub.style.display=open?'none':'';el.querySelector('.gchev').textContent=open?'▾':'▴'})(this)"
+          style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#fff;cursor:pointer;user-select:none">
+          <span style="font-size:11px;color:#AAA7B8;white-space:nowrap;width:90px;flex-shrink:0">${dt}</span>
+          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0;${tb}">${tl}</span>
+          <span style="flex:1;font-size:12px;color:#130D2A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${subj}</span>
+          <span style="font-size:11px;color:#7000FC;background:#F6F5FF;border:0.5px solid #DDD6FE;padding:2px 9px;border-radius:99px;white-space:nowrap;flex-shrink:0">${summaryText}</span>
+          <span style="font-size:11px;white-space:nowrap;${ss}">${sl}</span>
+          <span class="gchev" style="font-size:11px;color:#AAA7B8;flex-shrink:0">▾</span>
+        </div>
+        <div id="${groupId}" style="display:none">${subRows}</div>
       </div>`;
     }).join('');
   } catch (e) {
@@ -443,6 +498,12 @@ function toggleEmailLog() {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (localStorage.getItem('gln_email_log_open') === '1') toggleEmailLog();
+  const savedView = localStorage.getItem('gln_daily_view');
+  if (savedView) setDailyView(savedView);
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeModal();
 });
 
 function showMore(gridId, btnContainerId, ...extraIds) {
@@ -459,6 +520,7 @@ function setDailyView(type) {
   document.getElementById('dailyListView').style.display = type === 'list' ? '' : 'none';
   document.getElementById('btnDailyGrid').classList.toggle('active', type === 'grid');
   document.getElementById('btnDailyList').classList.toggle('active', type === 'list');
+  localStorage.setItem('gln_daily_view', type);
 }
 
 async function showReport(subdir, filename) {

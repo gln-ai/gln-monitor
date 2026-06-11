@@ -251,6 +251,10 @@ a { text-decoration: none; }
       <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16"/><rect x="8" y="10" width="12" height="12" rx="2"/></svg></span>
       <span class="nav-item-text">리포트 아카이브</span>
     </a>
+    <a href="/monthly-report" class="nav-item {% if request.endpoint == 'monthly_perf.monthly_report' %}active{% endif %}">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
+      <span class="nav-item-text">월별 실적</span>
+    </a>
   </div>
 
   <hr class="nav-divider">

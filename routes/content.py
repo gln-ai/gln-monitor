@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import threading
+import uuid
 from datetime import datetime
 
 from flask import Blueprint, jsonify, render_template, request
@@ -13,7 +14,7 @@ from flask import Blueprint, jsonify, render_template, request
 from config import APPS_ROOT, KST
 from db import get_db
 from services.pipeline import generate_single, generate_multi, run_content_pipeline
-from routes.monitor import COUNTRY_LABEL
+from routes.monitor import COUNTRY_LABEL, COUNTRY_EMOJI
 
 content_bp = Blueprint("content", __name__)
 
@@ -25,84 +26,149 @@ FORMAT_MAP = {
     "threads":   ["threads"],
 }
 
+FORMAT_LABEL = {
+    "blog":           "블로그",
+    "instagram_card": "인스타그램",
+    "youtube_shorts": "쇼츠",
+    "threads":        "스레드",
+    "reels":          "릴스",
+    "cartoon":        "웹툰",
+}
+
+FORMAT_ICON = {
+    "blog":           "📝",
+    "instagram_card": "📷",
+    "youtube_shorts": "▶",
+    "threads":        "@",
+    "reels":          "🎬",
+    "cartoon":        "🦌",
+}
+
+def _worst_grade(grades_csv: str) -> str:
+    grades = set((grades_csv or "").split(","))
+    for g in ["red", "yellow", "pending", "green"]:
+        if g in grades:
+            return g
+    return "pending"
+
 
 @content_bp.route("/content")
 def content_status():
-    conn     = get_db()
-    grade     = request.args.get("grade", "")
-    channel   = request.args.get("channel", "official")
-    fmt       = request.args.get("format", "")
-    date_from = request.args.get("date_from", "")
-    date_to   = request.args.get("date_to", "")
-    page      = int(request.args.get("page", 1))
-    per_page  = 20
-    offset    = (page - 1) * per_page
+    conn        = get_db()
+    grade       = request.args.get("grade", "")
+    channel     = request.args.get("channel", "")
+    status      = request.args.get("status", "")      # published / unpublished
+    country     = request.args.get("country", "")
+    fmt_filter  = request.args.get("format", "")
+    date_from   = request.args.get("date_from", "")
+    date_to     = request.args.get("date_to", "")
+    page        = int(request.args.get("page", 1))
+    per_page    = 15
 
     where = "WHERE deleted_at IS NULL"
     args  = []
-    if grade:
-        where += " AND guard_grade = ?"; args.append(grade)
     if channel:
         where += " AND channel = ?"; args.append(channel)
-    if fmt:
-        codes = FORMAT_MAP.get(fmt)
-        if codes and len(codes) > 1:
-            placeholders = ",".join("?" * len(codes))
-            where += f" AND format IN ({placeholders})"
-            args.extend(codes)
-        elif codes:
-            where += " AND format = ?"; args.append(codes[0])
-        else:
-            where += " AND format = ?"; args.append(fmt)
+    if country:
+        where += " AND country = ?"; args.append(country)
     if date_from:
         where += " AND DATE(created_at) >= ?"; args.append(date_from)
     if date_to:
         where += " AND DATE(created_at) <= ?"; args.append(date_to)
 
-    total       = conn.execute(f"SELECT COUNT(*) FROM content_drafts {where}", args).fetchone()[0]
-    total_pages = max(1, (total + per_page - 1) // per_page)
+    having_parts = []
+    having_args  = []
+    if grade:
+        having_parts.append("SUM(CASE WHEN guard_grade=? THEN 1 ELSE 0 END) > 0")
+        having_args.append(grade)
+    if fmt_filter:
+        having_parts.append("SUM(CASE WHEN format=? THEN 1 ELSE 0 END) > 0")
+        having_args.append(fmt_filter)
+    if status == "published":
+        having_parts.append("SUM(CASE WHEN approval_status='published' THEN 1 ELSE 0 END) > 0")
+    elif status == "unpublished":
+        having_parts.append("SUM(CASE WHEN approval_status='unpublished' THEN 1 ELSE 0 END) > 0")
+    having = ("HAVING " + " AND ".join(having_parts)) if having_parts else ""
 
-    drafts = conn.execute(
-        f"SELECT * FROM content_drafts {where} ORDER BY created_at DESC LIMIT {per_page} OFFSET {offset}",
-        args
-    ).fetchall()
+    base_sql = f"""
+        SELECT
+          COALESCE(batch_id, 'solo_' || CAST(id AS TEXT)) AS group_key,
+          topic, country, source_type,
+          MAX(created_at) AS latest_at,
+          COUNT(*) AS total,
+          SUM(CASE WHEN guard_grade='green'   THEN 1 ELSE 0 END) AS green_cnt,
+          SUM(CASE WHEN guard_grade='yellow'  THEN 1 ELSE 0 END) AS yellow_cnt,
+          SUM(CASE WHEN guard_grade='red'     THEN 1 ELSE 0 END) AS red_cnt,
+          SUM(CASE WHEN guard_grade='pending' THEN 1 ELSE 0 END) AS pending_cnt,
+          SUM(CASE WHEN approval_status='published' THEN 1 ELSE 0 END) AS published_cnt,
+          GROUP_CONCAT(format)     AS formats_csv,
+          GROUP_CONCAT(guard_grade) AS grades_csv
+        FROM content_drafts
+        {where}
+        GROUP BY group_key
+        {having}
+        ORDER BY latest_at DESC
+    """
+    all_args    = args + having_args
+    total_groups = conn.execute(f"SELECT COUNT(*) FROM ({base_sql})", all_args).fetchone()[0]
+    total_pages  = max(1, (total_groups + per_page - 1) // per_page)
+    offset       = (page - 1) * per_page
+    groups_raw   = conn.execute(f"{base_sql} LIMIT {per_page} OFFSET {offset}", all_args).fetchall()
 
-    grade_counts = {}
-    for g in ["green", "yellow", "red", "pending"]:
-        grade_counts[g] = conn.execute(
-            "SELECT COUNT(*) FROM content_drafts WHERE guard_grade = ? AND deleted_at IS NULL", (g,)
-        ).fetchone()[0]
+    groups = []
+    for g in groups_raw:
+        row = dict(g)
+        row["worst_grade"] = _worst_grade(row.get("grades_csv", ""))
+        row["formats_list"] = [
+            {"code": f, "label": FORMAT_LABEL.get(f, f), "icon": FORMAT_ICON.get(f, "📄")}
+            for f in (row.get("formats_csv") or "").split(",") if f
+        ]
+        groups.append(row)
 
-    channel_counts = {}
-    for ch in ["official", "gorani"]:
-        channel_counts[ch] = conn.execute(
-            "SELECT COUNT(*) FROM content_drafts WHERE channel = ? AND deleted_at IS NULL", (ch,)
-        ).fetchone()[0]
+    # 전체 통계 (필터 없음)
+    stats = dict(conn.execute("""
+        SELECT
+          COUNT(DISTINCT COALESCE(batch_id, 'solo_' || CAST(id AS TEXT))) AS topic_cnt,
+          COUNT(*) AS draft_cnt,
+          SUM(CASE WHEN guard_grade='green' THEN 1 ELSE 0 END) AS green_cnt,
+          SUM(CASE WHEN approval_status='published' THEN 1 ELSE 0 END) AS published_cnt,
+          SUM(CASE WHEN channel='official' THEN 1 ELSE 0 END) AS official_cnt,
+          SUM(CASE WHEN channel='gorani'   THEN 1 ELSE 0 END) AS gorani_cnt
+        FROM content_drafts WHERE deleted_at IS NULL
+    """).fetchone())
 
-    published_count = conn.execute(
-        "SELECT COUNT(*) FROM content_drafts WHERE approval_status = 'published' AND deleted_at IS NULL"
-    ).fetchone()[0]
     trash_count = conn.execute(
         "SELECT COUNT(*) FROM content_drafts WHERE deleted_at IS NOT NULL"
     ).fetchone()[0]
+
+    # 실제 콘텐츠가 있는 국가 목록 (필터 칩용)
+    country_rows = conn.execute(
+        "SELECT DISTINCT country FROM content_drafts WHERE deleted_at IS NULL AND country IS NOT NULL ORDER BY country"
+    ).fetchall()
+    content_countries = [r["country"] for r in country_rows if r["country"]]
+
     conn.close()
 
     return render_template(
         "content_status.html",
-        drafts=drafts,
-        grade_counts=grade_counts,
-        channel_counts=channel_counts,
-        published_count=published_count,
+        groups=groups,
+        stats=stats,
+        total_groups=total_groups,
         trash_count=trash_count,
         filter_grade=grade,
         filter_channel=channel,
-        filter_format=fmt,
+        filter_status=status,
+        filter_country=country,
+        filter_format=fmt_filter,
         filter_date_from=date_from,
         filter_date_to=date_to,
         page=page,
         total_pages=total_pages,
-        total=total,
         country_label=COUNTRY_LABEL,
+        country_emoji=COUNTRY_EMOJI,
+        content_countries=content_countries,
+        format_label=FORMAT_LABEL,
+        format_icon=FORMAT_ICON,
     )
 
 
@@ -138,6 +204,34 @@ def content_create():
     return render_template("content_create.html", briefs=briefs)
 
 
+@content_bp.route("/api/content/group/<path:group_key>")
+def api_content_group(group_key):
+    """주제 그룹 lazy-load — accordion 클릭 시 해당 그룹의 드래프트 반환."""
+    conn = get_db()
+    if group_key.startswith("solo_"):
+        try:
+            draft_id = int(group_key[5:])
+            rows = conn.execute(
+                "SELECT * FROM content_drafts WHERE id=? AND deleted_at IS NULL",
+                (draft_id,)
+            ).fetchall()
+        except ValueError:
+            rows = []
+    else:
+        rows = conn.execute(
+            "SELECT * FROM content_drafts WHERE batch_id=? AND deleted_at IS NULL ORDER BY created_at",
+            (group_key,)
+        ).fetchall()
+    conn.close()
+    result = []
+    for r in rows:
+        d = dict(r)
+        d["format_label"] = FORMAT_LABEL.get(d.get("format", ""), d.get("format", ""))
+        d["format_icon"]  = FORMAT_ICON.get(d.get("format", ""), "📄")
+        result.append(d)
+    return jsonify(result)
+
+
 @content_bp.route("/api/content/generate", methods=["POST"])
 def api_content_generate():
     """동기 단건 생성 — /content/create 페이지에서 호출."""
@@ -148,8 +242,10 @@ def api_content_generate():
     country   = data.get("country", "")
     use_auto  = data.get("use_auto", False)
     try:
+        bid    = str(uuid.uuid4())[:8]
         result = generate_single(channel, fmt, topic=topic,
-                                 country=country, use_auto=use_auto)
+                                 country=country, use_auto=use_auto,
+                                 batch_id=bid)
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

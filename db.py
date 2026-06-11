@@ -151,12 +151,63 @@ def init_db():
         # v11: 보도자료 소재 연동 + 유형
         "ALTER TABLE pr_drafts ADD COLUMN source_post_id INTEGER",
         "ALTER TABLE pr_drafts ADD COLUMN pr_type TEXT DEFAULT 'general'",
+        # v12: 채널 성과 테이블 (marketing-dashboard → ingest)
+        # 테이블 자체는 아래 CREATE TABLE IF NOT EXISTS로 생성
+        # content_drafts에 발행 URL 추가
+        "ALTER TABLE content_drafts ADD COLUMN published_url TEXT",
     ]:
         try:
             conn.execute(alter_sql)
             conn.commit()
         except Exception:
             pass
+
+    # v13: 월별 실적
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS monthly_performance (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            year       INTEGER NOT NULL,
+            month      INTEGER NOT NULL,
+            members    REAL,
+            revenue    REAL,
+            profit     REAL,
+            memo       TEXT,
+            created_at TEXT DEFAULT (datetime('now','localtime')),
+            updated_at TEXT,
+            UNIQUE(year, month)
+        )
+    """)
+    conn.commit()
+
+    # v12: 채널 성과 테이블
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS channel_performance (
+            id               INTEGER PRIMARY KEY AUTOINCREMENT,
+            platform         TEXT NOT NULL,
+            metric_date      TEXT NOT NULL,
+            subscribers      INTEGER,
+            total_views      INTEGER,
+            video_count      INTEGER,
+            avg_eng_rate     REAL,
+            sessions         INTEGER,
+            users            INTEGER,
+            conv_rate        REAL,
+            bounce_rate      REAL,
+            avg_duration     REAL,
+            followers        INTEGER,
+            media_count      INTEGER,
+            reach            INTEGER,
+            impressions      INTEGER,
+            engagement_rate  REAL,
+            total_posts      INTEGER,
+            total_views_blog INTEGER,
+            avg_comments     REAL,
+            raw_json         TEXT,
+            synced_at        TEXT DEFAULT (datetime('now','localtime')),
+            UNIQUE(platform, metric_date)
+        )
+    """)
+    conn.commit()
 
     # v7: 알림 설정 테이블
     conn.execute("""
