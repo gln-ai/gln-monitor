@@ -306,10 +306,45 @@ def send_urgent_alert(title: str, analysis: dict,
     send_email(to, f"[GLN 긴급] {title[:40]}", html, report_type="urgent")
 
 
+# ── 보도자료 발송 ─────────────────────────────────────────────────────────────
+def send_pr_draft(draft: dict) -> tuple:
+    to_raw = get_setting("urgent_alert_to_list") or os.getenv("URGENT_ALERT_TO", "")
+    to_list = [e.strip() for e in to_raw.replace("\n", ",").split(",") if e.strip()]
+    if not to_list:
+        return False, "수신자 없음 — 긴급 알림 수신자 설정 필요"
+
+    headline   = (draft.get("headline") or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+    subheadline = (draft.get("subheadline") or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+    body_text  = (draft.get("body") or "").replace("&","&amp;").replace("<","&lt;").replace(">","&gt;")
+    pr_type    = draft.get("pr_type") or "general"
+    created_at = (draft.get("created_at") or "")[:16]
+
+    html = f"""
+<div style="font-family:sans-serif;max-width:700px;margin:auto;padding:24px">
+  <div style="background:#F0EAFF;border-left:4px solid #7000FC;padding:10px 16px;border-radius:4px;margin-bottom:20px">
+    <strong style="color:#5B00CC">GLN 보도자료</strong>
+    <span style="font-size:11px;color:#7000FC;margin-left:8px">{pr_type} · {created_at}</span>
+  </div>
+  <h1 style="font-size:20px;font-weight:800;color:#130D2A;line-height:1.4;margin-bottom:8px">{headline}</h1>
+  {'<p style="font-size:14px;color:#5E5A71;margin-bottom:20px">' + subheadline + '</p>' if subheadline else ''}
+  <hr style="border:none;border-top:1px solid #E4E1EE;margin:20px 0">
+  <pre style="font-family:inherit;font-size:13px;line-height:1.85;color:#130D2A;white-space:pre-wrap">{body_text}</pre>
+  <p style="font-size:11px;color:#AAA7B8;margin-top:32px">GLN 모니터링 시스템 · 보도자료 발송</p>
+</div>"""
+
+    subject = f"[GLN 보도자료] {(draft.get('headline') or '')[:60]}"
+    try:
+        for addr in to_list:
+            send_email(addr, subject, html, report_type="pr")
+        return True, f"발송 완료 ({len(to_list)}명)"
+    except Exception as e:
+        return False, str(e)
+
+
 # ── 일일 리포트 (AI퍼플이의 아침브리핑) ──────────────────────────────────────
 def send_daily_report(to: str = ""):
     if not to:
-        to = get_setting("report_to_weekday") or get_setting("daily_report_to_list") or get_setting("report_to_list") or os.getenv("REPORT_TO", "")
+        to = get_setting("report_to_weekday") or os.getenv("REPORT_TO", "")
     recipient_list = [r.strip() for r in to.replace("\n", ",").split(",") if r.strip()]
     print(f"[아침브리핑] 수신자 {len(recipient_list)}명 개별 발송", flush=True)
     if not recipient_list:

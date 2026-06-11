@@ -12,7 +12,7 @@ from flask import Blueprint, jsonify, render_template, request
 
 from config import APPS_ROOT, KST
 from db import get_db
-from services.pipeline import generate_single, run_content_pipeline
+from services.pipeline import generate_single, generate_multi, run_content_pipeline
 from routes.monitor import COUNTRY_LABEL
 
 content_bp = Blueprint("content", __name__)
@@ -150,6 +150,25 @@ def api_content_generate():
     try:
         result = generate_single(channel, fmt, topic=topic,
                                  country=country, use_auto=use_auto)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@content_bp.route("/api/content/generate-multi", methods=["POST"])
+def api_content_generate_multi():
+    """원소스 멀티유즈 — 여러 포맷을 한 번에 병렬 생성."""
+    data         = request.get_json(silent=True) or {}
+    formats      = data.get("formats", [])
+    topic        = data.get("topic", "")
+    country      = data.get("country", "")
+    use_auto     = data.get("use_auto", False)
+    requirements = data.get("requirements", "")
+    if not formats:
+        return jsonify({"error": "formats 필수"}), 400
+    try:
+        result = generate_multi(formats, topic=topic, country=country,
+                                use_auto=use_auto, requirements=requirements)
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

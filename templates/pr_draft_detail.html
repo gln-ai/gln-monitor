@@ -8,13 +8,21 @@
 .badge-verify   { background: #FFFBEB; color: #D97706; }
 .meta-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
 .meta-date { font-size: 11px; color: #AAA7B8; }
-.section-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; padding: 20px 24px; margin-bottom: 12px; }
-.section-label { font-size: 10px; font-weight: 600; color: #918DA0; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
-.section-headline { font-size: 18px; font-weight: 800; color: #130D2A; line-height: 1.4; margin-bottom: 4px; }
+.section-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; padding: 20px 24px; margin-bottom: 12px; transition: border-color 0.15s; }
+.section-card.editing { border-color: #7000FC; }
+.section-label-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.section-label { font-size: 10px; font-weight: 600; color: #918DA0; text-transform: uppercase; letter-spacing: 0.06em; }
+.edit-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: #C4B5FD; padding: 2px 6px; border-radius: 6px; transition: background 0.1s, color 0.1s; }
+.edit-btn:hover { background: #F0EAFF; color: #7000FC; }
+.section-headline { font-size: 18px; font-weight: 800; color: #130D2A; line-height: 1.4; }
 .section-sub { font-size: 14px; color: #5E5A71; line-height: 1.5; }
 .body-text { font-size: 13px; line-height: 1.85; color: #130D2A; white-space: pre-wrap; }
 .verify-box { background: #FFFBEB; border: 0.5px solid #FDE68A; border-radius: 10px; padding: 14px 16px; font-size: 12px; line-height: 1.8; color: #92400E; white-space: pre-wrap; }
+.edit-textarea { width: 100%; box-sizing: border-box; border: 1.5px solid #7000FC; border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.85; color: #130D2A; font-family: inherit; resize: vertical; outline: none; background: #FAFAF9; }
+.edit-textarea.headline-ta { font-size: 16px; font-weight: 700; }
 .action-bar { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+.pr-type-badge { font-size: 10px; background: #F6F5FF; color: #5E5A71; padding: 2px 8px; border-radius: 99px; }
+.toast { display:none; position:fixed; bottom:24px; right:24px; background:#130D2A; color:#fff; padding:10px 18px; border-radius:10px; font-size:12px; font-weight:500; z-index:100; }
 {% endblock %}
 
 {% block topbar_back %}
@@ -25,6 +33,11 @@
 {% endblock %}
 
 {% block topbar_title %}보도자료 초안 #{{ draft.id }}{% endblock %}
+
+{% block topbar_actions %}
+<button id="save-btn" class="btn btn-primary btn-sm" onclick="saveEdits()" style="display:none">저장</button>
+<button id="cancel-btn" class="btn btn-neutral btn-sm" onclick="cancelEdits()" style="display:none">취소</button>
+{% endblock %}
 
 {% block content %}
 <div style="max-width:800px;">
@@ -39,42 +52,65 @@
     {% if draft.verify_list and draft.verify_list != '없음' and draft.verify_list|length > 2 %}
       <span class="badge badge-verify">검증필요</span>
     {% endif %}
+    {% if draft.pr_type and draft.pr_type != 'general' %}
+      <span class="pr-type-badge">{{ draft.pr_type }}</span>
+    {% endif %}
     <span class="meta-date">{{ draft.created_at[:16] if draft.created_at else '' }}</span>
-  </div>
-
-  <!-- 헤드라인 -->
-  <div class="section-card">
-    <div class="section-label">헤드라인</div>
-    <div class="section-headline">{{ draft.headline }}</div>
-    {% if draft.subheadline %}
-    <div style="margin-top:10px;padding-top:10px;border-top:0.5px solid #F0EDF7;">
-      <div class="section-label">부제</div>
-      <div class="section-sub">{{ draft.subheadline }}</div>
-    </div>
+    {% if draft.updated_at and draft.updated_at != draft.created_at %}
+      <span class="meta-date">수정 {{ draft.updated_at[:16] }}</span>
     {% endif %}
   </div>
 
-  <!-- 본문 -->
-  {% if draft.body %}
-  <div class="section-card">
-    <div class="section-label">보도자료 본문</div>
-    <div class="body-text">{{ draft.body }}</div>
+  <!-- 헤드라인 -->
+  <div class="section-card" id="card-headline">
+    <div class="section-label-row">
+      <span class="section-label">헤드라인</span>
+      <button class="edit-btn" onclick="toggleEdit('headline')" title="편집">✎</button>
+    </div>
+    <div id="view-headline" class="section-headline">{{ draft.headline }}</div>
+    <textarea id="edit-headline" class="edit-textarea headline-ta" rows="2" style="display:none">{{ draft.headline }}</textarea>
+
+    <div id="sub-wrapper" style="margin-top:10px;padding-top:10px;border-top:0.5px solid #F0EDF7;{% if not draft.subheadline %}display:none{% endif %}">
+      <div class="section-label-row">
+        <span class="section-label">부제</span>
+        <button class="edit-btn" onclick="toggleEdit('subheadline')" title="편집">✎</button>
+      </div>
+      <div id="view-subheadline" class="section-sub">{{ draft.subheadline or '' }}</div>
+      <textarea id="edit-subheadline" class="edit-textarea" rows="2" style="display:none">{{ draft.subheadline or '' }}</textarea>
+    </div>
   </div>
-  {% endif %}
+
+  <!-- 본문 -->
+  <div class="section-card" id="card-body">
+    <div class="section-label-row">
+      <span class="section-label">보도자료 본문</span>
+      <button class="edit-btn" onclick="toggleEdit('body')" title="편집">✎</button>
+    </div>
+    <div id="view-body" class="body-text">{{ draft.body or '' }}</div>
+    <textarea id="edit-body" class="edit-textarea" rows="16" style="display:none">{{ draft.body or '' }}</textarea>
+  </div>
 
   <!-- 핵심 메시지 -->
   {% if draft.key_messages %}
-  <div class="section-card">
-    <div class="section-label">핵심 메시지</div>
-    <div class="body-text">{{ draft.key_messages }}</div>
+  <div class="section-card" id="card-key_messages">
+    <div class="section-label-row">
+      <span class="section-label">핵심 메시지</span>
+      <button class="edit-btn" onclick="toggleEdit('key_messages')" title="편집">✎</button>
+    </div>
+    <div id="view-key_messages" class="body-text">{{ draft.key_messages }}</div>
+    <textarea id="edit-key_messages" class="edit-textarea" rows="6" style="display:none">{{ draft.key_messages }}</textarea>
   </div>
   {% endif %}
 
   <!-- 검증 필요 -->
   {% if draft.verify_list and draft.verify_list != '없음' %}
-  <div class="section-card">
-    <div class="section-label">검증 필요 항목</div>
-    <div class="verify-box">{{ draft.verify_list }}</div>
+  <div class="section-card" id="card-verify_list">
+    <div class="section-label-row">
+      <span class="section-label">검증 필요 항목</span>
+      <button class="edit-btn" onclick="toggleEdit('verify_list')" title="편집">✎</button>
+    </div>
+    <div id="view-verify_list" class="verify-box">{{ draft.verify_list }}</div>
+    <textarea id="edit-verify_list" class="edit-textarea" rows="4" style="display:none">{{ draft.verify_list }}</textarea>
   </div>
   {% endif %}
 
@@ -84,30 +120,147 @@
     {% if draft.approval_status != 'approved' %}
     <button class="btn btn-primary" onclick="approveDraft({{ draft.id }})">승인</button>
     {% endif %}
-    <button class="btn btn-danger" onclick="deleteDraft({{ draft.id }})">삭제</button>
+    <button id="send-btn" class="btn btn-primary" onclick="sendEmail({{ draft.id }})">이메일 발송</button>
+    <button class="btn btn-danger" style="margin-left:auto" onclick="deleteDraft({{ draft.id }})">삭제</button>
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+const DRAFT_ID = {{ draft.id }};
+const _originals = {};
+const _editingFields = new Set();
+
+function showToast(msg, duration=2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, duration);
+}
+
+function toggleEdit(field) {
+  const view = document.getElementById(`view-${field}`);
+  const ta   = document.getElementById(`edit-${field}`);
+  if (!view || !ta) return;
+  const card = ta.closest('.section-card');
+
+  if (ta.style.display === 'none') {
+    if (!(field in _originals)) _originals[field] = ta.value;
+    view.style.display = 'none';
+    ta.style.display   = 'block';
+    if (card) card.classList.add('editing');
+    if (field === 'subheadline') document.getElementById('sub-wrapper').style.display = '';
+    ta.focus();
+    ta.setSelectionRange(ta.value.length, ta.value.length);
+    _editingFields.add(field);
+  } else {
+    view.style.display = '';
+    ta.style.display   = 'none';
+    if (card) card.classList.remove('editing');
+    _editingFields.delete(field);
+  }
+  _updateToolbar();
+}
+
+function _updateToolbar() {
+  const on = _editingFields.size > 0;
+  document.getElementById('save-btn').style.display   = on ? '' : 'none';
+  document.getElementById('cancel-btn').style.display = on ? '' : 'none';
+}
+
+function cancelEdits() {
+  for (const field of [..._editingFields]) {
+    const ta   = document.getElementById(`edit-${field}`);
+    const view = document.getElementById(`view-${field}`);
+    if (ta && field in _originals) ta.value = _originals[field];
+    if (view && ta) {
+      view.style.display = '';
+      ta.style.display   = 'none';
+      const card = ta.closest('.section-card');
+      if (card) card.classList.remove('editing');
+    }
+  }
+  _editingFields.clear();
+  _updateToolbar();
+}
+
+async function saveEdits() {
+  const payload = {};
+  for (const field of _editingFields) {
+    const ta = document.getElementById(`edit-${field}`);
+    if (ta) payload[field] = ta.value;
+  }
+  if (!Object.keys(payload).length) return;
+
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '저장 중...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch(`/api/pr/drafts/${DRAFT_ID}`, {
+      method: 'PATCH',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      for (const field of [..._editingFields]) {
+        const ta   = document.getElementById(`edit-${field}`);
+        const view = document.getElementById(`view-${field}`);
+        if (ta && view) {
+          view.textContent = ta.value;
+          view.style.display = '';
+          ta.style.display   = 'none';
+          const card = ta.closest('.section-card');
+          if (card) card.classList.remove('editing');
+        }
+      }
+      _editingFields.clear();
+      _updateToolbar();
+      showToast('저장됨');
+    } else {
+      const err = await res.json();
+      showToast('저장 실패: ' + (err.error || '오류'));
+    }
+  } catch(e) {
+    showToast('저장 실패: ' + e.message);
+  } finally {
+    btn.textContent = '저장';
+    btn.disabled = false;
+  }
+}
+
 function copyBody() {
-  const text = {{ draft.body | tojson }};
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('.action-bar .btn-neutral');
-    btn.textContent = '복사됨!';
-    setTimeout(() => btn.textContent = '본문 복사', 2000);
-  });
+  const view = document.getElementById('view-body');
+  navigator.clipboard.writeText(view ? view.textContent : '').then(() => showToast('본문 복사됨'));
 }
 
 async function approveDraft(id) {
-  const res = await fetch('/api/pr/drafts/' + id + '/approve', {method:'POST'});
+  const res = await fetch(`/api/pr/drafts/${id}/approve`, {method:'POST'});
   if (res.ok) location.reload();
+}
+
+async function sendEmail(id) {
+  const btn = document.getElementById('send-btn');
+  btn.textContent = '발송 중...';
+  btn.disabled = true;
+  try {
+    const res  = await fetch(`/api/pr/drafts/${id}/send`, {method:'POST'});
+    const data = await res.json();
+    showToast(data.ok ? data.msg : '발송 실패: ' + data.msg, 4000);
+  } catch(e) {
+    showToast('발송 오류: ' + e.message, 4000);
+  } finally {
+    btn.textContent = '이메일 발송';
+    btn.disabled = false;
+  }
 }
 
 async function deleteDraft(id) {
   if (!confirm('이 초안을 삭제할까요?')) return;
-  const res = await fetch('/api/pr/drafts/' + id, {method:'DELETE'});
+  const res = await fetch(`/api/pr/drafts/${id}`, {method:'DELETE'});
   if (res.ok) window.location.href = '/pr/drafts';
 }
 </script>

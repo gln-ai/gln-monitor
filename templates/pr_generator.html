@@ -514,7 +514,7 @@ ${draft}`;
       if(d.error){
         document.getElementById('reviseOutput').innerHTML='<div style="color:#c0392b;padding:1rem;font-size:13px;">오류: '+escHtml(d.error)+'</div>';
       } else {
-        document.getElementById('reviseOutput').innerHTML='<div style="font-size:12px;font-weight:500;margin-bottom:0.5rem;">리바이즈 완료</div><div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:0.6rem;">모드: <b>'+selectedMode+'</b> · 강도: <b>'+selectedIntensity+'</b> · 초점: '+focusList+'</div><div class="preview-box">'+escHtml(d.result)+'</div><div style="display:flex;gap:6px;margin-top:0.6rem;"><button class="btn-sm" onclick="cpText(\'#reviseOutput .preview-box\',\'복사\',this)">복사</button><button class="btn-sm blue" onclick="buildReviseAndSend()">재요청 ↗</button></div>';
+        document.getElementById('reviseOutput').innerHTML='<div style="font-size:12px;font-weight:500;margin-bottom:0.5rem;">리바이즈 완료</div><div style="font-size:11px;color:var(--color-text-secondary);margin-bottom:0.6rem;">모드: <b>'+selectedMode+'</b> · 강도: <b>'+selectedIntensity+'</b> · 초점: '+focusList+'</div><div class="preview-box">'+escHtml(d.result)+'</div><div style="display:flex;gap:6px;margin-top:0.6rem;"><button class="btn-sm" onclick="cpText(\'#reviseOutput .preview-box\',\'복사\',this)">복사</button><button class="btn-sm" style="background:#059669;color:#fff;border:none;" onclick="saveReviseDraft(this)">저장</button><button class="btn-sm blue" onclick="buildReviseAndSend()">재요청 ↗</button></div>';
       }
     })
     .catch(e=>{document.getElementById('reviseOutput').innerHTML='<div style="color:#c0392b;padding:1rem;font-size:13px;">네트워크 오류: '+escHtml(e.message)+'</div>';})
@@ -541,16 +541,41 @@ async function savePrDraft(btn) {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
-      headline:     sections['PR_HEADLINE'] || sections['헤드라인'] || raw.slice(0,80),
-      subheadline:  sections['PR_SUBHEADLINE'] || sections['부제'] || '',
-      body:         sections['PRESS_RELEASE'] || sections['보도자료 본문'] || raw,
-      key_messages: sections['KEY_MESSAGES'] || sections['핵심 메시지'] || '',
-      verify_list:  sections['VERIFY_LIST'] || sections['검증 목록'] || '',
+      headline:        sections['PR_HEADLINE'] || sections['헤드라인'] || raw.slice(0,80),
+      subheadline:     sections['PR_SUBHEADLINE'] || sections['부제'] || '',
+      body:            sections['PRESS_RELEASE'] || sections['보도자료 본문'] || raw,
+      key_messages:    sections['KEY_MESSAGES'] || sections['핵심 메시지'] || '',
+      verify_list:     sections['VERIFY_LIST'] || sections['검증 목록'] || '',
+      source_post_id:  window._sourcePrPostId || null,
     })
   });
   const data = await res.json();
-  btn.textContent = '✓ 저장됨 #' + data.id;
+  btn.textContent = '✓ 저장됨 — 이동 중...';
   btn.style.background = '#047857';
+  setTimeout(() => { window.location.href = `/pr/drafts/${data.id}`; }, 700);
+}
+
+async function saveReviseDraft(btn) {
+  const bodyEl = document.querySelector('#reviseOutput .preview-box');
+  if (!bodyEl) { alert('리바이즈 결과가 없습니다.'); return; }
+  const body = bodyEl.textContent || '';
+  const draftEl = document.getElementById('draftInput');
+  const headline = (draftEl?.value || '').split('\n')[0].slice(0, 120) || '리바이즈 초안';
+  btn.disabled = true; btn.textContent = '저장 중...';
+  try {
+    const res = await fetch('/api/pr/save', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ headline, body, source_post_id: window._sourcePrPostId || null })
+    });
+    const data = await res.json();
+    btn.textContent = '✓ 저장됨 — 이동 중...';
+    setTimeout(() => { window.location.href = `/pr/drafts/${data.id}`; }, 700);
+  } catch(e) {
+    btn.textContent = '저장';
+    btn.disabled = false;
+    alert('저장 실패: ' + e.message);
+  }
 }
 
 function cpText(sel,label,btn){
@@ -729,6 +754,23 @@ function rejectSuggestion(i) {
   card.style.opacity = '0.35';
   card.style.pointerEvents = 'none';
 }
+
+// 소재 연동 — 모니터링 피드에서 진입 시 자동 입력
+(function() {
+  const sourceId    = {{ source_id | tojson }};
+  const sourceTitle = {{ source_title | tojson }};
+  if (sourceTitle) {
+    const summaryEl = document.getElementById('summary');
+    if (summaryEl && !summaryEl.value) {
+      summaryEl.value = sourceTitle;
+      const countEl = document.getElementById('summaryCount');
+      if (countEl) countEl.textContent = sourceTitle.length + '자';
+    }
+  }
+  if (sourceId) {
+    window._sourcePrPostId = sourceId;
+  }
+})();
 
 async function acceptAll() {
   const pending = (window._learnSuggestions || []).filter((_, i) => {

@@ -66,12 +66,22 @@
 .guard-arrow-h svg { flex-shrink: 0; }
 
 /* ── 사이드 패널 ── */
-.map-layout { display: grid; grid-template-columns: 1fr 260px; gap: 20px; align-items: start; }
+.map-layout { display: grid; grid-template-columns: 1fr 268px; gap: 20px; align-items: start; }
 .side-panel { display: flex; flex-direction: column; gap: 14px; }
 .side-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; overflow: hidden; }
 .side-card-header { padding: 10px 14px; font-size: 10px; font-weight: 700; color: #918DA0; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 0.5px solid #F0EDF7; }
-.trigger-row { display: flex; align-items: flex-start; gap: 8px; padding: 10px 14px; border-bottom: 0.5px solid #F0EDF7; }
-.trigger-row:last-child { border-bottom: none; }
+
+/* ── 리포트 카드 (새 디자인) ── */
+.report-item { padding: 12px 14px; border-bottom: 0.5px solid #F0EDF7; display: flex; flex-direction: column; gap: 8px; }
+.report-item:last-child { border-bottom: none; }
+.report-item-top { display: flex; align-items: center; gap: 8px; }
+.report-trigger-chip { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; line-height: 1.4; }
+.report-arrow { font-size: 11px; color: #C4B5FD; flex-shrink: 0; }
+.report-agent-name { font-size: 12px; font-weight: 700; color: #130D2A; flex: 1; min-width: 0; }
+.report-out-badge { font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 99px; flex-shrink: 0; }
+.report-item-desc { font-size: 10px; color: #918DA0; padding-left: 2px; line-height: 1.5; }
+
+/* ── 인덱스 ── */
 .trigger-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; }
 .index-row { display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-bottom: 0.5px solid #F6F5FF; }
 .index-row:last-child { border-bottom: none; }
@@ -152,7 +162,7 @@
           </div>
           <span class="agent-badge" style="background:#DCFCE7;color:#15803D">AUTO</span>
           <div class="agent-name">모니터링 수집</div>
-          <div class="agent-sub">네이버 카페·블로그·뉴스<br>1시간 주기 자동 수집</div>
+          <div id="collect-sub" class="agent-sub">네이버 카페·블로그·뉴스<br>1시간 주기 자동 수집</div>
           <div class="agent-tags-wrap">
             <span class="agent-tag" style="background:#DCFCE7;color:#15803D">카페</span>
             <span class="agent-tag" style="background:#DCFCE7;color:#15803D">블로그</span>
@@ -187,7 +197,7 @@
           </div>
           <span class="agent-badge" style="background:#DCFCE7;color:#15803D">AUTO</span>
           <div class="agent-name">AI 분석</div>
-          <div class="agent-sub">요약·감성·카테고리<br>중요도 1~10 자동 산출</div>
+          <div id="analysis-sub" class="agent-sub">요약·감성·카테고리<br>중요도 1~10 자동 산출</div>
           <div class="agent-tags-wrap">
             <span class="agent-tag" style="background:#DCFCE7;color:#15803D">Claude API</span>
           </div>
@@ -237,8 +247,8 @@
           </div>
           <span class="agent-badge" style="background:#DBEAFE;color:#1D4ED8">에이전트 #8</span>
           <div class="agent-name">국가 매니저</div>
-          <div class="agent-sub">태국·일본·베트남 현지 이슈 분석<br>콘텐츠 소재 관점 브리핑 작성</div>
-          <div class="agent-tags-wrap">
+          <div class="agent-sub">서비스 현황 국가 · 현지 이슈 분석<br>콘텐츠 소재 관점 브리핑 작성</div>
+          <div id="country-tags" class="agent-tags-wrap">
             <span class="agent-tag" style="background:#DBEAFE;color:#1D4ED8">태국 🇹🇭</span>
             <span class="agent-tag" style="background:#DBEAFE;color:#1D4ED8">일본 🇯🇵</span>
             <span class="agent-tag" style="background:#DBEAFE;color:#1D4ED8">베트남 🇻🇳</span>
@@ -349,7 +359,7 @@
               <div>
                 <span class="agent-badge" style="background:#EDE9FE;color:#7000FC;margin-bottom:4px;display:inline-block">에이전트 #9</span>
                 <div class="agent-name" style="font-size:12px">블로그 PD</div>
-                <div class="agent-sub" style="font-size:10px">네이버 블로그 롱폼 · 1100~1300자</div>
+                <div id="fmt-blog-sub" class="agent-sub" style="font-size:10px">네이버 블로그 롱폼 · 1100~1300자</div>
               </div>
             </div>
 
@@ -381,7 +391,7 @@
               <div>
                 <span class="agent-badge" style="background:#EDE9FE;color:#7000FC;margin-bottom:4px;display:inline-block">에이전트 #10</span>
                 <div class="agent-name" style="font-size:12px">인스타 비주얼 PD</div>
-                <div class="agent-sub" style="font-size:10px">카드뉴스 5장 · 캡션·해시태그</div>
+                <div id="fmt-insta-sub" class="agent-sub" style="font-size:10px">카드뉴스 5장 · 캡션·해시태그</div>
               </div>
             </div>
 
@@ -413,7 +423,7 @@
               <div>
                 <span class="agent-badge" style="background:#EDE9FE;color:#7000FC;margin-bottom:4px;display:inline-block">에이전트 #11</span>
                 <div class="agent-name" style="font-size:12px">쇼츠 PD</div>
-                <div class="agent-sub" style="font-size:10px">유튜브 쇼츠 스크립트 · 30~60초</div>
+                <div id="fmt-shorts-sub" class="agent-sub" style="font-size:10px">유튜브 쇼츠 스크립트 · 30~60초</div>
               </div>
             </div>
 
@@ -445,7 +455,7 @@
               <div>
                 <span class="agent-badge" style="background:#EDE9FE;color:#7000FC;margin-bottom:4px;display:inline-block">에이전트 #12</span>
                 <div class="agent-name" style="font-size:12px">스레드 PD</div>
-                <div class="agent-sub" style="font-size:10px">스레드 3종 버전 · 추천 1개 포함</div>
+                <div id="fmt-threads-sub" class="agent-sub" style="font-size:10px">스레드 3종 버전 · 추천 1개 포함</div>
               </div>
             </div>
 
@@ -492,7 +502,7 @@
             </div>
             <span class="agent-badge" style="background:#FFE4E6;color:#BE123C">에이전트 #13</span>
             <div class="agent-name">고라니 크리에이터</div>
-            <div class="agent-sub">고라니 캐릭터 콘텐츠<br>릴스·스레드·웹툰 제작</div>
+            <div id="fmt-gorani-sub" class="agent-sub">고라니 캐릭터 콘텐츠<br>릴스·스레드·웹툰 제작</div>
             <div style="font-size:11px;color:#9F1239;margin-top:4px;line-height:1.6;font-weight:600">
               "찌질하지만 귀엽게 🦌"<br>공감형 · 드립형
             </div>
@@ -640,11 +650,11 @@
 
     <!-- 출력 -->
     <div class="output-grid">
-      <div class="output-card output-green">
+      <div id="guard-green" class="output-card output-green">
         <div style="font-size:10px;color:#86EFAC;margin-bottom:4px">GREEN ✓</div>
         <div style="font-size:13px;font-weight:700;color:#fff">발행 가능</div>
       </div>
-      <div class="output-card output-yellow">
+      <div id="guard-yellow" class="output-card output-yellow">
         <div style="font-size:10px;color:#FDE68A;margin-bottom:4px">YELLOW !</div>
         <div style="font-size:13px;font-weight:700;color:#fff">담당자 검토 후 결정</div>
       </div>
@@ -660,91 +670,36 @@
       <div class="side-card-header">알림 & 리포트 파이프라인</div>
 
       <!-- #5 긴급알림 -->
-      <div class="trigger-row">
-        <span class="trigger-badge" style="background:#FEE2E2;color:#DC2626">중요도 7+<br>즉시</span>
-        <span style="font-size:14px;color:#E4E1EE;flex-shrink:0">→</span>
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="16" fill="#FEE2E2"/>
-              <ellipse cx="16" cy="22" rx="8" ry="6" fill="#FCA5A5"/>
-              <circle cx="16" cy="13" r="7" fill="#FECACA"/>
-              <ellipse cx="11" cy="8" rx="2.2" ry="3.5" fill="#FCA5A5" transform="rotate(-15 11 8)"/>
-              <ellipse cx="21" cy="8" rx="2.2" ry="3.5" fill="#FCA5A5" transform="rotate(15 21 8)"/>
-              <circle cx="13" cy="13" r="2" fill="white"/><circle cx="19" cy="13" r="2" fill="white"/>
-              <circle cx="13.5" cy="13.5" r="1.1" fill="#DC2626"/><circle cx="19.5" cy="13.5" r="1.1" fill="#DC2626"/>
-              <ellipse cx="16" cy="16" rx="2" ry="1.5" fill="#FCA5A5"/>
-              <!-- 사이렌 -->
-              <circle cx="23" cy="7" r="3" fill="#DC2626"/>
-              <circle cx="23" cy="7" r="1.5" fill="white"/>
-              <path d="M21 5 Q20 3 22 2" stroke="#DC2626" stroke-width="0.8" fill="none"/>
-              <path d="M25 5 Q26 3 24 2" stroke="#DC2626" stroke-width="0.8" fill="none"/>
-            </svg>
-            <div>
-              <div style="font-size:12px;font-weight:600;color:#130D2A">긴급 알림 에디터</div>
-              <div style="font-size:10px;color:#AAA7B8">Agent #5 · 상황/영향도/권고</div>
-            </div>
-          </div>
+      <div class="report-item">
+        <div class="report-item-top">
+          <span class="report-trigger-chip" style="background:#FEE2E2;color:#DC2626">🚨 즉시</span>
+          <span class="report-arrow">→</span>
+          <span class="report-agent-name">#5 긴급 알림 에디터</span>
+          <span class="report-out-badge" style="background:#DCFCE7;color:#15803D">이메일</span>
         </div>
-        <span style="font-size:10px;color:#059669;font-weight:600;background:#F0FDF4;padding:2px 8px;border-radius:99px;flex-shrink:0">이메일</span>
+        <div class="report-item-desc">중요도 7+ 게시글 감지 시 즉각 발송<br>상황 요약 · 영향도 · 권고 조치 포함</div>
       </div>
 
       <!-- #6 일일리포트 -->
-      <div class="trigger-row">
-        <span class="trigger-badge" style="background:#EDE9FE;color:#7000FC">매일<br>08:00</span>
-        <span style="font-size:14px;color:#E4E1EE;flex-shrink:0">→</span>
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="16" fill="#F5F3FF"/>
-              <ellipse cx="16" cy="22" rx="8" ry="6" fill="#C4B5FD"/>
-              <circle cx="16" cy="13" r="7" fill="#DDD6FE"/>
-              <ellipse cx="11" cy="8" rx="2.2" ry="3.5" fill="#C4B5FD" transform="rotate(-15 11 8)"/>
-              <ellipse cx="21" cy="8" rx="2.2" ry="3.5" fill="#C4B5FD" transform="rotate(15 21 8)"/>
-              <circle cx="13" cy="13" r="2" fill="white"/><circle cx="19" cy="13" r="2" fill="white"/>
-              <circle cx="13.5" cy="13.5" r="1.1" fill="#7000FC"/><circle cx="19.5" cy="13.5" r="1.1" fill="#7000FC"/>
-              <ellipse cx="16" cy="16" rx="2" ry="1.5" fill="#FCA5A5"/>
-              <!-- 커피컵 -->
-              <rect x="6" y="20" width="6" height="5" rx="1" fill="#7000FC"/>
-              <path d="M12 22 Q14 22 14 23 Q14 24 12 24" stroke="#7000FC" stroke-width="0.8" fill="none"/>
-              <rect x="6" y="25" width="6" height="1" rx="0.5" fill="#5A00CC"/>
-              <path d="M8 19 Q8 17 9 17" stroke="#C4B5FD" stroke-width="0.8" fill="none"/>
-              <path d="M10 19 Q10 16 11 16" stroke="#C4B5FD" stroke-width="0.8" fill="none"/>
-            </svg>
-            <div>
-              <div style="font-size:12px;font-weight:600;color:#130D2A">일일 리포트 에디터</div>
-              <div style="font-size:10px;color:#AAA7B8">Agent #6 · 전날 수집 전체 요약</div>
-            </div>
-          </div>
+      <div class="report-item">
+        <div class="report-item-top">
+          <span class="report-trigger-chip" style="background:#EDE9FE;color:#7000FC">⏰ 매일 08:00</span>
+          <span class="report-arrow">→</span>
+          <span class="report-agent-name">#6 일일 리포트 에디터</span>
+          <span class="report-out-badge" style="background:#DCFCE7;color:#15803D">이메일</span>
         </div>
-        <span style="font-size:10px;color:#059669;font-weight:600;background:#F0FDF4;padding:2px 8px;border-radius:99px;flex-shrink:0">이메일</span>
+        <div class="report-item-desc">전날 수집 전체 요약 · 평일 자동 발송</div>
       </div>
 
       <!-- #7 주간리포트 -->
-      <div class="trigger-row">
-        <span class="trigger-badge" style="background:#F0FDF4;color:#15803D">매주<br>수동</span>
-        <span style="font-size:14px;color:#E4E1EE;flex-shrink:0">→</span>
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <circle cx="16" cy="16" r="16" fill="#F0FDF4"/>
-              <ellipse cx="16" cy="22" rx="8" ry="6" fill="#86EFAC"/>
-              <circle cx="16" cy="13" r="7" fill="#BBF7D0"/>
-              <ellipse cx="11" cy="8" rx="2.2" ry="3.5" fill="#86EFAC" transform="rotate(-15 11 8)"/>
-              <ellipse cx="21" cy="8" rx="2.2" ry="3.5" fill="#86EFAC" transform="rotate(15 21 8)"/>
-              <circle cx="13" cy="13" r="2" fill="white"/><circle cx="19" cy="13" r="2" fill="white"/>
-              <circle cx="13.5" cy="13.5" r="1.1" fill="#15803D"/><circle cx="19.5" cy="13.5" r="1.1" fill="#15803D"/>
-              <ellipse cx="16" cy="16" rx="2" ry="1.5" fill="#FCA5A5"/>
-              <!-- 차트 -->
-              <polyline points="5,26 8,22 11,24 14,19 17,21" stroke="#15803D" stroke-width="1" fill="none" stroke-linecap="round"/>
-            </svg>
-            <div>
-              <div style="font-size:12px;font-weight:600;color:#130D2A">주간 리포트 에디터</div>
-              <div style="font-size:10px;color:#AAA7B8">Agent #7 · 흐름 해석·방향</div>
-            </div>
-          </div>
+      <div class="report-item">
+        <div class="report-item-top">
+          <span class="report-trigger-chip" style="background:#F0FDF4;color:#15803D">📅 매주 월 08:00</span>
+          <span class="report-arrow">→</span>
+          <span class="report-agent-name">#7 주간 리포트 에디터</span>
+          <span class="report-out-badge" style="background:#DCFCE7;color:#15803D">이메일</span>
         </div>
-        <span style="font-size:10px;color:#059669;font-weight:600;background:#F0FDF4;padding:2px 8px;border-radius:99px;flex-shrink:0">이메일</span>
+        <div class="report-item-desc">주간 트렌드 흐름 해석 · 다음 주 방향 제시</div>
       </div>
     </div>
 
@@ -791,4 +746,77 @@
 
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  let stats;
+  try {
+    const res = await fetch('/api/admin/agent-map/stats');
+    if (!res.ok) return;
+    stats = await res.json();
+  } catch (e) { return; }
+
+  // 국가 매니저 태그 — fact_db 기반 전체 국가
+  const countryTagsEl = document.getElementById('country-tags');
+  if (countryTagsEl && stats.countries) {
+    countryTagsEl.innerHTML = stats.countries.map(c => {
+      if (c.active) {
+        return `<span class="agent-tag" style="background:#DBEAFE;color:#1D4ED8">${c.name} ${c.flag}</span>`;
+      } else {
+        return `<span class="agent-tag" style="background:#F3F4F6;color:#9CA3AF;text-decoration:line-through">${c.name} ${c.flag}</span>`;
+      }
+    }).join('');
+  }
+
+  // 수집 에이전트 — 오늘 수집 건수
+  const collectEl = document.getElementById('collect-sub');
+  if (collectEl && stats.posts) {
+    const p = stats.posts;
+    const lastAt = p.last_at ? ` · 최근 ${p.last_at}` : '';
+    collectEl.innerHTML = `네이버 카페·블로그·뉴스<br>오늘 <strong>${p.today}건</strong> 수집 (총 ${p.total.toLocaleString()}${lastAt})`;
+  }
+
+  // AI 분석 — 분석 건수
+  const analysisEl = document.getElementById('analysis-sub');
+  if (analysisEl && stats.analysis) {
+    const a = stats.analysis;
+    const todayHigh = a.high_importance_today > 0 ? ` · 오늘 중요 <strong style="color:#EF4444">${a.high_importance_today}건</strong>` : '';
+    analysisEl.innerHTML = `총 <strong>${a.total.toLocaleString()}건</strong> 분석완료 · 미분석 ${a.pending}건${todayHigh}`;
+  }
+
+  // 콘텐츠 PD 이번주 건수 배지
+  const fmtMap = [
+    ['fmt-blog-sub',    stats.content?.blog,             '네이버 블로그 롱폼 · 1100~1300자'],
+    ['fmt-insta-sub',   stats.content?.instagram_card,   '카드뉴스 5장 · 캡션·해시태그'],
+    ['fmt-shorts-sub',  stats.content?.youtube_shorts,   '유튜브 쇼츠 스크립트 · 30~60초'],
+    ['fmt-threads-sub', stats.content?.threads_official, '스레드 3종 버전 · 추천 1개 포함'],
+    ['fmt-gorani-sub',  (stats.content?.reels || 0) + (stats.content?.threads_gorani || 0) + (stats.content?.cartoon || 0),
+                                                          '고라니 캐릭터 콘텐츠<br>릴스·스레드·웹툰 제작'],
+  ];
+  fmtMap.forEach(([id, cnt, base]) => {
+    const el = document.getElementById(id);
+    if (!el || cnt === undefined) return;
+    el.innerHTML = base + (cnt > 0 ? ` <span style="display:inline-block;background:#EDE9FE;color:#7000FC;border-radius:99px;padding:1px 7px;font-size:9px;font-weight:700;margin-left:4px">이번주 ${cnt}건</span>` : '');
+  });
+
+  // 출력 카드 — GREEN / YELLOW 건수
+  const greenEl = document.getElementById('guard-green');
+  if (greenEl && stats.content) {
+    const g = stats.content.green || 0;
+    const pub = stats.content.published || 0;
+    greenEl.innerHTML = `
+      <div style="font-size:10px;color:#86EFAC;margin-bottom:4px">GREEN ✓</div>
+      <div style="font-size:13px;font-weight:700;color:#fff">발행 가능</div>
+      <div style="font-size:11px;color:#86EFAC;margin-top:4px">${g}개 대기 · ${pub}개 발행됨</div>`;
+  }
+  const yellowEl = document.getElementById('guard-yellow');
+  if (yellowEl && stats.content) {
+    const y = stats.content.yellow || 0;
+    yellowEl.innerHTML = `
+      <div style="font-size:10px;color:#FDE68A;margin-bottom:4px">YELLOW !</div>
+      <div style="font-size:13px;font-weight:700;color:#fff">담당자 검토 후 결정</div>
+      <div style="font-size:11px;color:#FDE68A;margin-top:4px">${y}개 검토 필요</div>`;
+  }
+});
+</script>
 {% endblock %}

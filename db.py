@@ -145,6 +145,12 @@ def init_db():
         "ALTER TABLE content_drafts ADD COLUMN deleted_at TEXT",
         # v9: GLN 관련성 (0=무관, 1=관련, NULL=미분석)
         "ALTER TABLE ai_analysis ADD COLUMN is_relevant INTEGER DEFAULT 1",
+        # v10: 원소스 멀티유즈 — 배치 ID + 추가 요구사항
+        "ALTER TABLE content_drafts ADD COLUMN batch_id TEXT DEFAULT NULL",
+        "ALTER TABLE content_drafts ADD COLUMN requirements TEXT DEFAULT ''",
+        # v11: 보도자료 소재 연동 + 유형
+        "ALTER TABLE pr_drafts ADD COLUMN source_post_id INTEGER",
+        "ALTER TABLE pr_drafts ADD COLUMN pr_type TEXT DEFAULT 'general'",
     ]:
         try:
             conn.execute(alter_sql)

@@ -29,8 +29,8 @@ function generatePrompt(countries) {
   const qrOnlyList = active.filter(c => c.qr && !c.atm).map(c => c.name).join(", ");
   const inactive = countries.filter(c => !c.active).map(c => c.name);
 
-  return `당신은 GLN(Global Loyalty Network) 콘텐츠 팩트 체커입니다.
-글로벌로컬네트워크(주)가 운영하는 해외 여행자용 QR 결제·ATM 출금 플랫폼 GLN의
+  return `당신은 GLN 콘텐츠 팩트 체커입니다.
+(주)지엘엔인터내셔널(GLN International)이 운영하는 해외 여행자용 QR 결제·ATM 출금 플랫폼 GLN의
 모든 마케팅 콘텐츠가 발행 전 반드시 당신을 통과해야 합니다.
 
 당신의 유일한 역할은 사실 정확성과 금칙 위반 여부를 판단하는 것입니다.
@@ -100,8 +100,8 @@ ${inactive.length > 0 ? `서비스 중단 국가(${inactive.join(", ")})에서 G
 
 ## 검증 기준 4 — 브랜드 정보
 
-- 브랜드명: GLN / GLN (Global Loyalty Network) / 퍼플GLN
-- 운영사: 글로벌로컬네트워크(주) (하나은행 자회사)
+- 브랜드명: GLN / GLN International / 퍼플GLN
+- 운영사: (주)지엘엔인터내셔널 (하나은행 자회사)
 - 지원 플랫폼: iOS, Android (PC 불가)
 - 파트너 앱: 토스, 네이버페이, 카카오페이, 삼성페이, 하나은행, 하나머니, 하나카드, KB스타뱅킹, iM뱅크
 

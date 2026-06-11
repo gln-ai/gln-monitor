@@ -235,6 +235,15 @@
     </button>
   </div>
 
+  <div class="alert-row" style="align-items:flex-start;flex-direction:column;gap:6px;padding-bottom:12px">
+    <div>
+      <div class="alert-label">긴급 알림 수신자</div>
+      <div class="alert-sub">긴급·중요도 7↑ 즉시 이메일 (줄바꿈 또는 쉼표 구분)</div>
+    </div>
+    <textarea id="inp-urgent_alert_to_list" rows="2"
+      style="width:100%;box-sizing:border-box;border:0.5px solid #DAD9EA;border-radius:8px;padding:8px 10px;font-size:11px;font-family:monospace;resize:vertical;outline:none;color:#130D2A"></textarea>
+  </div>
+
   <div class="alert-row" style="border-bottom:none">
     <div>
       <div class="alert-label">알림 허용 시간대</div>
@@ -361,6 +370,10 @@ async function loadAlertSettings() {
       const el = document.getElementById(`inp-${key}`);
       if (el && data[key] !== undefined) el.value = data[key];
     }
+    const urgentEl = document.getElementById('inp-urgent_alert_to_list');
+    if (urgentEl && data['urgent_alert_to_list']) {
+      urgentEl.value = data['urgent_alert_to_list'].replace(/,/g, '\n');
+    }
   } catch (e) {
     console.warn("알림 설정 로드 실패:", e);
   }
@@ -384,6 +397,10 @@ async function saveAlertSettings() {
   for (const key of ["sla_hours","spike_threshold","alert_start_hour","alert_end_hour"]) {
     const el = document.getElementById(`inp-${key}`);
     if (el) payload[key] = el.value;
+  }
+  const urgentEl = document.getElementById('inp-urgent_alert_to_list');
+  if (urgentEl) {
+    payload['urgent_alert_to_list'] = urgentEl.value.split(/[\n,]/).map(s=>s.trim()).filter(Boolean).join(',');
   }
   const res = await fetch('/api/settings', {
     method: 'POST',

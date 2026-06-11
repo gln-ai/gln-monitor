@@ -6,6 +6,8 @@ import importlib.util
 import json
 import os
 import sys
+import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 from config import APPS_ROOT, KST, MONITOR_DIR
@@ -132,10 +134,12 @@ def run_content_pipeline(channel: str = None, formats: list = None):
 
 def generate_single(channel: str, fmt: str,
                     topic: str = "", country: str = "",
-                    use_auto: bool = False) -> dict:
+                    use_auto: bool = False,
+                    requirements: str = "",
+                    batch_id: str = None) -> dict:
     """
-    동기 단건 생성. /api/content/generate 엔드포인트에서 호출.
-    반환: {"draft_id": int, "grade": str, "topic": str}
+    동기 단건 생성. /api/content/generate 및 generate_multi에서 호출.
+    반환: {"draft_id": int, "grade": str, "topic": str, "channel": str, "format": str}
     """
     try:
         content_gen, checker = _get_modules()
@@ -143,6 +147,7 @@ def generate_single(channel: str, fmt: str,
         raise RuntimeError(f"모듈 로드 오류: {e}")
 
     now = datetime.now(KST).strftime("%Y-%m-%d %H:%M")
+    briefs = []
 
     if use_auto:
         briefs = content_gen.get_briefs(min_score=7, limit=1)
@@ -163,17 +168,21 @@ def generate_single(channel: str, fmt: str,
             source_post_id = None
     else:
         source_post_id = None
-        # 직접 입력 모드에서 country 비어있으면 토픽에서 자동 감지
         if not country and topic:
             country = content_gen.detect_country(topic)
 
-    # auto 모드에서 summary를 brief_summary로 전달 (품질 향상)
     brief_text = ""
     if use_auto and briefs:
         brief_text = (briefs[0].get("summary") or briefs[0].get("description") or "")[:300]
 
+    # 추가 요구사항을 brief_summary 앞에 주입
+    effective_brief = (
+        f"[추가 요구사항]\n{requirements}\n\n[소재 참고]\n{brief_text}"
+        if requirements else brief_text
+    )
+
     content = content_gen.generate(channel, fmt, topic=topic,
-                                   country=country, brief_summary=brief_text)
+                                   country=country, brief_summary=effective_brief)
     result  = checker.check_full(content)
 
     conn = get_db()
@@ -183,8 +192,9 @@ def generate_single(channel: str, fmt: str,
            verify_list, guard_grade, guard_issues,
            channel, format, platform, raw_output,
            country, source_type,
+           batch_id, requirements,
            created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         source_post_id,
         content.get("topic", topic),
@@ -199,6 +209,8 @@ def generate_single(channel: str, fmt: str,
         content.get("raw_output", ""),
         content.get("country", country),
         "auto" if use_auto else "manual",
+        batch_id,
+        requirements,
         now, now,
     ))
     draft_id = cur.lastrowid
@@ -212,3 +224,40 @@ def generate_single(channel: str, fmt: str,
         "channel":  channel,
         "format":   fmt,
     }
+
+
+def generate_multi(formats: list,
+                   topic: str = "", country: str = "",
+                   use_auto: bool = False,
+                   requirements: str = "") -> dict:
+    """
+    멀티 생성. formats = [{"channel":"official","format":"blog"}, ...]
+    반환: {"batch_id": str, "results": [...], "errors": [...]}
+    """
+    batch_id = str(uuid.uuid4())[:8]
+    results, errors = [], []
+
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        future_to_fmt = {
+            executor.submit(
+                generate_single,
+                f["channel"], f["format"],
+                topic=topic, country=country,
+                use_auto=use_auto,
+                requirements=requirements,
+                batch_id=batch_id,
+            ): f
+            for f in formats
+        }
+        for future in as_completed(future_to_fmt):
+            fmt_info = future_to_fmt[future]
+            try:
+                results.append(future.result(timeout=180))
+            except Exception as e:
+                errors.append({
+                    "channel": fmt_info["channel"],
+                    "format":  fmt_info["format"],
+                    "error":   str(e),
+                })
+
+    return {"batch_id": batch_id, "results": results, "errors": errors}

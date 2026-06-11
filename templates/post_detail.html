@@ -30,6 +30,14 @@
 {% block topbar_title %}게시글 상세{% endblock %}
 {% block topbar_sub %}{{ post.cafe_name or '' }}{% endblock %}
 
+{% block topbar_actions %}
+<a href="/pr?source_id={{ post.id }}&title={{ post.title | urlencode }}"
+   class="btn btn-sm {% if post.importance_score and post.importance_score >= 7 or post.category == '불만' %}btn-primary{% else %}btn-neutral{% endif %}"
+   style="text-decoration:none;">
+  보도자료 생성
+</a>
+{% endblock %}
+
 {% block content %}
 <div style="max-width:680px;">
   <!-- 게시글 정보 -->

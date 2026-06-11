@@ -20,7 +20,10 @@ def pr_generator():
         "SELECT * FROM pr_drafts ORDER BY created_at DESC LIMIT 20"
     ).fetchall()
     conn.close()
-    return render_template("pr_generator.html", drafts=drafts)
+    source_id    = request.args.get("source_id", "")
+    source_title = request.args.get("title", "")
+    return render_template("pr_generator.html", drafts=drafts,
+                           source_id=source_id, source_title=source_title)
 
 
 @pr_bp.route("/pr/drafts")
@@ -49,14 +52,17 @@ def api_pr_save():
     now  = datetime.now(KST).strftime("%Y-%m-%d %H:%M")
     conn = get_db()
     conn.execute("""
-        INSERT INTO pr_drafts (headline, subheadline, body, key_messages, verify_list, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO pr_drafts (headline, subheadline, body, key_messages, verify_list,
+                               source_post_id, pr_type, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         data.get("headline", ""),
         data.get("subheadline", ""),
         data.get("body", ""),
         data.get("key_messages", ""),
         data.get("verify_list", ""),
+        data.get("source_post_id"),
+        data.get("pr_type", "general"),
         now, now,
     ))
     conn.commit()
@@ -73,6 +79,35 @@ def api_pr_list():
     ).fetchall()
     conn.close()
     return jsonify([dict(r) for r in drafts])
+
+
+@pr_bp.route("/api/pr/drafts/<int:draft_id>", methods=["PATCH"])
+def api_pr_update(draft_id):
+    data = request.get_json(silent=True) or {}
+    allowed = ("headline", "subheadline", "body", "key_messages", "verify_list", "pr_type")
+    fields = {k: v for k, v in data.items() if k in allowed}
+    if not fields:
+        return jsonify({"error": "변경할 내용 없음"}), 400
+    now = datetime.now(KST).strftime("%Y-%m-%d %H:%M")
+    sets = ", ".join(f"{k}=?" for k in fields)
+    vals = list(fields.values()) + [now, draft_id]
+    conn = get_db()
+    conn.execute(f"UPDATE pr_drafts SET {sets}, updated_at=? WHERE id=?", vals)
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+
+
+@pr_bp.route("/api/pr/drafts/<int:draft_id>/send", methods=["POST"])
+def api_pr_send(draft_id):
+    conn  = get_db()
+    draft = conn.execute("SELECT * FROM pr_drafts WHERE id=?", (draft_id,)).fetchone()
+    conn.close()
+    if not draft:
+        return jsonify({"error": "초안 없음"}), 404
+    from services.email_svc import send_pr_draft
+    ok, msg = send_pr_draft(dict(draft))
+    return jsonify({"ok": ok, "msg": msg})
 
 
 @pr_bp.route("/api/pr/drafts/<int:draft_id>", methods=["DELETE"])

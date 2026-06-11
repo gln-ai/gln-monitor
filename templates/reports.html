@@ -45,22 +45,9 @@
 {% endblock %}
 
 {% block topbar_title %}보고서 아카이브{% endblock %}
-{% block topbar_sub %}일간·주간·월간 자동 저장 로그 (일간 30일 / 주간 12주 / 월간 무기한){% endblock %}
+{% block topbar_sub %}월간 {{ monthly|length }}건 · 주간 {{ weekly|length }}건 · 일간 {{ daily|length }}건{% endblock %}
 
 {% block content %}
-
-<!-- 이메일 발송 이력 -->
-<div style="margin-bottom:28px">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-    <div class="section-label" style="margin-bottom:0">
-      이메일 발송 이력 <span id="log-count" class="badge"></span>
-    </div>
-    <button onclick="loadEmailLog()" style="font-size:11px;background:#F6F5FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">새로고침</button>
-  </div>
-  <div id="email-log-list">
-    <div style="text-align:center;padding:20px;color:#AAA7B8;font-size:12px">불러오는 중...</div>
-  </div>
-</div>
 
 <!-- 월간 -->
 <div class="section-label">
@@ -221,6 +208,23 @@
 <div class="empty-card">일간 보고서 없음 (매일 23:55 자동 저장)</div>
 {% endif %}
 
+<!-- 이메일 발송 이력 (하단 접힘) -->
+<div style="margin-top:32px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+    <button onclick="toggleEmailLog()" id="email-log-toggle-btn"
+      style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#130D2A;background:none;border:none;cursor:pointer;padding:0">
+      이메일 발송 이력 <span id="log-count" class="badge"></span>
+      <span id="email-log-chevron" style="font-size:11px;color:#918DA0">▾</span>
+    </button>
+    <button onclick="loadEmailLog(true)" id="email-log-refresh-btn" style="display:none;font-size:11px;background:#F6F5FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:8px;padding:4px 12px;cursor:pointer;font-weight:600">새로고침</button>
+  </div>
+  <div id="email-log-section" style="display:none">
+    <div id="email-log-list">
+      <div style="text-align:center;padding:20px;color:#AAA7B8;font-size:12px">불러오는 중...</div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block modals %}
@@ -230,18 +234,24 @@
     <button class="modal-close" onclick="closeSendModal()">✕</button>
     <div class="modal-title">📧 리포트 발송</div>
     <div id="send-modal-desc" class="modal-sub"></div>
-    <div style="font-size:11px;font-weight:700;color:#130D2A;margin-bottom:8px">수신자</div>
-    <div id="send-modal-tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;margin-bottom:10px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:#130D2A">수신자 <span id="send-recip-count" style="color:#918DA0;font-weight:400"></span></div>
+      <button onclick="loadAllRecipients()" id="send-load-all-btn" style="font-size:10px;background:#F6F5FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:6px;padding:3px 10px;cursor:pointer;font-weight:600">설정 수신자 전체 불러오기</button>
+    </div>
+    <div id="send-modal-tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:32px;max-height:180px;overflow-y:auto;margin-bottom:10px;padding:4px 0"></div>
     <div style="display:flex;gap:6px">
-      <input id="send-extra-email" type="email" placeholder="추가 수신자 이메일"
+      <input id="send-extra-email" type="email" placeholder="이메일 입력 후 Enter 또는 + 추가"
         style="flex:1;border:0.5px solid #DAD9EA;border-radius:10px;padding:8px 12px;font-size:12px;outline:none;color:#130D2A"
         onfocus="this.style.borderColor='#7000FC'" onblur="this.style.borderColor='#DAD9EA'"
         onkeydown="if(event.key==='Enter')sendModalAddEmail()">
       <button onclick="sendModalAddEmail()" style="background:#F0E6FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap">+ 추가</button>
     </div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
-      <button class="btn btn-neutral btn-sm" onclick="closeSendModal()">취소</button>
-      <button class="btn btn-primary btn-sm" onclick="confirmSend()">발송</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px">
+      <button onclick="_clearRecipients()" style="font-size:11px;color:#AAA7B8;background:none;border:none;cursor:pointer;padding:0">전체 초기화</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-neutral btn-sm" onclick="closeSendModal()">취소</button>
+        <button class="btn btn-primary btn-sm" onclick="confirmSend()">발송</button>
+      </div>
     </div>
   </div>
 </div>
@@ -260,9 +270,11 @@
 <script>
 let _sentChart = null;
 
-async function loadEmailLog() {
+async function loadEmailLog(force=false) {
+  if (!force && _emailLogLoaded) return;
   const list = document.getElementById('email-log-list');
   const countEl = document.getElementById('log-count');
+  _emailLogLoaded = true;
   try {
     const res  = await fetch('/api/email-log');
     const logs = await res.json();
@@ -308,27 +320,22 @@ async function loadEmailLog() {
 
 let _sendType = 'daily';
 let _sendRecipients = [];
+let _allRecipientsCache = null;
 
-async function openSendModal(type) {
+function openSendModal(type) {
   _sendType = type;
   _sendRecipients = [];
+  _allRecipientsCache = null;
 
-  const modal = document.getElementById('sendModal');
-  const desc  = document.getElementById('send-modal-desc');
+  const desc = document.getElementById('send-modal-desc');
   desc.textContent = type === 'weekly'
-    ? '주간 GLN 리포트를 아래 수신자에게 발송합니다.'
-    : '일일 AI퍼플이 아침 브리핑을 아래 수신자에게 발송합니다.';
-
-  try {
-    const res  = await fetch('/api/settings');
-    const data = await res.json();
-    const csvKey = type === 'weekly' ? 'report_to_list' : (data.daily_report_to_list ? 'daily_report_to_list' : 'report_to_list');
-    const csv = data[csvKey] || data.report_to_list || '';
-    _sendRecipients = csv.split(',').map(e => e.trim()).filter(Boolean);
-  } catch (e) {}
+    ? '주간 GLN 리포트 발송. 수신자를 직접 입력하거나 설정 목록을 불러오세요.'
+    : '일일 AI퍼플 아침 브리핑 발송. 수신자를 직접 입력하거나 설정 목록을 불러오세요.';
 
   _renderSendTags();
-  modal.style.display = 'flex';
+  document.getElementById('send-extra-email').value = '';
+  document.getElementById('sendModal').style.display = 'flex';
+  setTimeout(() => document.getElementById('send-extra-email').focus(), 100);
 }
 
 function closeSendModal() {
@@ -336,15 +343,43 @@ function closeSendModal() {
   document.getElementById('send-extra-email').value = '';
 }
 
+async function loadAllRecipients() {
+  const btn = document.getElementById('send-load-all-btn');
+  btn.disabled = true;
+  btn.textContent = '불러오는 중...';
+  try {
+    if (!_allRecipientsCache) {
+      const res  = await fetch('/api/settings');
+      const data = await res.json();
+      const csvKey = _sendType === 'weekly' ? 'report_to_list' : (data.daily_report_to_list ? 'daily_report_to_list' : 'report_to_list');
+      const csv = data[csvKey] || data.report_to_list || '';
+      _allRecipientsCache = csv.split(',').map(e => e.trim()).filter(Boolean);
+    }
+    _allRecipientsCache.forEach(e => {
+      if (!_sendRecipients.includes(e)) _sendRecipients.push(e);
+    });
+    _renderSendTags();
+  } catch (e) {}
+  btn.disabled = false;
+  btn.textContent = '설정 수신자 전체 불러오기';
+}
+
+function _clearRecipients() {
+  _sendRecipients = [];
+  _renderSendTags();
+}
+
 function _renderSendTags() {
   const container = document.getElementById('send-modal-tags');
+  const countEl   = document.getElementById('send-recip-count');
+  countEl.textContent = _sendRecipients.length ? `(${_sendRecipients.length}명)` : '';
   container.innerHTML = _sendRecipients.length
     ? _sendRecipients.map(email => `
         <span style="display:inline-flex;align-items:center;gap:5px;background:#F5F3FF;color:#7000FC;border:0.5px solid #DDD6FE;border-radius:99px;padding:4px 10px;font-size:11px;font-weight:500">
           ${email}
           <button onclick="_removeSendEmail('${email}')" style="background:none;border:none;cursor:pointer;color:#7000FC;font-size:13px;line-height:1;padding:0">×</button>
         </span>`).join('')
-    : '<span style="font-size:11px;color:#AAA7B8">수신자가 없습니다</span>';
+    : '<span style="font-size:11px;color:#AAA7B8">수신자가 없습니다. 이메일을 입력하거나 설정 목록을 불러오세요.</span>';
 }
 
 function _removeSendEmail(email) {
@@ -392,7 +427,23 @@ function _showToast(msg) {
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-document.addEventListener('DOMContentLoaded', loadEmailLog);
+let _emailLogLoaded = false;
+
+function toggleEmailLog() {
+  const sec     = document.getElementById('email-log-section');
+  const chevron = document.getElementById('email-log-chevron');
+  const refreshBtn = document.getElementById('email-log-refresh-btn');
+  const open = sec.style.display === 'none';
+  sec.style.display = open ? '' : 'none';
+  chevron.textContent = open ? '▴' : '▾';
+  refreshBtn.style.display = open ? '' : 'none';
+  localStorage.setItem('gln_email_log_open', open ? '1' : '0');
+  if (open && !_emailLogLoaded) loadEmailLog(true);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('gln_email_log_open') === '1') toggleEmailLog();
+});
 
 function showMore(gridId, btnContainerId, ...extraIds) {
   [gridId, ...extraIds].forEach(id => {
@@ -503,7 +554,7 @@ async function showReport(subdir, filename) {
     <div style="display:grid;grid-template-columns:110px 1fr;gap:20px;align-items:center;margin-bottom:8px">
       <canvas id="sentChart" width="110" height="110"></canvas>
       <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
-        <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#7000FC;flex-shrink:0"></span><span style="color:#130D2A;font-weight:500">긍정</span><span style="color:#AAA7B8;margin-left:auto">${sent.positive||0}건 (${posP}%)</span></div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#059669;flex-shrink:0"></span><span style="color:#130D2A;font-weight:500">긍정</span><span style="color:#AAA7B8;margin-left:auto">${sent.positive||0}건 (${posP}%)</span></div>
         <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#DAD9EA;flex-shrink:0"></span><span style="color:#130D2A;font-weight:500">중립</span><span style="color:#AAA7B8;margin-left:auto">${sent.neutral||0}건 (${neuP}%)</span></div>
         <div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#DC2626;flex-shrink:0"></span><span style="color:#130D2A;font-weight:500">부정</span><span style="color:#AAA7B8;margin-left:auto">${sent.negative||0}건 (${negP}%)</span></div>
       </div>
@@ -526,7 +577,7 @@ async function showReport(subdir, filename) {
       data: {
         datasets: [{
           data: [sent.positive||0, sent.neutral||0, sent.negative||0],
-          backgroundColor: ['#7000FC', '#DAD9EA', '#DC2626'],
+          backgroundColor: ['#059669', '#DAD9EA', '#DC2626'],
           borderWidth: 0, hoverOffset: 4,
         }]
       },
