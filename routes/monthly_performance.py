@@ -36,8 +36,8 @@ def _seed_if_empty(conn):
         conn.commit()
 
 
-def _get_chart_data(conn, year: int):
-    """현재 연도와 전년도 데이터를 차트용으로 반환."""
+def _get_chart_data(conn, year: int, max_month: int = 12):
+    """현재 연도와 전년도 데이터를 차트용으로 반환. max_month까지만 표시."""
     prev_year = year - 1
 
     def fetch_year(y):
@@ -50,13 +50,13 @@ def _get_chart_data(conn, year: int):
     cur  = fetch_year(year)
     prev = fetch_year(prev_year)
 
-    months = list(range(1, 13))
+    all_months = [0] + list(range(1, max_month + 1))  # 기준 + 1~선택월
 
     labels, cur_members, cur_revenue, cur_profit = [], [], [], []
     prev_members, prev_revenue, prev_profit = [], [], []
 
-    for m in months:
-        labels.append(f"{m}월")
+    for m in all_months:
+        labels.append("기준" if m == 0 else f"{m}월")
 
         def val(d, key):
             r = d.get(m)
@@ -85,7 +85,7 @@ def monthly_report():
     year  = int(request.args.get("year",  now.year))
     month = int(request.args.get("month", now.month))
 
-    chart = _get_chart_data(conn, year)
+    chart = _get_chart_data(conn, year, max_month=month)
 
     years = [r[0] for r in conn.execute(
         "SELECT DISTINCT year FROM monthly_performance ORDER BY year DESC"

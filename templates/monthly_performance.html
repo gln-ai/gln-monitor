@@ -1,320 +1,336 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ year }}년 {{ '%02d' % month }}월 실적 — GLN</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-{% block title %}월별 실적 — GLN{% endblock %}
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      background: #1a1a2e;
+      margin: 0;
+    }
 
-{% block page_styles %}
-/* ── Monthly Performance ── */
-.mp-wrap { display: flex; flex-direction: column; gap: 20px; }
+    /* ── 1920×1080 고정 비율 래퍼 ── */
+    .hero-wrap {
+      width: 100%;
+      max-width: 1920px;
+      margin: 0 auto;
+      aspect-ratio: 16 / 9;
+      position: relative;
+      overflow: hidden;
+    }
 
-/* Hero */
-.mp-hero {
-  position: relative; border-radius: 20px; overflow: hidden;
-  min-height: 220px; display: flex; align-items: center;
-  background: linear-gradient(135deg, #a8edea 0%, #84c8a3 25%, #6ec6b4 50%, #afd3e2 75%, #d4eaf7 100%);
-  padding: 32px 40px;
-}
-.mp-hero-bg {
-  position: absolute; inset: 0;
-  background-image: url('/static/img/monthly_bg.jpg');
-  background-size: cover; background-position: center;
-  opacity: 0.85;
-}
-.mp-hero-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(to right, rgba(255,255,255,0.15) 0%, transparent 60%);
-}
-.mp-hero-content { position: relative; z-index: 2; flex: 1; }
-.mp-hero-year {
-  display: inline-block; background: rgba(255,255,255,0.85);
-  color: #7000FC; font-size: 13px; font-weight: 800;
-  padding: 4px 14px; border-radius: 99px; margin-bottom: 8px;
-  backdrop-filter: blur(6px);
-}
-.mp-hero-title {
-  font-size: 48px; font-weight: 900; color: #fff;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.25);
-  line-height: 1.1; margin: 0;
-  letter-spacing: -1px;
-}
-.mp-hero-sub {
-  font-size: 14px; color: rgba(255,255,255,0.85); margin-top: 8px;
-  font-weight: 500;
-}
-.mp-hero-mascot {
-  position: absolute; right: 30px; bottom: 0; z-index: 2;
-  height: 210px; object-fit: contain;
-  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.15));
-}
+    /* ── 배경 ── */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('/static/img/monthly_bg.jpg');
+      background-size: cover;
+      background-position: center;
+      z-index: 0;
+    }
 
-/* Year / Month nav */
-.mp-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.mp-nav-left  { display: flex; align-items: center; gap: 8px; }
-.mp-nav-right { display: flex; align-items: center; gap: 8px; }
-.mp-year-select {
-  border: 0.5px solid #DAD9EA; border-radius: 10px;
-  padding: 7px 12px; font-size: 13px; font-weight: 600;
-  color: #130D2A; background: #fff; cursor: pointer;
-}
-.mp-month-chips { display: flex; gap: 4px; flex-wrap: wrap; }
-.mp-month-chip {
-  padding: 5px 11px; border-radius: 99px; font-size: 11px;
-  font-weight: 600; border: 0.5px solid #DAD9EA; color: #5E5A71;
-  background: #fff; cursor: pointer; text-decoration: none;
-  white-space: nowrap;
-}
-.mp-month-chip:hover  { border-color: #7000FC; color: #7000FC; }
-.mp-month-chip.active { background: #7000FC; color: #fff; border-color: #7000FC; }
+    /* ── 콘텐츠 ── */
+    .hero-section {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 3% 4%;
+      z-index: 1;
+    }
 
-/* KPI Cards */
-.mp-kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.mp-kpi {
-  border-radius: 16px; padding: 18px 20px;
-  display: flex; flex-direction: column; gap: 6px;
-  border: 0.5px solid rgba(255,255,255,0.4);
-}
-.mp-kpi-blue   { background: linear-gradient(135deg,#EFF6FF,#DBEAFE); }
-.mp-kpi-pink   { background: linear-gradient(135deg,#FFF0F6,#FFD6E7); }
-.mp-kpi-purple { background: linear-gradient(135deg,#F5F0FF,#EDE9FE); }
-.mp-kpi-label {
-  font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.mp-kpi-blue   .mp-kpi-label { color: #2563EB; }
-.mp-kpi-pink   .mp-kpi-label { color: #DB2777; }
-.mp-kpi-purple .mp-kpi-label { color: #7C3AED; }
-.mp-kpi-value {
-  font-size: 32px; font-weight: 900; line-height: 1; color: #130D2A;
-}
-.mp-kpi-unit  { font-size: 14px; font-weight: 600; color: #6B7280; }
-.mp-kpi-diff  { font-size: 11px; font-weight: 600; margin-top: 2px; }
-.mp-kpi-diff.up   { color: #059669; }
-.mp-kpi-diff.down { color: #DC2626; }
-.mp-kpi-diff.flat { color: #9CA3AF; }
+    .hero-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
 
-/* Charts grid */
-.mp-charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto;
-  gap: 14px;
-}
-.mp-chart-card {
-  background: #fff; border-radius: 18px; padding: 20px 22px;
-  border: 0.5px solid #E4E1EE;
-  box-shadow: 0 2px 12px rgba(19,13,42,0.05);
-}
-.mp-chart-card.full-width { grid-column: 1 / -1; }
-.mp-chart-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.mp-chart-badge {
-  padding: 4px 13px; border-radius: 99px; font-size: 12px; font-weight: 800;
-  letter-spacing: -0.2px;
-}
-.badge-blue-solid   { background: #3B82F6; color: #fff; }
-.badge-pink-solid   { background: #EC4899; color: #fff; }
-.badge-purple-solid { background: #8B5CF6; color: #fff; }
-.mp-chart-title { font-size: 14px; font-weight: 700; color: #130D2A; }
-.mp-chart-canvas { height: 300px; }
+    /* ── 상단 내비 ── */
+    .top-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
 
-/* Input / Edit modal */
-.mp-modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
-.mp-field label { display: block; font-size: 11px; font-weight: 600; color: #5E5A71; margin-bottom: 4px; }
-.mp-field input, .mp-field select, .mp-field textarea {
-  width: 100%; padding: 8px 12px; border-radius: 10px; font-size: 13px;
-  border: 0.5px solid #DAD9EA; outline: none; font-family: inherit;
-}
-.mp-field input:focus, .mp-field select:focus { border-color: #7000FC; }
-.mp-field.full { grid-column: 1 / -1; }
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(8px);
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #130D2A;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .nav-back:hover { background: rgba(255,255,255,0.95); }
 
-@media (max-width: 900px) {
-  .mp-hero { padding: 20px 20px; min-height: 160px; }
-  .mp-hero-title { font-size: 32px; }
-  .mp-hero-mascot { height: 140px; right: 10px; }
-  .mp-kpi-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .mp-kpi-value { font-size: 24px; }
-  .mp-charts-grid { grid-template-columns: 1fr; }
-  .mp-chart-card.full-width { grid-column: 1; }
-  .mp-chart-canvas { height: 220px !important; }
-  .mp-nav { flex-direction: column; align-items: flex-start; gap: 8px; }
-  .mp-month-chips { gap: 3px; }
-  .mp-month-chip { padding: 4px 8px; font-size: 10px; }
-}
-@media (max-width: 600px) {
-  .mp-hero-title { font-size: 24px; }
-  .mp-hero-mascot { display: none; }
-  .mp-kpi-grid { grid-template-columns: 1fr; }
-  .mp-modal-grid { grid-template-columns: 1fr; }
-  .mp-field.full { grid-column: 1; }
-}
-{% endblock %}
+    .nav-year {
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(8px);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #130D2A;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
 
-{% block topbar_title %}월별 실적{% endblock %}
-{% block topbar_sub %}월별 회원수 · 매출액 · 순이익 추이{% endblock %}
+    .nav-month {
+      display: inline-flex;
+      padding: 5px 10px;
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(4px);
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #130D2A;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .nav-month:hover { background: rgba(255,255,255,0.9); }
+    .nav-month.active { background: #7000FC; color: #fff; }
 
-{% block topbar_actions %}
-<button class="btn btn-primary btn-sm" onclick="openInputModal()">
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-  데이터 입력
-</button>
-{% endblock %}
+    /* ── 타이틀 ── */
+    .main-title {
+      font-size: clamp(28px, 4vw, 64px);
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.75), 0 4px 40px rgba(0,0,0,0.6), 0 1px 4px rgba(0,0,0,0.9);
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 2%;
+    }
 
-{% block content %}
-{% set chart_json = chart | tojson %}
+    /* ── 차트 레이아웃 (배경 왼쪽 60%에 배치) ── */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 1.2%;
+      align-items: stretch;
+      width: 68%;
+      height: 46vh;        /* 전체 차트 영역 높이 고정 */
+      min-height: 320px;
+      flex: 1;
+    }
 
-<div class="mp-wrap">
+    /* 왼쪽 컬럼: 두 카드가 12px 간격으로 균등 분할 */
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+    }
 
-  <!-- Hero -->
-  <div class="mp-hero">
-    <div class="mp-hero-bg"></div>
-    <div class="mp-hero-overlay"></div>
-    <div class="mp-hero-content">
-      <div class="mp-hero-year">{{ year }}년 실적</div>
-      <h1 class="mp-hero-title">{{ year }}년 {{ month }}월 실적</h1>
-      <p class="mp-hero-sub">Purple | GLN &nbsp;·&nbsp; 해외 QR결제 서비스</p>
-    </div>
-    <img src="/static/img/mascot_purpley.png" class="mp-hero-mascot" alt="GLN">
-  </div>
+    .left-col .chart-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-  <!-- Nav -->
-  <div class="mp-nav">
-    <div class="mp-nav-left">
-      <select class="mp-year-select" onchange="changeYear(this.value)">
+    .left-col .chart-card .chart-sm {
+      flex: 1;
+      height: 0;           /* flex가 높이 결정하도록 */
+      min-height: 80px;
+    }
+
+    .chart-card {
+      background: rgba(255,255,255,0.87);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 16px;
+      padding: 1.2% 1.4% 1%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.14), inset 0 1px 0 rgba(255,255,255,0.9);
+      border: 0.5px solid rgba(255,255,255,0.5);
+    }
+
+    /* 순이익 카드: 오른쪽 컬럼 전체 높이 채움 */
+    .chart-card-profit {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chart-card-profit .chart-lg {
+      flex: 1;
+      height: 0;
+      min-height: 180px;
+    }
+
+    .chart-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.35em 1em;
+      border-radius: 99px;
+      font-size: clamp(11px, 1.1vw, 16px);
+      font-weight: 800;
+      margin-bottom: 0.6em;
+      letter-spacing: -0.2px;
+      flex-shrink: 0;
+    }
+    .badge-blue   { background: #3B82F6; color: #fff; }
+    .badge-pink   { background: #EC4899; color: #fff; }
+    .badge-purple { background: #8B5CF6; color: #fff; }
+
+    /* ── 테이블 섹션 ── */
+    .table-section {
+      background: #F6F5FF;
+      padding: 40px 36px;
+    }
+
+    .table-card {
+      background: #fff;
+      border-radius: 20px;
+      border: 0.5px solid #E4E1EE;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(19,13,42,0.05);
+    }
+
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px 14px;
+    }
+
+    /* ── 공통 버튼 ── */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 8px 14px;
+      background: #7000FC; color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 12px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+    .btn-primary:hover { background: #5900D0; }
+
+    .btn-neutral {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 8px 14px;
+      background: #F3F4F6; color: #374151;
+      border: none; border-radius: 10px;
+      font-size: 12px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+
+    /* ── 모달 ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    .modal-box {
+      background: #fff;
+      border-radius: 20px;
+      padding: 28px;
+      width: 480px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal-title { font-size: 17px; font-weight: 800; color: #130D2A; margin-bottom: 4px; }
+    .modal-sub   { font-size: 12px; color: #918DA0; margin-bottom: 16px; }
+    .modal-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+    .mp-field label { display: block; font-size: 11px; font-weight: 600; color: #5E5A71; margin-bottom: 4px; }
+    .mp-field input, .mp-field select {
+      width: 100%; padding: 8px 12px; border-radius: 10px;
+      font-size: 13px; border: 0.5px solid #DAD9EA;
+      outline: none; font-family: inherit;
+    }
+    .mp-field input:focus, .mp-field select:focus { border-color: #7000FC; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+    /* ── 타이틀 크기 반응형 ── */
+    @media (max-width: 900px) {
+      .charts-row { width: 100%; grid-template-columns: 1fr; }
+      .chart-sm   { height: 180px; }
+      .chart-lg   { height: 220px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ 배경 + 차트 섹션 ══ -->
+<div class="hero-wrap">
+  <div class="hero-bg"></div>
+  <div class="hero-section">
+  <div class="hero-content">
+
+    <!-- 상단 내비 -->
+    <div class="top-nav">
+      <a href="/" class="nav-back">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        대시보드
+      </a>
+      <select class="nav-year" onchange="changeYear(this.value)">
         {% for y in years %}
         <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}년</option>
         {% endfor %}
       </select>
-      <div class="mp-month-chips">
-        {% for m in range(1, 13) %}
-        <a href="/monthly-report?year={{ year }}&month={{ m }}"
-           class="mp-month-chip {% if m == month %}active{% endif %}">{{ m }}월</a>
-        {% endfor %}
-      </div>
+      {% for m in range(1, 13) %}
+      <a href="/monthly-report?year={{ year }}&month={{ m }}"
+         class="nav-month {% if m == month %}active{% endif %}">{{ m }}월</a>
+      {% endfor %}
     </div>
-    <div class="mp-nav-right">
-      {% if row %}
-      <button class="btn btn-ghost btn-sm" onclick="openEditModal({{ row['year'] }}, {{ row['month'] }}, {{ row['members'] or 'null' }}, {{ row['revenue'] or 'null' }}, {{ row['profit'] or 'null' }}, {{ (row['memo'] or '') | tojson }})">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        {{ month }}월 수정
-      </button>
-      {% endif %}
+
+    <!-- 타이틀 -->
+    <h1 class="main-title">{{ year }}년 {{ '%02d' % month }}월 실적</h1>
+
+    <!-- 차트 그리드 -->
+    <div class="charts-row">
+
+      <!-- 왼쪽: 회원수 + 매출액 -->
+      <div class="left-col">
+        <div class="chart-card">
+          <div class="chart-badge badge-blue">1. 회원수</div>
+          <div class="chart-sm"><canvas id="membersChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-badge badge-pink">2. 매출액</div>
+          <div class="chart-sm"><canvas id="revenueChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- 오른쪽: 순이익 -->
+      <div class="chart-card chart-card-profit">
+        <div class="chart-badge badge-purple">3. 순이익</div>
+        <div class="chart-lg"><canvas id="profitChart"></canvas></div>
+      </div>
+
     </div>
   </div>
-
-  <!-- KPI Summary Cards -->
-  <div class="mp-kpi-grid">
-    <!-- 회원수 -->
-    <div class="mp-kpi mp-kpi-blue">
-      <div class="mp-kpi-label">👥 회원수</div>
-      {% if row and row['members'] is not none %}
-      <div>
-        <span class="mp-kpi-value">{{ row['members'] | int if row['members'] == row['members'] | int else row['members'] }}</span>
-        <span class="mp-kpi-unit">만명</span>
-      </div>
-      {% set diff = (row['members'] - prev_row['members']) if prev_row and prev_row['members'] else none %}
-      {% if diff is not none %}
-      <div class="mp-kpi-diff {% if diff > 0 %}up{% elif diff < 0 %}down{% else %}flat{% endif %}">
-        {% if diff > 0 %}▲{% elif diff < 0 %}▼{% endif %}
-        전년 동월 대비 {{ diff | abs }}만명
-      </div>
-      {% endif %}
-      {% else %}
-      <div class="mp-kpi-value" style="font-size:20px;color:#AAA7B8;">—</div>
-      {% endif %}
-    </div>
-
-    <!-- 매출액 -->
-    <div class="mp-kpi mp-kpi-pink">
-      <div class="mp-kpi-label">💰 매출액</div>
-      {% if row and row['revenue'] is not none %}
-      <div>
-        <span class="mp-kpi-value">{{ row['revenue'] }}</span>
-        <span class="mp-kpi-unit">억원</span>
-      </div>
-      {% set diff = (row['revenue'] - prev_row['revenue']) if prev_row and prev_row['revenue'] else none %}
-      {% if diff is not none %}
-      <div class="mp-kpi-diff {% if diff > 0 %}up{% elif diff < 0 %}down{% else %}flat{% endif %}">
-        {% if diff > 0 %}▲{% elif diff < 0 %}▼{% endif %}
-        전년 동월 대비 {{ diff | abs }}억
-      </div>
-      {% endif %}
-      {% else %}
-      <div class="mp-kpi-value" style="font-size:20px;color:#AAA7B8;">—</div>
-      {% endif %}
-    </div>
-
-    <!-- 순이익 -->
-    <div class="mp-kpi mp-kpi-purple">
-      <div class="mp-kpi-label">📊 순이익</div>
-      {% if row and row['profit'] is not none %}
-      <div>
-        <span class="mp-kpi-value">{{ row['profit'] }}</span>
-        <span class="mp-kpi-unit">억원</span>
-      </div>
-      {% set diff = (row['profit'] - prev_row['profit']) if prev_row and prev_row['profit'] else none %}
-      {% if diff is not none %}
-      <div class="mp-kpi-diff {% if diff > 0 %}up{% elif diff < 0 %}down{% else %}flat{% endif %}">
-        {% if diff > 0 %}▲{% elif diff < 0 %}▼{% endif %}
-        전년 동월 대비 {{ diff | abs | round(1) }}억
-      </div>
-      {% endif %}
-      {% else %}
-      <div class="mp-kpi-value" style="font-size:20px;color:#AAA7B8;">—</div>
-      {% endif %}
-    </div>
   </div>
+</div>
 
-  <!-- Charts -->
-  <div class="mp-charts-grid">
-    {% set legend_html %}
-    <div style="display:flex;gap:8px;margin-left:auto;align-items:center;flex-shrink:0">
-      <button class="lg-btn" data-idx="0" onclick="toggleDs(this)"
-        style="display:flex;align-items:center;gap:5px;background:none;border:0.5px solid #E4E1EE;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;color:#130D2A">
-        <span class="lg-line" style="width:18px;height:2.5px;border-radius:2px;display:inline-block"></span>
-        {{ year }}년
-      </button>
-      <button class="lg-btn" data-idx="1" onclick="toggleDs(this)"
-        style="display:flex;align-items:center;gap:5px;background:none;border:0.5px solid #E4E1EE;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;cursor:pointer;color:#130D2A">
-        <span class="lg-line" style="width:18px;height:2px;border-radius:2px;display:inline-block;opacity:0.5;background:repeating-linear-gradient(90deg,#9CA3AF 0,#9CA3AF 4px,transparent 4px,transparent 7px)"></span>
-        {{ year - 1 }}년
-      </button>
-    </div>
-    {% endset %}
-
-    <!-- 회원수 -->
-    <div class="mp-chart-card">
-      <div class="mp-chart-header">
-        <span class="mp-chart-badge badge-blue-solid">1. 회원수</span>
-        <span class="mp-chart-title">월별 회원수 추이 (만명)</span>
-        <div class="chart-legend" data-target="membersChart">{{ legend_html }}</div>
+<!-- ══ 전체 내역 테이블 섹션 ══ -->
+<div class="table-section">
+  <div class="table-card">
+    <div class="table-header">
+      <div>
+        <span style="font-size:15px;font-weight:700;color:#130D2A">📋 전체 내역</span>
+        <span style="font-size:11px;color:#918DA0;font-weight:400;margin-left:6px">셀 클릭 후 바로 수정 가능</span>
       </div>
-      <div class="mp-chart-canvas"><canvas id="membersChart"></canvas></div>
-    </div>
-
-    <!-- 매출액 -->
-    <div class="mp-chart-card">
-      <div class="mp-chart-header">
-        <span class="mp-chart-badge badge-pink-solid">2. 매출액</span>
-        <span class="mp-chart-title">월별 매출액 추이 (억원)</span>
-        <div class="chart-legend" data-target="revenueChart">{{ legend_html }}</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span id="save-status" style="font-size:11px;color:#059669;opacity:0;transition:opacity 0.3s">저장됨 ✓</span>
+        <button class="btn-primary" onclick="openInputModal()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          데이터 입력
+        </button>
       </div>
-      <div class="mp-chart-canvas"><canvas id="revenueChart"></canvas></div>
-    </div>
-
-    <!-- 순이익 (전체 너비) -->
-    <div class="mp-chart-card full-width">
-      <div class="mp-chart-header">
-        <span class="mp-chart-badge badge-purple-solid">3. 순이익</span>
-        <span class="mp-chart-title">월별 순이익 추이 (억원)</span>
-        <div class="chart-legend" data-target="profitChart">{{ legend_html }}</div>
-      </div>
-      <div class="mp-chart-canvas" style="height:270px;"><canvas id="profitChart"></canvas></div>
-    </div>
-  </div>
-
-  <!-- 전체 내역 테이블 -->
-  <div style="background:#fff;border-radius:18px;border:0.5px solid #E4E1EE;overflow:hidden;box-shadow:0 2px 12px rgba(19,13,42,0.05)">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px">
-      <div style="font-size:14px;font-weight:700;color:#130D2A">📋 전체 내역 <span style="font-size:11px;color:#918DA0;font-weight:400">(2025년 이후 · 셀 클릭 후 수정 가능)</span></div>
-      <span id="save-status" style="font-size:11px;color:#059669;opacity:0;transition:opacity 0.3s">저장됨 ✓</span>
     </div>
     <div style="overflow-x:auto">
       <table style="width:100%;border-collapse:collapse">
@@ -340,7 +356,6 @@
             <td style="padding:4px 8px;text-align:right">
               <input type="number" step="0.1" data-field="members"
                      value="{{ r.members if r.members is not none else '' }}"
-                     onblur="saveCell(this)"
                      style="width:80px;text-align:right;border:0.5px solid transparent;border-radius:6px;padding:4px 8px;font-size:12px;font-weight:600;color:#2563EB;background:transparent;font-family:inherit;outline:none"
                      onfocus="this.style.borderColor='#7000FC';this.style.background='#F5F0FF'"
                      onblur="this.style.borderColor='transparent';this.style.background='transparent';saveCell(this)">
@@ -378,17 +393,14 @@
       </table>
     </div>
   </div>
-
 </div>
-{% endblock %}
 
-{% block modals %}
-<!-- 데이터 입력 모달 -->
+<!-- ══ 데이터 입력 모달 ══ -->
 <div class="modal-overlay" id="inputModal" style="display:none; align-items:center; justify-content:center;">
-  <div class="modal-box" style="width:480px;">
+  <div class="modal-box">
     <div class="modal-title" id="modalTitle">월별 실적 입력</div>
     <div class="modal-sub">값을 입력하면 자동으로 차트에 반영됩니다.</div>
-    <div class="mp-modal-grid" style="margin-top:16px;">
+    <div class="modal-grid">
       <div class="mp-field">
         <label>연도</label>
         <select id="inp_year">
@@ -425,21 +437,19 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-neutral" onclick="closeInputModal()">취소</button>
-      <button class="btn btn-primary" onclick="saveData()">저장</button>
+      <button class="btn-neutral" onclick="closeInputModal()">취소</button>
+      <button class="btn-primary" onclick="saveData()">저장</button>
     </div>
   </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-/* 데이터 포인트 위 숫자 표시 — CDN 없이 인라인 구현 */
+/* ── 포인트 위 숫자 표시 플러그인 ── */
 Chart.register({
   id: 'pointLabels',
   afterDatasetsDraw(chart) {
-    const ctx = chart.ctx;
+    const ctx  = chart.ctx;
     const unit = chart.options._unit || '';
     chart.data.datasets.forEach((ds, i) => {
       const meta = chart.getDatasetMeta(i);
@@ -448,11 +458,15 @@ Chart.register({
         const v = ds.data[idx];
         if (v === null || v === undefined) return;
         ctx.save();
-        ctx.font = 'bold 10px system-ui, sans-serif';
-        ctx.fillStyle = ds.borderColor;
+        ctx.font = 'bold 20px system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
-        ctx.fillText(v + unit, el.x, el.y - 6);
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 5;
+        ctx.lineJoin = 'round';
+        ctx.strokeText(v + unit, el.x, el.y - 8);
+        ctx.fillStyle = ds.borderColor;
+        ctx.fillText(v + unit, el.x, el.y - 8);
         ctx.restore();
       });
     });
@@ -460,13 +474,22 @@ Chart.register({
 });
 
 const CHART_DATA = {{ chart | tojson | safe }};
+const CUR_YEAR  = {{ year }};
+const PREV_YEAR = {{ year - 1 }};
+
+/* X축 레이블: 기준 → 숨김, 1월 → '26.1월, 나머지 그대로 */
+const fmtLabels = CHART_DATA.labels.map((l) => {
+  if (l === '기준') return '';
+  if (l === '1월')  return `'${String(CUR_YEAR).slice(-2)}.${l}`;
+  return l;
+});
 
 function makeDataset(label, data, color, isDashed) {
   return {
     label,
     data,
     borderColor: color,
-    backgroundColor: color + '18',
+    backgroundColor: color + '15',
     pointBackgroundColor: color,
     pointBorderColor: '#fff',
     pointBorderWidth: 2,
@@ -474,7 +497,7 @@ function makeDataset(label, data, color, isDashed) {
     pointHoverRadius: 7,
     borderWidth: isDashed ? 2 : 2.5,
     borderDash: isDashed ? [5, 4] : [],
-    tension: 0.35,
+    tension: 0.3,
     fill: false,
     spanGaps: true,
   };
@@ -498,25 +521,27 @@ function chartOpts(unit) {
       }
     },
     scales: {
-      x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 } } },
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 9 }, color: '#666' }
+      },
       y: {
         grid: { color: 'rgba(0,0,0,0.04)' },
         ticks: { display: false },
         beginAtZero: false
       }
     },
-    layout: { padding: { top: 22, right: 10 } }
+    layout: { padding: { top: 36, right: 10 } }
   };
 }
 
-/* ── 차트 생성 ── */
 new Chart(document.getElementById('membersChart'), {
   type: 'line',
   data: {
-    labels: CHART_DATA.labels,
+    labels: fmtLabels,
     datasets: [
-      makeDataset('{{ year }}년', CHART_DATA.cur_members,  '#3B82F6', false),
-      makeDataset('{{ year - 1 }}년', CHART_DATA.prev_members, '#9CA3AF', true),
+      makeDataset(`${CUR_YEAR}년`,  CHART_DATA.cur_members,  '#3B82F6', false),
+      makeDataset(`${PREV_YEAR}년`, CHART_DATA.prev_members, '#9CA3AF', true),
     ]
   },
   options: chartOpts('만')
@@ -525,10 +550,10 @@ new Chart(document.getElementById('membersChart'), {
 new Chart(document.getElementById('revenueChart'), {
   type: 'line',
   data: {
-    labels: CHART_DATA.labels,
+    labels: fmtLabels,
     datasets: [
-      makeDataset('{{ year }}년', CHART_DATA.cur_revenue,  '#EC4899', false),
-      makeDataset('{{ year - 1 }}년', CHART_DATA.prev_revenue, '#9CA3AF', true),
+      makeDataset(`${CUR_YEAR}년`,  CHART_DATA.cur_revenue,  '#EC4899', false),
+      makeDataset(`${PREV_YEAR}년`, CHART_DATA.prev_revenue, '#9CA3AF', true),
     ]
   },
   options: chartOpts('억')
@@ -537,114 +562,60 @@ new Chart(document.getElementById('revenueChart'), {
 new Chart(document.getElementById('profitChart'), {
   type: 'line',
   data: {
-    labels: CHART_DATA.labels,
+    labels: fmtLabels,
     datasets: [
-      makeDataset('{{ year }}년', CHART_DATA.cur_profit,  '#8B5CF6', false),
-      makeDataset('{{ year - 1 }}년', CHART_DATA.prev_profit, '#9CA3AF', true),
+      makeDataset(`${CUR_YEAR}년`,  CHART_DATA.cur_profit,  '#8B5CF6', false),
+      makeDataset(`${PREV_YEAR}년`, CHART_DATA.prev_profit, '#9CA3AF', true),
     ]
   },
   options: chartOpts('억')
 });
 
-/* ── 차트 범례 토글 ── */
-function toggleDs(btn) {
-  const legend  = btn.closest('.chart-legend');
-  const chartId = legend.closest('[class*="mp-chart"]').querySelector('canvas').id;
-  const chart   = Chart.getChart(document.getElementById(chartId));
-  const idx     = parseInt(btn.dataset.idx);
-  const meta    = chart.getDatasetMeta(idx);
-  meta.hidden   = !meta.hidden;
-  btn.style.opacity     = meta.hidden ? '0.35' : '1';
-  btn.style.borderColor = meta.hidden ? '#E4E1EE' : '';
-  chart.update();
-}
-
-function initLegendColors() {
-  const COLORS = ['#3B82F6','#EC4899','#8B5CF6'];
-  document.querySelectorAll('.chart-legend').forEach((legend, ci) => {
-    const btns = legend.querySelectorAll('.lg-btn');
-    btns[0]?.querySelector('.lg-line')?.style.setProperty('background', COLORS[ci]);
-  });
+/* ── 연도 변경 ── */
+function changeYear(y) {
+  window.location.href = `/monthly-report?year=${y}&month={{ month }}`;
 }
 
 /* ── 행 삭제 ── */
 async function deleteRow(btn) {
-  const tr = btn.closest('tr');
+  const tr    = btn.closest('tr');
   const year  = parseInt(tr.dataset.year);
   const month = parseInt(tr.dataset.month);
-  const label = month === 0 ? '기준' : `${month}월`;
-  if (!confirm(`${year}년 ${label} 데이터를 삭제할까요?`)) return;
+  if (!confirm(`${year}년 ${month === 0 ? '기준' : month + '월'} 데이터를 삭제할까요?`)) return;
   const res  = await fetch('/api/monthly-report/delete', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ year, month }),
   });
-  const data = await res.json();
-  if (data.ok) tr.remove();
+  if ((await res.json()).ok) tr.remove();
 }
 
 /* ── 테이블 셀 인라인 저장 ── */
 async function saveCell(input) {
-  const tr = input.closest('tr');
+  const tr    = input.closest('tr');
   const year  = parseInt(tr.dataset.year);
   const month = parseInt(tr.dataset.month);
-
-  const get = field => {
-    const el = tr.querySelector(`[data-field="${field}"]`);
-    return el ? el.value : '';
-  };
-
-  const payload = {
-    year, month,
-    members: get('members'),
-    revenue: get('revenue'),
-    profit:  get('profit'),
-    memo:    get('memo'),
-  };
-
+  const get   = f => { const el = tr.querySelector(`[data-field="${f}"]`); return el ? el.value : ''; };
   try {
     const res  = await fetch('/api/monthly-report/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ year, month, members: get('members'), revenue: get('revenue'), profit: get('profit'), memo: get('memo') }),
     });
-    const data = await res.json();
-    if (data.ok) {
+    if ((await res.json()).ok) {
       const s = document.getElementById('save-status');
       s.style.opacity = '1';
       clearTimeout(s._t);
       s._t = setTimeout(() => s.style.opacity = '0', 1500);
     }
-  } catch(e) { /* 네트워크 오류 무시 */ }
-}
-
-initLegendColors();
-
-/* ── 연도 변경 ── */
-function changeYear(y) {
-  const m = {{ month }};
-  window.location.href = `/monthly-report?year=${y}&month=${m}`;
+  } catch(e) {}
 }
 
 /* ── 모달 ── */
 function openInputModal() {
   document.getElementById('modalTitle').textContent = '월별 실적 입력';
-  document.getElementById('inp_members').value = '';
-  document.getElementById('inp_revenue').value = '';
-  document.getElementById('inp_profit').value  = '';
-  document.getElementById('inp_memo').value    = '';
-  document.getElementById('inp_month').value   = {{ month }};
-  document.getElementById('inputModal').style.display = 'flex';
-}
-
-function openEditModal(year, month, members, revenue, profit, memo) {
-  document.getElementById('modalTitle').textContent = `${year}년 ${month}월 수정`;
-  document.getElementById('inp_year').value    = year;
-  document.getElementById('inp_month').value   = month;
-  document.getElementById('inp_members').value = members ?? '';
-  document.getElementById('inp_revenue').value = revenue ?? '';
-  document.getElementById('inp_profit').value  = profit ?? '';
-  document.getElementById('inp_memo').value    = memo ?? '';
+  ['members','revenue','profit','memo'].forEach(k => document.getElementById('inp_' + k).value = '');
+  document.getElementById('inp_month').value = {{ month }};
   document.getElementById('inputModal').style.display = 'flex';
 }
 
@@ -656,12 +627,12 @@ async function saveData() {
   const payload = {
     year:    +document.getElementById('inp_year').value,
     month:   +document.getElementById('inp_month').value,
-    members: document.getElementById('inp_members').value,
-    revenue: document.getElementById('inp_revenue').value,
-    profit:  document.getElementById('inp_profit').value,
-    memo:    document.getElementById('inp_memo').value,
+    members:  document.getElementById('inp_members').value,
+    revenue:  document.getElementById('inp_revenue').value,
+    profit:   document.getElementById('inp_profit').value,
+    memo:     document.getElementById('inp_memo').value,
   };
-  const res = await fetch('/api/monthly-report/save', {
+  const res  = await fetch('/api/monthly-report/save', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -678,4 +649,5 @@ document.getElementById('inputModal').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeInputModal();
 });
 </script>
-{% endblock %}
+</body>
+</html>
