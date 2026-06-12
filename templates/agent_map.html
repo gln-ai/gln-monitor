@@ -662,6 +662,32 @@
       </div>
     </div>
 
+    <div class="pipeline-arrow">↓</div>
+
+    <!-- 보도자료 파이프라인 -->
+    <div class="pipeline-section">
+      <div class="pipeline-section-header">
+        <div class="pipeline-section-label">보도자료</div>
+        <div class="pipeline-section-line"></div>
+      </div>
+      <div class="gorani-grid gorani-grid-1">
+        <div class="gorani-card card-report" style="flex-direction:row;align-items:center;gap:14px;text-align:left;">
+          <div style="font-size:28px;flex-shrink:0;">📰</div>
+          <div style="flex:1;">
+            <div class="agent-name">보도자료 생성기</div>
+            <div id="pr-sub" class="agent-sub">fact_db · pr_rules 기반 생성 · 규칙 학습</div>
+            <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;" id="pr-stats-chips">
+              <span id="pr-chip-total"  style="font-size:10px;background:#F0F9FF;color:#0369A1;padding:2px 8px;border-radius:99px;">전체 -건</span>
+              <span id="pr-chip-month"  style="font-size:10px;background:#DCFCE7;color:#15803D;padding:2px 8px;border-radius:99px;">이번달 -건</span>
+              <span id="pr-chip-sent"   style="font-size:10px;background:#EDE9FE;color:#7000FC;padding:2px 8px;border-radius:99px;">발송 -건</span>
+              <span id="pr-chip-pending" style="font-size:10px;background:#FFFBEB;color:#D97706;padding:2px 8px;border-radius:99px;">검토중 -건</span>
+            </div>
+          </div>
+          <a href="/pr" style="font-size:11px;color:#7000FC;text-decoration:none;flex-shrink:0;font-weight:600;">생성하기 →</a>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ── 오른쪽: 사이드 패널 ── -->
@@ -827,6 +853,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       <div style="font-size:10px;color:#FDE68A;margin-bottom:4px">YELLOW !</div>
       <div style="font-size:13px;font-weight:700;color:#fff">담당자 검토 후 결정</div>
       <div style="font-size:11px;color:#FDE68A;margin-top:4px">${y}개 검토 필요</div>`;
+  }
+
+  // ── 보도자료 통계 ──
+  if (stats.pr) {
+    const pr = stats.pr;
+    const chipTotal   = document.getElementById('pr-chip-total');
+    const chipMonth   = document.getElementById('pr-chip-month');
+    const chipSent    = document.getElementById('pr-chip-sent');
+    const chipPending = document.getElementById('pr-chip-pending');
+    if (chipTotal)   chipTotal.textContent   = `전체 ${pr.total}건`;
+    if (chipMonth)   chipMonth.textContent   = `이번달 ${pr.this_month}건`;
+    if (chipSent)    chipSent.textContent    = `발송 ${pr.sent}건`;
+    if (chipPending) chipPending.textContent = `검토중 ${pr.pending}건`;
   }
 });
 </script>

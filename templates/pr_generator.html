@@ -116,6 +116,15 @@ select { height: 34px; cursor: pointer; }
 .btn-reject:hover { background: var(--color-background-secondary); }
 .saved-badge { font-size: 10px; color: #27ae60; font-weight: 600; display: none; margin-left: 6px; }
 .learn-summary { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.65rem 0.9rem; font-size: 11px; color: var(--color-text-secondary); line-height: 1.7; margin-bottom: 1rem; border: 0.5px solid var(--color-border-tertiary); }
+.src-toggle { flex: 1; padding: 6px 8px; font-size: 11px; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; color: var(--color-text-secondary); background: var(--color-background-primary); transition: all 0.1s; }
+.src-toggle.active { background: #7000FC; color: #fff; border-color: #7000FC; }
+.candidate-item { padding: 7px 10px; border-bottom: 0.5px solid var(--color-border-tertiary); cursor: pointer; font-size: 12px; line-height: 1.5; }
+.candidate-item:last-child { border-bottom: none; }
+.candidate-item:hover { background: #F5F3FF; }
+.candidate-item.selected { background: #EDE9FE; }
+.candidate-score { display: inline-block; background: #FFF3CD; color: #856404; font-size: 9px; font-weight: 600; padding: 1px 5px; border-radius: 3px; margin-right: 4px; }
+.candidate-title { color: var(--color-text-primary); font-weight: 500; }
+.candidate-sub { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; }
 {% endblock %}
 
 {% block topbar_title %}보도자료 생성기{% endblock %}
@@ -145,44 +154,89 @@ select { height: 34px; cursor: pointer; }
   <!-- 기사 생성 탭 -->
   <div id="tab-gen" class="tab-content active">
     <div class="app-sidebar">
+
+      <!-- 소재 방식 토글 -->
+      <div class="sl" style="margin-top:0;">소재 방식</div>
+      <div style="display:flex;gap:4px;margin-bottom:0.6rem;">
+        <button class="src-toggle active" id="srcDirect" onclick="setSrcMode('direct',this)">✏️ 직접 입력</button>
+        <button class="src-toggle" id="srcPost" onclick="setSrcMode('post',this)">🔍 게시글 선택</button>
+      </div>
+
+      <!-- 게시글 선택 패널 -->
+      <div id="candidatesPanel" style="display:none;margin-bottom:0.8rem;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <input type="text" id="candidateSearch" placeholder="제목 검색..." style="flex:1;font-size:11px;padding:5px 8px;" oninput="filterCandidates()"/>
+          <button class="btn-sm" onclick="loadCandidates()" style="padding:5px 9px;font-size:11px;white-space:nowrap;">새로고침</button>
+        </div>
+        <div id="candidateList" style="max-height:220px;overflow-y:auto;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);"></div>
+        <div id="selectedPostInfo" style="display:none;margin-top:6px;padding:7px 9px;background:#F5F3FF;border-radius:var(--border-radius-md);font-size:11px;color:#7000FC;line-height:1.5;"></div>
+      </div>
+
       <div class="sl">보도자료 유형</div>
       <select id="pressType">
-        <option value="서비스 출시">서비스 출시 / 론칭</option>
-        <option value="제휴·파트너십">제휴 · 파트너십 체결</option>
-        <option value="서비스 확대">서비스 확대 / 지역 확장</option>
-        <option value="프로모션·이벤트">프로모션 · 이벤트</option>
-        <option value="투자·성과">투자 유치 / 실적 성과</option>
-        <option value="기술·솔루션">기술 · 솔루션 발표</option>
+        <option value="서비스 출시 / 론칭">서비스 출시 / 론칭</option>
+        <option value="제휴 · 파트너십 체결">제휴 · 파트너십 체결</option>
+        <option value="서비스 확대 / 지역 확장">서비스 확대 / 지역 확장</option>
+        <option value="프로모션 · 이벤트">프로모션 · 이벤트</option>
+        <option value="투자 유치 / 실적 성과">투자 유치 / 실적 성과</option>
+        <option value="기술 · 솔루션 발표">기술 · 솔루션 발표</option>
+        <option value="위기 대응">위기 대응</option>
       </select>
-      <div class="sl">발표 국가 / 지역 <span style="font-size:9px;color:var(--color-text-tertiary);">(이용자 많은 순)</span></div>
-      <input type="text" id="country" placeholder="예: 일본, 베트남, 라오스" />
+
+      <div class="sl">발표 국가 <span style="font-size:9px;color:var(--color-text-tertiary);">(이용자 많은 순)</span></div>
+      <select id="countrySelect" onchange="onCountryChange()">
+        <option value="">국가 선택 (선택사항)</option>
+        {% for c in countries %}
+        <option value="{{ c.code }}" {% if not c.active %}disabled style="color:#bbb"{% endif %}>
+          {{ c.flag }} {{ c.name }}{% if not c.active %} (서비스 중단){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+
+      <!-- 국가 서비스 현황 패널 -->
+      <div id="countryCtxPanel" style="display:none;margin-top:6px;margin-bottom:2px;padding:8px 10px;background:#EEF2FF;border-radius:var(--border-radius-md);font-size:11px;line-height:1.65;color:#3730A3;"></div>
+
       <div class="sl">핵심 내용 요약 <span style="color:var(--color-text-danger)">*</span></div>
-      <textarea id="summary" placeholder="보도자료 핵심 내용을 1~3줄로 요약해 주세요." style="min-height:75px;"></textarea>
+      <textarea id="summary" placeholder="보도자료 핵심 내용을 1~3줄로 요약해 주세요." style="min-height:75px;" oninput="document.getElementById('summaryCount').textContent=this.value.length+'자'"></textarea>
       <div class="char-c" id="summaryCount">0자</div>
+
       <div class="sl">주요 서비스명</div>
       <input type="text" id="serviceName" placeholder="예: QR출금, 위챗페이 QR결제" />
+
       <div class="sl">제휴사 / 파트너 <span class="opt">(선택)</span></div>
       <input type="text" id="partner" placeholder="예: Tenpay Global" />
+
       <div class="sl">포함할 주요 앱</div>
       <div class="tag-wrap" id="appsWrap" onclick="document.getElementById('appTagInput').focus()">
         <input class="tag-input" id="appTagInput" placeholder="앱 이름 입력 후 Enter" />
       </div>
+
       <div class="sl">강조 키워드</div>
       <div class="tag-wrap" id="keywordsWrap" onclick="document.getElementById('kwTagInput').focus()">
         <input class="tag-input" id="kwTagInput" placeholder="키워드 입력 후 Enter" />
       </div>
+
+      <div class="sl">내부 태그 <span class="opt">(선택 — 분류·검색용)</span></div>
+      <div class="tag-wrap" id="tagsWrap" onclick="document.getElementById('tagInput').focus()">
+        <input class="tag-input" id="tagInput" placeholder="태그 입력 후 Enter" />
+      </div>
+
       <div class="sl">이석 대표 발언 맥락 <span class="opt">(선택)</span></div>
       <textarea id="ceoContext" placeholder="없으면 기본 문구 자동 사용" style="min-height:45px;"></textarea>
+
       <div class="sl">추가 사항 <span class="opt">(선택)</span></div>
       <textarea id="extra" placeholder="프로모션 기간, 수치, 특이사항 등" style="min-height:45px;"></textarea>
+
       <div class="sl">발표 날짜</div>
       <input type="text" id="releaseDate" placeholder="예: 2026년 4월 15일" />
+
       <button class="btn-primary" id="genBtn" onclick="buildAndSend()">기사문 생성하기 ↗</button>
     </div>
     <div class="main-panel" id="outputPanel">
       <div class="placeholder">
         <div style="font-size:32px;">📄</div>
         <p style="font-size:13px;color:var(--color-text-secondary);text-align:center;">좌측 양식을 입력하고<br>기사문 생성하기를 눌러주세요</p>
+        <p style="font-size:11px;color:var(--color-text-tertiary);text-align:center;margin-top:4px;">국가를 선택하면 서비스 현황이<br>보도자료에 자동 반영됩니다</p>
       </div>
     </div>
   </div>
@@ -337,10 +391,104 @@ select { height: 34px; cursor: pointer; }
 
 {% block scripts %}
 <script>
-const appTags=[], kwTags=[];
+const appTags=[], kwTags=[], prTags=[];
 let selectedMode='단락 수정';
 let selectedIntensity='가볍게';
 let selectedChips=new Set(['이용자 규모 순 강조','모바일만으로 여행 컨셉']);
+let _srcMode = 'direct';
+let _candidates = [];
+let _selectedPostId = null;
+let _selectedPostTitle = '';
+
+// ── 소재 방식 토글 ─────────────────────────────────
+function setSrcMode(mode, btn) {
+  _srcMode = mode;
+  document.querySelectorAll('.src-toggle').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('candidatesPanel').style.display = mode === 'post' ? '' : 'none';
+  if (mode === 'post' && _candidates.length === 0) loadCandidates();
+}
+
+async function loadCandidates() {
+  const listEl = document.getElementById('candidateList');
+  listEl.innerHTML = '<div style="padding:8px 10px;font-size:11px;color:var(--color-text-tertiary);">로딩 중...</div>';
+  try {
+    const res  = await fetch('/api/pr/candidates?limit=30');
+    const data = await res.json();
+    _candidates = data;
+    renderCandidates(_candidates);
+  } catch(e) {
+    listEl.innerHTML = '<div style="padding:8px 10px;font-size:11px;color:#c0392b;">불러오기 실패: ' + e.message + '</div>';
+  }
+}
+
+function renderCandidates(list) {
+  const listEl = document.getElementById('candidateList');
+  if (!list.length) {
+    listEl.innerHTML = '<div style="padding:8px 10px;font-size:11px;color:var(--color-text-tertiary);">최근 30일 내 중요도 7+ 게시글이 없습니다.</div>';
+    return;
+  }
+  listEl.innerHTML = list.map((c, i) => `
+    <div class="candidate-item ${c.id === _selectedPostId ? 'selected' : ''}" onclick="selectCandidate(${i})">
+      <div><span class="candidate-score">${c.importance_score || '-'}점</span><span class="candidate-title">${escHtml(c.title || '')}</span></div>
+      <div class="candidate-sub">${escHtml(c.category || '')} · ${escHtml((c.summary || c.description || '').slice(0, 60))}...</div>
+    </div>
+  `).join('');
+}
+
+function filterCandidates() {
+  const q = document.getElementById('candidateSearch').value.toLowerCase().trim();
+  const filtered = q ? _candidates.filter(c => (c.title || '').toLowerCase().includes(q)) : _candidates;
+  renderCandidates(filtered);
+}
+
+function selectCandidate(idx) {
+  const c = _candidates[idx];
+  if (!c) return;
+  _selectedPostId = c.id;
+  _selectedPostTitle = c.title || '';
+  window._sourcePrPostId = c.id;
+
+  // 요약 자동 채움
+  const summaryEl = document.getElementById('summary');
+  if (summaryEl && !summaryEl.value) {
+    summaryEl.value = c.summary || c.description || '';
+    document.getElementById('summaryCount').textContent = summaryEl.value.length + '자';
+  }
+
+  // 선택된 게시글 정보 표시
+  const infoEl = document.getElementById('selectedPostInfo');
+  infoEl.style.display = '';
+  infoEl.innerHTML = `✓ 선택됨: <strong>${escHtml(c.title || '')}</strong><br>중요도 ${c.importance_score || '-'}/10 · ${escHtml(c.category || '')}`;
+
+  renderCandidates(_candidates);
+}
+
+// ── 국가 변경 → 서비스 현황 패널 ─────────────────
+async function onCountryChange() {
+  const code  = document.getElementById('countrySelect').value;
+  const panel = document.getElementById('countryCtxPanel');
+  if (!code) { panel.style.display = 'none'; return; }
+  try {
+    const res  = await fetch(`/api/pr/fact-context?country=${code}`);
+    const info = await res.json();
+    if (res.ok) {
+      const services = [];
+      if (info.qr_payment) services.push('QR결제(' + (info.qr_network?.join('·') || '가능') + ')');
+      if (info.atm)        services.push('QR출금(' + (info.atm_network?.join('·') || '가능') + ')');
+      panel.innerHTML =
+        `<strong>${info.flag} ${info.name_ko}</strong> — ${info.launch_status}<br>` +
+        (services.length ? '서비스: ' + services.join(', ') + '<br>' : '') +
+        (info.major_cities?.length ? '주요 도시: ' + info.major_cities.join('·') + '<br>' : '') +
+        (info.currency ? '통화: ' + info.currency : '');
+      panel.style.display = '';
+    } else {
+      panel.style.display = 'none';
+    }
+  } catch(e) {
+    panel.style.display = 'none';
+  }
+}
 
 function switchTab(t,el){
   document.querySelectorAll('.tab').forEach(e=>{e.classList.remove('active');});
@@ -392,14 +540,16 @@ function removeTag(i,wrapId,inputId){
 }
 setupTagInput('appTagInput',appTags,'appsWrap');
 setupTagInput('kwTagInput',kwTags,'keywordsWrap');
-document.getElementById('summary').addEventListener('input',function(){document.getElementById('summaryCount').textContent=this.value.length+'자';});
+setupTagInput('tagInput',prTags,'tagsWrap');
 function updateDraftCount(){document.getElementById('draftCount').textContent=document.getElementById('draftInput').value.length+'자';}
 
 function buildAndSend(){
   const summary=document.getElementById('summary').value.trim();
   if(!summary){alert('핵심 내용 요약은 필수입니다.');return;}
   const pressType=document.getElementById('pressType').value;
-  const country=document.getElementById('country').value.trim();
+  const country=document.getElementById('countrySelect').value;
+  const countryOption = document.getElementById('countrySelect').selectedOptions[0];
+  const countryText = country ? countryOption.text.trim() : '';
   const serviceName=document.getElementById('serviceName').value.trim();
   const partner=document.getElementById('partner').value.trim();
   const apps=appTags.length?appTags.join(', '):'퍼플GLN, 토스, 네이버페이';
@@ -429,7 +579,7 @@ function buildAndSend(){
 
 [입력 정보]
 유형: ${pressType}
-국가/지역: ${country||'미입력'}
+국가/지역: ${countryText||'미입력'}
 핵심내용: ${summary}
 서비스명: ${serviceName||'미입력'}
 제휴사: ${partner||'없음'}
@@ -443,14 +593,30 @@ function buildAndSend(){
   btn.disabled=true; btn.textContent='생성 중...';
   document.getElementById('outputPanel').innerHTML='<div class="loading-box"><span>⏳</span> Claude가 보도자료를 작성하고 있습니다...</div>';
 
-  fetch('/api/pr/generate', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({prompt:prompt})})
+  window._lastPrCountry   = country;
+  window._lastPrPressType = pressType;
+
+  fetch('/api/pr/generate', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+    prompt,
+    country,
+    pr_type: pressType,
+    source_post_id: window._sourcePrPostId || null,
+  })})
     .then(r=>r.json())
     .then(d=>{
       if(d.error){
         document.getElementById('outputPanel').innerHTML='<div style="color:#c0392b;padding:1rem;font-size:13px;">오류: '+escHtml(d.error)+'</div>';
       } else {
         window._lastPrResult = d.result;
-        document.getElementById('outputPanel').innerHTML='<div class="preview-box" id="prResultText">'+escHtml(d.result)+'</div><div style="display:flex;gap:6px;margin-top:0.6rem;flex-wrap:wrap;"><button class="btn-sm" onclick="cpText(\'#outputPanel .preview-box\',\'복사\',this)">복사</button><button class="btn-sm" style="background:#059669;color:#fff;border:none;" onclick="savePrDraft(this)">DB 저장</button><button class="btn-sm blue" onclick="buildAndSend()">재생성 ↗</button></div>';
+        // 금칙어 하이라이트
+        const highlighted = highlightForbidden(d.result);
+        document.getElementById('outputPanel').innerHTML=
+          '<div class="preview-box" id="prResultText">'+highlighted+'</div>'+
+          '<div style="display:flex;gap:6px;margin-top:0.6rem;flex-wrap:wrap;">'+
+          '<button class="btn-sm" onclick="cpText(\'#outputPanel .preview-box\',\'복사\',this)">복사</button>'+
+          '<button class="btn-sm" style="background:#059669;color:#fff;border:none;" onclick="savePrDraft(this)">DB 저장</button>'+
+          '<button class="btn-sm blue" onclick="buildAndSend()">재생성 ↗</button>'+
+          '</div>';
       }
     })
     .catch(e=>{document.getElementById('outputPanel').innerHTML='<div style="color:#c0392b;padding:1rem;font-size:13px;">네트워크 오류: '+escHtml(e.message)+'</div>';})
@@ -523,6 +689,16 @@ ${draft}`;
 
 function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 
+const _FORBIDDEN_WORDS = ['ATM출금','ATM 출금','ATMQR출금','금융서비스','금융 서비스','무료 환전','수수료 없음','보장','최저 수수료','100%'];
+function highlightForbidden(text) {
+  let escaped = escHtml(text);
+  _FORBIDDEN_WORDS.forEach(w => {
+    const re = new RegExp(escHtml(w).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'g');
+    escaped = escaped.replace(re, `<mark style="background:#FFE0E0;color:#c0392b;border-radius:2px;padding:0 2px;">${escHtml(w)}</mark>`);
+  });
+  return escaped;
+}
+
 async function savePrDraft(btn) {
   const raw = window._lastPrResult || '';
   if (!raw) return;
@@ -547,6 +723,9 @@ async function savePrDraft(btn) {
       key_messages:    sections['KEY_MESSAGES'] || sections['핵심 메시지'] || '',
       verify_list:     sections['VERIFY_LIST'] || sections['검증 목록'] || '',
       source_post_id:  window._sourcePrPostId || null,
+      country:         window._lastPrCountry || '',
+      press_type:      window._lastPrPressType || '',
+      tags:            [...prTags],
     })
   });
   const data = await res.json();

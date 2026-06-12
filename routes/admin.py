@@ -175,6 +175,17 @@ def api_agent_map_stats():
     ).fetchall()
     keywords = [r["keyword"] for r in kw_rows]
 
+    # ── 보도자료 통계 ──
+    pr_row = conn.execute("""
+        SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now', 'localtime') THEN 1 ELSE 0 END) AS this_month,
+            SUM(CASE WHEN approval_status = 'approved' THEN 1 ELSE 0 END) AS approved,
+            SUM(CASE WHEN sent_at IS NOT NULL THEN 1 ELSE 0 END) AS sent,
+            SUM(CASE WHEN approval_status = 'pending' THEN 1 ELSE 0 END) AS pending
+        FROM pr_drafts
+    """).fetchone()
+
     conn.close()
 
     return jsonify({
@@ -202,6 +213,13 @@ def api_agent_map_stats():
             "red":     grade_map.get("red",     0),
             "pending": grade_map.get("pending", 0),
             "published": published,
+        },
+        "pr": {
+            "total":      pr_row["total"]      if pr_row else 0,
+            "this_month": pr_row["this_month"] if pr_row else 0,
+            "approved":   pr_row["approved"]   if pr_row else 0,
+            "sent":       pr_row["sent"]        if pr_row else 0,
+            "pending":    pr_row["pending"]    if pr_row else 0,
         },
         "keywords": keywords,
     })

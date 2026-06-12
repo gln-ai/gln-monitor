@@ -155,6 +155,11 @@ def init_db():
         # 테이블 자체는 아래 CREATE TABLE IF NOT EXISTS로 생성
         # content_drafts에 발행 URL 추가
         "ALTER TABLE content_drafts ADD COLUMN published_url TEXT",
+        # v14: 보도자료 확장
+        "ALTER TABLE pr_drafts ADD COLUMN country TEXT",
+        "ALTER TABLE pr_drafts ADD COLUMN tags TEXT",
+        "ALTER TABLE pr_drafts ADD COLUMN sent_at TEXT",
+        "ALTER TABLE pr_drafts ADD COLUMN sent_to TEXT",
     ]:
         try:
             conn.execute(alter_sql)

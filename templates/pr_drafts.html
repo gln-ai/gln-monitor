@@ -2,6 +2,10 @@
 {% block title %}GLN 보도자료 초안 목록{% endblock %}
 
 {% block page_styles %}
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+.stat-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 12px; padding: 14px 16px; }
+.stat-num { font-size: 22px; font-weight: 800; color: #130D2A; line-height: 1.1; }
+.stat-lbl { font-size: 10px; color: #918DA0; margin-top: 3px; }
 .card-grid { display: flex; flex-direction: column; gap: 10px; }
 .draft-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; padding: 16px 20px; cursor: pointer; text-decoration: none; display: block; transition: box-shadow 0.15s, border-color 0.15s; }
 .draft-card:hover { border-color: #C4B5FD; box-shadow: 0 2px 12px rgba(112,0,252,0.08); }
@@ -10,16 +14,19 @@
 .badge-approved { background: #F0FDF4; color: #059669; }
 .badge-rejected { background: #FEF2F2; color: #DC2626; }
 .badge-verify   { background: #FFFBEB; color: #D97706; }
+.badge-sent     { background: #E0F2FE; color: #0369A1; }
 .card-date { font-size: 10px; color: #AAA7B8; margin-left: auto; }
 .card-headline { font-size: 14px; font-weight: 700; color: #130D2A; line-height: 1.4; margin-bottom: 4px; }
 .card-sub { font-size: 12px; color: #5E5A71; line-height: 1.5; }
 .card-arrow { display: flex; align-items: center; justify-content: flex-end; margin-top: 10px; color: #C4B5FD; }
-.filter-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-.filter-btn { background: #F6F5FF; border: 0.5px solid #E4E1EE; color: #5E5A71; border-radius: 99px; padding: 5px 14px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.1s; }
+.filter-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.filter-btn { background: #F6F5FF; border: 0.5px solid #E4E1EE; color: #5E5A71; border-radius: 99px; padding: 5px 13px; font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.1s; white-space: nowrap; }
 .filter-btn.active { background: #7000FC; border-color: #7000FC; color: #fff; }
-.search-inp { flex: 1; min-width: 160px; max-width: 280px; border: 0.5px solid #E4E1EE; border-radius: 99px; padding: 6px 14px; font-size: 12px; outline: none; color: #130D2A; }
+.search-inp { flex: 1; min-width: 140px; max-width: 260px; border: 0.5px solid #E4E1EE; border-radius: 99px; padding: 6px 13px; font-size: 11px; outline: none; color: #130D2A; }
 .search-inp:focus { border-color: #7000FC; }
+.filter-sep { width: 0.5px; height: 16px; background: #E4E1EE; flex-shrink: 0; }
 .card-hidden { display: none !important; }
+.type-badge { font-size: 10px; background: #F0F9FF; color: #0369A1; padding: 2px 7px; border-radius: 99px; font-weight: 500; }
 {% endblock %}
 
 {% block topbar_title %}보도자료 초안 목록{% endblock %}
@@ -30,17 +37,56 @@
 {% endblock %}
 
 {% block content %}
+
+<!-- 통계 카드 -->
+{% if stats %}
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-num">{{ stats.total or 0 }}</div>
+    <div class="stat-lbl">전체 보도자료</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ stats.this_month or 0 }}</div>
+    <div class="stat-lbl">이번 달 생성</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ stats.approved or 0 }}</div>
+    <div class="stat-lbl">승인됨</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">{{ stats.sent or 0 }}</div>
+    <div class="stat-lbl">발송됨</div>
+  </div>
+</div>
+{% endif %}
+
 {% if not drafts %}
 <div class="empty-state" style="background:#fff;border:0.5px solid #E4E1EE;border-radius:14px;">
   아직 보도자료 초안이 없어요.<br>
-  <a href="/pr" style="color:#7000FC;text-decoration:none;font-weight:600;">보도자료 생성기</a>에서 만들거나 pr_generator.py를 실행하세요.
+  <a href="/pr" style="color:#7000FC;text-decoration:none;font-weight:600;">보도자료 생성기</a>에서 만들어 보세요.
 </div>
 {% else %}
+
+<!-- 필터바 -->
 <div class="filter-bar">
-  <button class="filter-btn active" onclick="setFilter('all', this)">전체</button>
-  <button class="filter-btn" onclick="setFilter('pending', this)">검토중</button>
-  <button class="filter-btn" onclick="setFilter('approved', this)">승인완료</button>
-  <button class="filter-btn" onclick="setFilter('verify', this)">검증필요</button>
+  <button class="filter-btn active" data-filter="status" data-val="all" onclick="setFilter('status','all',this)">전체</button>
+  <button class="filter-btn" data-filter="status" data-val="pending" onclick="setFilter('status','pending',this)">검토중</button>
+  <button class="filter-btn" data-filter="status" data-val="approved" onclick="setFilter('status','approved',this)">승인완료</button>
+  <button class="filter-btn" data-filter="status" data-val="sent" onclick="setFilter('status','sent',this)">발송됨</button>
+  <button class="filter-btn" data-filter="status" data-val="verify" onclick="setFilter('status','verify',this)">검증필요</button>
+
+  <span class="filter-sep"></span>
+
+  <!-- 국가 필터 -->
+  <button class="filter-btn active" data-filter="country" data-val="all" onclick="setFilter('country','all',this)">🌐 전체 국가</button>
+  {% for c in countries %}
+  {% set has = drafts | selectattr('country', 'equalto', c.code) | list %}
+  {% if has %}
+  <button class="filter-btn" data-filter="country" data-val="{{ c.code }}" onclick="setFilter('country','{{ c.code }}',this)">{{ c.flag }} {{ c.name }}</button>
+  {% endif %}
+  {% endfor %}
+
+  <span class="filter-sep"></span>
   <input class="search-inp" id="search-inp" placeholder="제목 검색..." oninput="applyFilters()">
 </div>
 
@@ -48,10 +94,14 @@
   {% for d in drafts %}
   <a href="/pr/drafts/{{ d.id }}" class="draft-card"
      data-status="{{ d.approval_status }}"
+     data-sent="{{ 'yes' if d.sent_at else 'no' }}"
      data-verify="{{ 'yes' if (d.verify_list and d.verify_list != '없음' and d.verify_list|length > 2) else 'no' }}"
+     data-country="{{ d.country or '' }}"
      data-headline="{{ (d.headline or '')|lower|e }}">
     <div class="card-meta">
-      {% if d.approval_status == 'approved' %}
+      {% if d.sent_at %}
+        <span class="badge badge-sent">발송됨</span>
+      {% elif d.approval_status == 'approved' %}
         <span class="badge badge-approved">승인완료</span>
       {% elif d.approval_status == 'rejected' %}
         <span class="badge badge-rejected">반려</span>
@@ -60,6 +110,15 @@
       {% endif %}
       {% if d.verify_list and d.verify_list != '없음' and d.verify_list|length > 2 %}
         <span class="badge badge-verify">검증필요</span>
+      {% endif %}
+      {% if d.country %}
+        <span style="font-size:12px;">{{ country_emoji.get(d.country, '🌐') }}</span>
+      {% endif %}
+      {% if d.pr_type and d.pr_type != 'general' %}
+        <span class="type-badge">{{ pr_type_label.get(d.pr_type, d.pr_type) }}</span>
+      {% endif %}
+      {% if d.tags and d.tags != '[]' and d.tags != 'null' %}
+        <span class="badge" style="background:#F6F5FF;color:#7000FC;font-size:10px;">🏷 태그있음</span>
       {% endif %}
       <span class="card-date">{{ d.created_at[:16] if d.created_at else '' }}</span>
     </div>
@@ -91,29 +150,39 @@
 
 {% block scripts %}
 <script>
-let _activeStatus = 'all';
+const _filters = { status: 'all', country: 'all' };
 
-function setFilter(status, btn) {
-  _activeStatus = status;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+function setFilter(type, val, btn) {
+  _filters[type] = val;
+  document.querySelectorAll(`[data-filter="${type}"]`).forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   applyFilters();
 }
 
 function applyFilters() {
-  const query = (document.getElementById('search-inp')?.value || '').toLowerCase().trim();
-  const cards = document.querySelectorAll('#card-grid .draft-card');
+  const query   = (document.getElementById('search-inp')?.value || '').toLowerCase().trim();
+  const cards   = document.querySelectorAll('#card-grid .draft-card');
   let visible = 0;
   cards.forEach(card => {
     const status   = card.dataset.status;
+    const sent     = card.dataset.sent;
     const verify   = card.dataset.verify;
+    const country  = card.dataset.country;
     const headline = card.dataset.headline || '';
     let show = true;
-    if (_activeStatus === 'pending'  && status !== 'pending')  show = false;
-    if (_activeStatus === 'approved' && status !== 'approved') show = false;
-    if (_activeStatus === 'rejected' && status !== 'rejected') show = false;
-    if (_activeStatus === 'verify'   && verify !== 'yes')      show = false;
-    if (query && !headline.includes(query))                    show = false;
+
+    const sf = _filters.status;
+    if (sf === 'pending'  && status !== 'pending')  show = false;
+    if (sf === 'approved' && status !== 'approved') show = false;
+    if (sf === 'rejected' && status !== 'rejected') show = false;
+    if (sf === 'sent'     && sent   !== 'yes')      show = false;
+    if (sf === 'verify'   && verify !== 'yes')      show = false;
+
+    const cf = _filters.country;
+    if (cf && cf !== 'all' && country !== cf) show = false;
+
+    if (query && !headline.includes(query)) show = false;
+
     card.classList.toggle('card-hidden', !show);
     if (show) visible++;
   });

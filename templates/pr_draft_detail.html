@@ -6,7 +6,9 @@
 .badge-approved { background: #F0FDF4; color: #059669; }
 .badge-rejected { background: #FEF2F2; color: #DC2626; }
 .badge-verify   { background: #FFFBEB; color: #D97706; }
-.meta-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.badge-sent     { background: #E0F2FE; color: #0369A1; }
+.detail-layout  { display: grid; grid-template-columns: 1fr 280px; gap: 16px; align-items: start; }
+.meta-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
 .meta-date { font-size: 11px; color: #AAA7B8; }
 .section-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; padding: 20px 24px; margin-bottom: 12px; transition: border-color 0.15s; }
 .section-card.editing { border-color: #7000FC; }
@@ -21,8 +23,31 @@
 .edit-textarea { width: 100%; box-sizing: border-box; border: 1.5px solid #7000FC; border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.85; color: #130D2A; font-family: inherit; resize: vertical; outline: none; background: #FAFAF9; }
 .edit-textarea.headline-ta { font-size: 16px; font-weight: 700; }
 .action-bar { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
-.pr-type-badge { font-size: 10px; background: #F6F5FF; color: #5E5A71; padding: 2px 8px; border-radius: 99px; }
+.pr-type-badge { font-size: 10px; background: #F0F9FF; color: #0369A1; padding: 2px 8px; border-radius: 99px; }
 .toast { display:none; position:fixed; bottom:24px; right:24px; background:#130D2A; color:#fff; padding:10px 18px; border-radius:10px; font-size:12px; font-weight:500; z-index:100; }
+/* ── 사이드 패널 ── */
+.side-panel { display: flex; flex-direction: column; gap: 12px; }
+.side-card { background: #fff; border: 0.5px solid #E4E1EE; border-radius: 14px; overflow: hidden; }
+.side-card-header { padding: 10px 14px; font-size: 10px; font-weight: 700; color: #918DA0; text-transform: uppercase; letter-spacing: 0.08em; border-bottom: 0.5px solid #F0EDF7; display: flex; justify-content: space-between; align-items: center; }
+.checklist-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 14px; border-bottom: 0.5px solid #F0EDF7; font-size: 12px; color: #130D2A; line-height: 1.4; }
+.checklist-item:last-child { border-bottom: none; }
+.checklist-item input[type=checkbox] { margin-top: 1px; flex-shrink: 0; }
+.checklist-item.checked { text-decoration: line-through; color: #AAA7B8; }
+.country-info-box { padding: 12px 14px; font-size: 11px; line-height: 1.65; color: #3730A3; background: #EEF2FF; }
+/* ── 규칙 학습 ── */
+.learn-section { }
+.learn-toggle { width: 100%; text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; color: #918DA0; text-transform: uppercase; letter-spacing: 0.08em; background: none; border: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.learn-toggle:hover { background: #F6F5FF; }
+.learn-body { padding: 12px 14px; border-top: 0.5px solid #F0EDF7; display: none; }
+.learn-body.open { display: block; }
+.suggest-card { border: 0.5px solid #E4E1EE; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; }
+.suggest-card.forbidden { border-left: 3px solid #e74c3c; }
+.suggest-card.phrase    { border-left: 3px solid #7000FC; }
+.suggest-card.naming    { border-left: 3px solid #27ae60; }
+.suggest-card.checklist { border-left: 3px solid #f0c040; }
+.btn-accept-sm { padding: 3px 10px; font-size: 10px; background: #7000FC; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+.btn-accept-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-reject-sm { padding: 3px 10px; font-size: 10px; background: none; border: 0.5px solid #E4E1EE; border-radius: 4px; cursor: pointer; color: #918DA0; }
 {% endblock %}
 
 {% block topbar_back %}
@@ -40,88 +65,165 @@
 {% endblock %}
 
 {% block content %}
-<div style="max-width:800px;">
-  <div class="meta-bar">
-    {% if draft.approval_status == 'approved' %}
-      <span class="badge badge-approved">승인완료</span>
-    {% elif draft.approval_status == 'rejected' %}
-      <span class="badge badge-rejected">반려</span>
-    {% else %}
-      <span class="badge badge-pending">검토중</span>
-    {% endif %}
-    {% if draft.verify_list and draft.verify_list != '없음' and draft.verify_list|length > 2 %}
-      <span class="badge badge-verify">검증필요</span>
-    {% endif %}
-    {% if draft.pr_type and draft.pr_type != 'general' %}
-      <span class="pr-type-badge">{{ draft.pr_type }}</span>
-    {% endif %}
-    <span class="meta-date">{{ draft.created_at[:16] if draft.created_at else '' }}</span>
-    {% if draft.updated_at and draft.updated_at != draft.created_at %}
-      <span class="meta-date">수정 {{ draft.updated_at[:16] }}</span>
-    {% endif %}
-  </div>
+<div class="meta-bar">
+  {% if draft.sent_at %}
+    <span class="badge badge-sent">발송됨</span>
+  {% elif draft.approval_status == 'approved' %}
+    <span class="badge badge-approved">승인완료</span>
+  {% elif draft.approval_status == 'rejected' %}
+    <span class="badge badge-rejected">반려</span>
+  {% else %}
+    <span class="badge badge-pending">검토중</span>
+  {% endif %}
+  {% if draft.verify_list and draft.verify_list != '없음' and draft.verify_list|length > 2 %}
+    <span class="badge badge-verify">검증필요</span>
+  {% endif %}
+  {% if draft.country %}
+    <span style="font-size:13px;">{{ country_emoji.get(draft.country, '🌐') }}</span>
+  {% endif %}
+  {% if draft.pr_type and draft.pr_type != 'general' %}
+    <span class="pr-type-badge">{{ pr_type_label.get(draft.pr_type, draft.pr_type) }}</span>
+  {% endif %}
+  <span class="meta-date">{{ draft.created_at[:16] if draft.created_at else '' }}</span>
+  {% if draft.updated_at and draft.updated_at != draft.created_at %}
+    <span class="meta-date">수정 {{ draft.updated_at[:16] }}</span>
+  {% endif %}
+  {% if draft.sent_at %}
+    <span class="meta-date">발송 {{ draft.sent_at[:16] }}</span>
+  {% endif %}
+</div>
 
-  <!-- 헤드라인 -->
-  <div class="section-card" id="card-headline">
-    <div class="section-label-row">
-      <span class="section-label">헤드라인</span>
-      <button class="edit-btn" onclick="toggleEdit('headline')" title="편집">✎</button>
-    </div>
-    <div id="view-headline" class="section-headline">{{ draft.headline }}</div>
-    <textarea id="edit-headline" class="edit-textarea headline-ta" rows="2" style="display:none">{{ draft.headline }}</textarea>
-
-    <div id="sub-wrapper" style="margin-top:10px;padding-top:10px;border-top:0.5px solid #F0EDF7;{% if not draft.subheadline %}display:none{% endif %}">
+<div class="detail-layout">
+  <!-- 메인 컨텐츠 -->
+  <div>
+    <!-- 헤드라인 -->
+    <div class="section-card" id="card-headline">
       <div class="section-label-row">
-        <span class="section-label">부제</span>
-        <button class="edit-btn" onclick="toggleEdit('subheadline')" title="편집">✎</button>
+        <span class="section-label">헤드라인</span>
+        <button class="edit-btn" onclick="toggleEdit('headline')" title="편집">✎</button>
       </div>
-      <div id="view-subheadline" class="section-sub">{{ draft.subheadline or '' }}</div>
-      <textarea id="edit-subheadline" class="edit-textarea" rows="2" style="display:none">{{ draft.subheadline or '' }}</textarea>
-    </div>
-  </div>
+      <div id="view-headline" class="section-headline">{{ draft.headline }}</div>
+      <textarea id="edit-headline" class="edit-textarea headline-ta" rows="2" style="display:none">{{ draft.headline }}</textarea>
 
-  <!-- 본문 -->
-  <div class="section-card" id="card-body">
-    <div class="section-label-row">
-      <span class="section-label">보도자료 본문</span>
-      <button class="edit-btn" onclick="toggleEdit('body')" title="편집">✎</button>
+      <div id="sub-wrapper" style="margin-top:10px;padding-top:10px;border-top:0.5px solid #F0EDF7;{% if not draft.subheadline %}display:none{% endif %}">
+        <div class="section-label-row">
+          <span class="section-label">부제</span>
+          <button class="edit-btn" onclick="toggleEdit('subheadline')" title="편집">✎</button>
+        </div>
+        <div id="view-subheadline" class="section-sub">{{ draft.subheadline or '' }}</div>
+        <textarea id="edit-subheadline" class="edit-textarea" rows="2" style="display:none">{{ draft.subheadline or '' }}</textarea>
+      </div>
     </div>
-    <div id="view-body" class="body-text">{{ draft.body or '' }}</div>
-    <textarea id="edit-body" class="edit-textarea" rows="16" style="display:none">{{ draft.body or '' }}</textarea>
-  </div>
 
-  <!-- 핵심 메시지 -->
-  {% if draft.key_messages %}
-  <div class="section-card" id="card-key_messages">
-    <div class="section-label-row">
-      <span class="section-label">핵심 메시지</span>
-      <button class="edit-btn" onclick="toggleEdit('key_messages')" title="편집">✎</button>
+    <!-- 본문 -->
+    <div class="section-card" id="card-body">
+      <div class="section-label-row">
+        <span class="section-label">보도자료 본문</span>
+        <div style="display:flex;gap:6px;">
+          <button class="edit-btn" onclick="copyBody()" title="복사" style="font-size:11px;color:#5E5A71;">복사</button>
+          <button class="edit-btn" onclick="toggleEdit('body')" title="편집">✎</button>
+        </div>
+      </div>
+      <div id="view-body" class="body-text">{{ draft.body or '' }}</div>
+      <textarea id="edit-body" class="edit-textarea" rows="16" style="display:none">{{ draft.body or '' }}</textarea>
     </div>
-    <div id="view-key_messages" class="body-text">{{ draft.key_messages }}</div>
-    <textarea id="edit-key_messages" class="edit-textarea" rows="6" style="display:none">{{ draft.key_messages }}</textarea>
-  </div>
-  {% endif %}
 
-  <!-- 검증 필요 -->
-  {% if draft.verify_list and draft.verify_list != '없음' %}
-  <div class="section-card" id="card-verify_list">
-    <div class="section-label-row">
-      <span class="section-label">검증 필요 항목</span>
-      <button class="edit-btn" onclick="toggleEdit('verify_list')" title="편집">✎</button>
+    <!-- 핵심 메시지 -->
+    {% if draft.key_messages %}
+    <div class="section-card" id="card-key_messages">
+      <div class="section-label-row">
+        <span class="section-label">핵심 메시지</span>
+        <button class="edit-btn" onclick="toggleEdit('key_messages')" title="편집">✎</button>
+      </div>
+      <div id="view-key_messages" class="body-text">{{ draft.key_messages }}</div>
+      <textarea id="edit-key_messages" class="edit-textarea" rows="6" style="display:none">{{ draft.key_messages }}</textarea>
     </div>
-    <div id="view-verify_list" class="verify-box">{{ draft.verify_list }}</div>
-    <textarea id="edit-verify_list" class="edit-textarea" rows="4" style="display:none">{{ draft.verify_list }}</textarea>
-  </div>
-  {% endif %}
-
-  <!-- 액션 -->
-  <div class="action-bar">
-    <button class="btn btn-neutral" onclick="copyBody()">본문 복사</button>
-    {% if draft.approval_status != 'approved' %}
-    <button class="btn btn-primary" onclick="approveDraft({{ draft.id }})">승인</button>
     {% endif %}
-    <button id="send-btn" class="btn btn-primary" onclick="sendEmail({{ draft.id }})">이메일 발송</button>
-    <button class="btn btn-danger" style="margin-left:auto" onclick="deleteDraft({{ draft.id }})">삭제</button>
+
+    <!-- 검증 필요 -->
+    {% if draft.verify_list and draft.verify_list != '없음' %}
+    <div class="section-card" id="card-verify_list">
+      <div class="section-label-row">
+        <span class="section-label">검증 필요 항목</span>
+        <button class="edit-btn" onclick="toggleEdit('verify_list')" title="편집">✎</button>
+      </div>
+      <div id="view-verify_list" class="verify-box">{{ draft.verify_list }}</div>
+      <textarea id="edit-verify_list" class="edit-textarea" rows="4" style="display:none">{{ draft.verify_list }}</textarea>
+    </div>
+    {% endif %}
+
+    <!-- 액션 -->
+    <div class="action-bar">
+      <button class="btn btn-neutral" onclick="copyFull()">전문 복사</button>
+      {% if draft.approval_status != 'approved' %}
+      <button class="btn btn-primary" onclick="approveDraft({{ draft.id }})">승인</button>
+      {% endif %}
+      <button id="send-btn" class="btn btn-primary" onclick="sendEmail({{ draft.id }})">이메일 발송</button>
+      <button class="btn btn-danger" style="margin-left:auto" onclick="deleteDraft({{ draft.id }})">삭제</button>
+    </div>
+  </div>
+
+  <!-- 사이드 패널 -->
+  <div class="side-panel">
+
+    <!-- 국가 서비스 현황 -->
+    {% if country_info %}
+    <div class="side-card">
+      <div class="side-card-header">{{ country_emoji.get(draft.country, '🌐') }} {{ country_info.name_ko }} 서비스 현황</div>
+      <div class="country-info-box">
+        {% if country_info.qr_payment %}<div>✓ QR결제: {{ country_info.qr_network | join('·') if country_info.qr_network else '가능' }}</div>{% endif %}
+        {% if country_info.atm %}<div>✓ QR출금: {{ country_info.atm_network | join('·') if country_info.atm_network else '가능' }}</div>{% endif %}
+        {% if country_info.major_cities %}<div style="margin-top:4px;color:#5E5A71;">주요도시: {{ country_info.major_cities | join('·') }}</div>{% endif %}
+        {% if country_info.fee_note %}<div style="font-size:10px;margin-top:4px;color:#7000FC;">⚠ {{ country_info.fee_note }}</div>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 체크리스트 -->
+    {% if checklist %}
+    <div class="side-card">
+      <div class="side-card-header">
+        필수 체크리스트
+        <span id="checkProgress" style="font-size:10px;font-weight:600;color:#059669;"></span>
+      </div>
+      <div id="checklistItems">
+        {% for item in checklist %}
+        <label class="checklist-item" id="citem-{{ loop.index }}">
+          <input type="checkbox" onchange="updateCheckProgress()">
+          <span>{{ item.item }}{% if item.required %} <span style="color:#e74c3c;font-size:9px;font-weight:700;">필수</span>{% endif %}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 규칙 학습 -->
+    <div class="side-card learn-section">
+      <button class="learn-toggle" onclick="toggleLearn(this)">
+        🧠 이 기사에서 규칙 학습
+        <span id="learnArrow">▸</span>
+      </button>
+      <div id="learnBody" class="learn-body">
+        <textarea id="learnNote" placeholder="메모 (선택)" style="width:100%;font-size:11px;padding:6px;border:0.5px solid #E4E1EE;border-radius:6px;resize:none;height:50px;"></textarea>
+        <button onclick="runLearnFromDetail()" id="learnRunBtn"
+          style="width:100%;margin-top:6px;padding:7px;background:#7000FC;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;">
+          기사 분석하기 ↗
+        </button>
+        <div id="learnResult" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- 발송 이력 -->
+    {% if draft.sent_at %}
+    <div class="side-card">
+      <div class="side-card-header">발송 이력</div>
+      <div style="padding:10px 14px;font-size:11px;color:#5E5A71;line-height:1.6;">
+        <div>📤 발송일시: {{ draft.sent_at[:16] }}</div>
+        {% if draft.sent_to %}<div style="margin-top:4px;word-break:break-all;">수신자: {{ draft.sent_to }}</div>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+
   </div>
 </div>
 
@@ -146,7 +248,6 @@ function toggleEdit(field) {
   const ta   = document.getElementById(`edit-${field}`);
   if (!view || !ta) return;
   const card = ta.closest('.section-card');
-
   if (ta.style.display === 'none') {
     if (!(field in _originals)) _originals[field] = ta.value;
     view.style.display = 'none';
@@ -194,11 +295,9 @@ async function saveEdits() {
     if (ta) payload[field] = ta.value;
   }
   if (!Object.keys(payload).length) return;
-
   const btn = document.getElementById('save-btn');
   btn.textContent = '저장 중...';
   btn.disabled = true;
-
   try {
     const res = await fetch(`/api/pr/drafts/${DRAFT_ID}`, {
       method: 'PATCH',
@@ -237,6 +336,15 @@ function copyBody() {
   navigator.clipboard.writeText(view ? view.textContent : '').then(() => showToast('본문 복사됨'));
 }
 
+function copyFull() {
+  const parts = [];
+  ['view-headline','view-subheadline','view-body','view-key_messages'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.textContent.trim()) parts.push(el.textContent.trim());
+  });
+  navigator.clipboard.writeText(parts.join('\n\n')).then(() => showToast('전문 복사됨'));
+}
+
 async function approveDraft(id) {
   const res = await fetch(`/api/pr/drafts/${id}/approve`, {method:'POST'});
   if (res.ok) location.reload();
@@ -247,9 +355,14 @@ async function sendEmail(id) {
   btn.textContent = '발송 중...';
   btn.disabled = true;
   try {
-    const res  = await fetch(`/api/pr/drafts/${id}/send`, {method:'POST'});
+    const res  = await fetch(`/api/pr/drafts/${id}/send`, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({})});
     const data = await res.json();
-    showToast(data.ok ? data.msg : '발송 실패: ' + data.msg, 4000);
+    if (data.ok) {
+      showToast(data.msg, 3000);
+      setTimeout(() => location.reload(), 2000);
+    } else {
+      showToast('발송 실패: ' + data.msg, 4000);
+    }
   } catch(e) {
     showToast('발송 오류: ' + e.message, 4000);
   } finally {
@@ -262,6 +375,102 @@ async function deleteDraft(id) {
   if (!confirm('이 초안을 삭제할까요?')) return;
   const res = await fetch(`/api/pr/drafts/${id}`, {method:'DELETE'});
   if (res.ok) window.location.href = '/pr/drafts';
+}
+
+// ── 체크리스트 ──
+function updateCheckProgress() {
+  const items = document.querySelectorAll('#checklistItems input[type=checkbox]');
+  const checked = [...items].filter(c => c.checked).length;
+  const el = document.getElementById('checkProgress');
+  if (el) el.textContent = `${checked}/${items.length}`;
+  items.forEach(c => {
+    const label = c.closest('.checklist-item');
+    if (label) label.classList.toggle('checked', c.checked);
+  });
+}
+updateCheckProgress();
+
+// ── 규칙 학습 ──
+function toggleLearn(btn) {
+  const body  = document.getElementById('learnBody');
+  const arrow = document.getElementById('learnArrow');
+  const open  = body.classList.toggle('open');
+  arrow.textContent = open ? '▾' : '▸';
+}
+
+async function runLearnFromDetail() {
+  const bodyEl = document.getElementById('view-body');
+  const article = (bodyEl ? bodyEl.textContent : '').trim();
+  if (!article || article.length < 50) {
+    alert('본문이 너무 짧습니다. 보도자료 본문을 먼저 저장하세요.');
+    return;
+  }
+  const note = document.getElementById('learnNote').value.trim();
+  const btn  = document.getElementById('learnRunBtn');
+  btn.disabled = true; btn.textContent = '분석 중...';
+  document.getElementById('learnResult').innerHTML = '<div style="font-size:11px;color:#918DA0;padding:4px 0;">Claude가 분석 중입니다...</div>';
+
+  try {
+    const res  = await fetch('/api/pr/learn', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ article, note, scopes: {forbidden:true,phrase:true,naming:true,checklist:true} })
+    });
+    const data = await res.json();
+    if (data.error) {
+      document.getElementById('learnResult').innerHTML = '<div style="font-size:11px;color:#c0392b;">' + data.error + '</div>';
+      return;
+    }
+    renderDetailSuggestions(data.suggestions || [], data.summary || '');
+  } catch(e) {
+    document.getElementById('learnResult').innerHTML = '<div style="font-size:11px;color:#c0392b;">' + e.message + '</div>';
+  } finally {
+    btn.disabled = false; btn.textContent = '기사 분석하기 ↗';
+  }
+}
+
+const _TYPE_META = {
+  forbidden: {label:'금지어', cls:'forbidden'},
+  phrase:    {label:'재사용 표현', cls:'phrase'},
+  naming:    {label:'명칭 규칙', cls:'naming'},
+  checklist: {label:'체크리스트', cls:'checklist'},
+};
+
+function renderDetailSuggestions(suggestions, summary) {
+  const el = document.getElementById('learnResult');
+  if (!suggestions.length) {
+    el.innerHTML = '<div style="font-size:11px;color:#059669;padding:4px 0;">✓ 새로 추가할 규칙 없음</div>';
+    return;
+  }
+  let html = summary ? `<div style="font-size:10px;color:#918DA0;margin-bottom:6px;">${summary}</div>` : '';
+  window._detailSuggestions = suggestions;
+  suggestions.forEach((s, i) => {
+    const meta = _TYPE_META[s.type] || {label:s.type, cls:'phrase'};
+    html += `<div class="suggest-card ${meta.cls}" id="dsc-${i}">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#918DA0;">${meta.label}</div>
+      <div style="font-size:11px;margin:3px 0;">${(s.display||'').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+      <div style="display:flex;gap:4px;margin-top:5px;">
+        <button class="btn-accept-sm" onclick="acceptDetailSuggestion(${i})">✓ 추가</button>
+        <button class="btn-reject-sm" onclick="document.getElementById('dsc-${i}').style.opacity='0.3'">건너뜀</button>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+async function acceptDetailSuggestion(i) {
+  const s = window._detailSuggestions[i];
+  try {
+    const res  = await fetch('/api/pr/rules/update', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({suggestions:[s]})
+    });
+    const data = await res.json();
+    if (data.error) { showToast('오류: ' + data.error); return; }
+    document.getElementById(`dsc-${i}`).style.opacity = '0.4';
+    showToast('규칙 저장됨');
+  } catch(e) { showToast('오류: ' + e.message); }
 }
 </script>
 {% endblock %}
