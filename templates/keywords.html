@@ -196,6 +196,17 @@
   </div>
 </div>
 
+<!-- 채널 성과 동기화 -->
+<div class="card" id="sync">
+  <div style="font-size:13px;font-weight:700;color:#130D2A;margin-bottom:4px">채널 성과 동기화</div>
+  <div style="font-size:11px;color:#918DA0;margin-bottom:14px">marketing-dashboard sync.js를 즉시 실행하여 GA4·YouTube·Instagram 데이터를 수집합니다.</div>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <button class="btn btn-primary btn-sm" id="syncBtn" onclick="syncChannels()">지금 수집</button>
+    <span id="syncStatus" style="font-size:12px;color:#918DA0"></span>
+  </div>
+  <div id="syncLog" style="display:none;margin-top:12px;background:#F6F5FF;border-radius:8px;padding:10px 12px;font-size:10px;font-family:monospace;color:#5E5A71;white-space:pre-wrap;max-height:160px;overflow-y:auto;line-height:1.6"></div>
+</div>
+
 <!-- 알림 설정 -->
 <div class="card">
   <div style="font-size:13px;font-weight:700;color:#130D2A;margin-bottom:4px">이벤트 알림</div>
@@ -513,5 +524,37 @@ function toggleAlertMore() {
 }
 
 loadReportRecipients();
+
+async function syncChannels() {
+  const btn    = document.getElementById('syncBtn');
+  const status = document.getElementById('syncStatus');
+  const log    = document.getElementById('syncLog');
+  btn.disabled = true;
+  btn.textContent = '수집 중...';
+  status.textContent = '실행 중 (최대 120초)...';
+  status.style.color = '#7000FC';
+  log.style.display = 'none';
+
+  try {
+    const res  = await fetch('/api/admin/sync-channels', {method:'POST'});
+    const data = await res.json();
+    if (data.ok) {
+      status.textContent = '수집 완료';
+      status.style.color = '#16A34A';
+    } else {
+      status.textContent = '오류: ' + (data.error || '실패');
+      status.style.color = '#DC2626';
+    }
+    if (data.output) {
+      log.textContent = data.output;
+      log.style.display = 'block';
+    }
+  } catch (e) {
+    status.textContent = '요청 실패';
+    status.style.color = '#DC2626';
+  }
+  btn.disabled = false;
+  btn.textContent = '지금 수집';
+}
 </script>
 {% endblock %}

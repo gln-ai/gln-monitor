@@ -111,7 +111,10 @@ a { text-decoration: none; }
 /* ── KPI Cards ── */
 .kpi-grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 14px; }
 .kpi-grid-6 { display: grid; grid-template-columns: repeat(6,1fr); gap: 10px; margin-bottom: 14px; }
+.kpi-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 14px; }
 .kpi-card { background: #fff; border-radius: 14px; padding: 15px 17px; border: 0.5px solid #E4E1EE; }
+.kpi-card-warn { border-color: #FDE68A; background: #FFFBEB; }
+.kpi-card-ok   { border-color: #BBF7D0; background: #F0FDF4; }
 .kpi-label { font-size: 10.5px; color: #918DA0; margin-bottom: 4px; }
 .kpi-value { font-size: 26px; font-weight: 700; color: #130D2A; line-height: 1; }
 .kpi-sub   { font-size: 10px; color: #AAA7B8; margin-top: 4px; }
@@ -129,6 +132,7 @@ a { text-decoration: none; }
 .badge-pos     { background: #F0FDF4; color: #059669; }
 .badge-neu     { background: #F6F5FF; color: #918DA0; }
 .badge-cat     { background: #EFF6FF; color: #1D4ED8; }
+.badge-comp    { background: #FFF7ED; color: #C2410C; border: 0.5px solid #FED7AA; }
 
 /* ── Filter chips ── */
 .filter-row  { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
@@ -200,6 +204,7 @@ a { text-decoration: none; }
   .main-wrap { margin-left: 60px; }
   .kpi-grid-4 { grid-template-columns: repeat(2, 1fr); }
   .kpi-grid-6 { grid-template-columns: repeat(3, 1fr); }
+  .kpi-grid-3 { grid-template-columns: repeat(3, 1fr); }
   .page-content { padding: 14px 14px 30px; }
 }
 {% block page_styles %}{% endblock %}
@@ -217,6 +222,10 @@ a { text-decoration: none; }
 
   <div class="nav-section">
     <div class="nav-section-label">Overview</div>
+    <a href="/overview" class="nav-item {% if request.endpoint == 'overview.overview' %}active{% endif %}">
+      <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+      <span class="nav-item-text">시스템 현황</span>
+    </a>
     <a href="/insights" class="nav-item {% if request.endpoint == 'monitor.insights' %}active{% endif %}">
       <span class="nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></span>
       <span class="nav-item-text">인사이트</span>

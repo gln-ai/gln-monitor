@@ -31,13 +31,14 @@ BASE_URL=http://192.168.1.60:5001
 ## UI 페이지 구조
 | 경로 | 템플릿 | 설명 |
 |------|--------|------|
+| `/overview` | overview.html | 시스템 통합 현황판 (KPI, 채널 성과, 이메일) |
 | `/` | dashboard.html | 모니터링 피드 (수집 게시글 목록) |
 | `/insights` | insights.html | 인사이트 (차트·SLA·이슈) |
 | `/content` | content_status.html | 콘텐츠 목록 |
 | `/content/create` | content_create.html | 콘텐츠 제작 설정 |
 | `/pr` | pr_drafts.html | 보도자료 |
 | `/reports` | reports.html | 리포트 아카이브 |
-| `/settings` | settings.html | 키워드 관리 |
+| `/keywords` | keywords.html | 키워드 관리·알림설정·채널 성과 수동 동기화 |
 | `/post/<id>` | post_detail.html | 게시글 상세 |
 
 ---
@@ -100,6 +101,7 @@ FORMAT_MAP = {
 - Railway SMTP 차단 → 맥미니 로컬 실행으로 해결
 - 카페 작성일 미제공 → 수집일 표시
 - pydantic v1 경고 → 기능 무관
+- gln-content/gln-guard 사본: 이전에는 gln-monitor/ 내부에 dead code 사본 존재 → 2026-06-12 삭제. pipeline.py는 ~/apps/ 루트 원본만 로드함
 
 ## 배포 및 PM2
 ```

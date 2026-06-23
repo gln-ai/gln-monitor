@@ -5,7 +5,7 @@ import json
 import os
 import threading
 
-from config import APPS_ROOT
+from config import APPS_ROOT, MODEL_ID
 from db import get_db
 from utils import get_claude_client
 
@@ -87,6 +87,48 @@ def _build_service_context(country_code: str, fdb: dict) -> str:
     if atm_apps:
         lines.append(f"- ATM 지원 앱: {', '.join(atm_apps)}")
     return "\n".join(lines)
+
+
+# ─── 경쟁사 언급 감지 ─────────────────────────────────────────────────────────
+
+COMPETITORS: dict[str, str] = {
+    "토스페이":   "toss",
+    "토스뱅크":   "toss",
+    "토스":       "toss",
+    "카카오페이": "kakaopay",
+    "카카오 페이": "kakaopay",
+    "트래블월렛": "travelwallet",
+    "트래블 월렛": "travelwallet",
+    "하나머니":   "hanamoney",
+    "트래블로그": "travellog",
+    "네이버페이": "naverpay",
+    "네이버 페이": "naverpay",
+    "페이코":     "payco",
+    "위비트래블": "wibeetravel",
+    "WISE":       "wise",
+    "와이즈":     "wise",
+}
+
+COMPETITOR_LABEL: dict[str, str] = {
+    "toss":         "토스",
+    "kakaopay":     "카카오페이",
+    "travelwallet": "트래블월렛",
+    "hanamoney":    "하나머니",
+    "travellog":    "트래블로그",
+    "naverpay":     "네이버페이",
+    "payco":        "페이코",
+    "wibeetravel":  "위비트래블",
+    "wise":         "와이즈",
+}
+
+
+def detect_competitors(text: str) -> list[str]:
+    """텍스트에서 경쟁사 이름을 감지해 코드 목록 반환 (중복 제거)."""
+    found: set[str] = set()
+    for keyword, code in COMPETITORS.items():
+        if keyword in text:
+            found.add(code)
+    return sorted(found)
 
 
 # ─── KnuSentiLex ──────────────────────────────────────────────────────────────
@@ -209,7 +251,7 @@ def analyze_post(post_id: int, title: str, description: str):
     try:
         client = get_claude_client()
         msg = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model=MODEL_ID,
             max_tokens=800,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -251,7 +293,7 @@ def generate_replies(post_id: int, title: str, summary: str,
     try:
         client = get_claude_client()
         msg = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model=MODEL_ID,
             max_tokens=1000,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -293,14 +335,18 @@ def process_unanalyzed():
             description=row["description"] or "",
         ) if is_cafe else None
 
+        full_text   = f"{row['title']} {row['description'] or ''}"
+        competitors = detect_competitors(full_text)
+        competitors_json = json.dumps(competitors, ensure_ascii=False) if competitors else ""
+
         conn = get_db()
         is_relevant = 0 if analysis.get("is_relevant") is False else 1
         conn.execute(
             """INSERT OR REPLACE INTO ai_analysis
-               (post_id, summary, category, sentiment, importance_score, is_relevant)
-               VALUES (?, ?, ?, ?, ?, ?)""",
+               (post_id, summary, category, sentiment, importance_score, is_relevant, competitors)
+               VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (post_id, analysis.get("summary"), analysis.get("category"),
-             analysis.get("sentiment"), analysis.get("importance_score"), is_relevant)
+             analysis.get("sentiment"), analysis.get("importance_score"), is_relevant, competitors_json)
         )
         conn.execute("UPDATE posts SET is_processed=1, is_urgent=? WHERE id=?",
                      (is_urgent, post_id))
@@ -324,6 +370,10 @@ def process_unanalyzed():
                       row["cafe_name"], row["link"], row["created_at"], post_id),
                 daemon=True
             ).start()
+
+        if competitors:
+            labels = [COMPETITOR_LABEL.get(c, c) for c in competitors]
+            print(f"[경쟁사 감지] #{post_id} — {', '.join(labels)}")
 
         print(f"[AI 완료] #{post_id} | {analysis.get('category')} | "
               f"{analysis.get('sentiment')} | 중요도 {analysis.get('importance_score')}")

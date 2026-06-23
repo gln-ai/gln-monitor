@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% block title %}시스템 현황 — GLN{% endblock %}
+
+{% block page_styles %}
+.section-title { font-size:11px; font-weight:700; color:#918DA0; text-transform:uppercase; letter-spacing:0.08em; margin:0 0 10px; }
+.ov-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+.ov-grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin-bottom:14px; }
+.ov-card { background:#fff; border:0.5px solid #E4E1EE; border-radius:14px; padding:16px 18px; }
+.ov-card-warn { border-color:#FDE68A; background:#FFFBEB; }
+.ov-card-ok   { border-color:#BBF7D0; background:#F0FDF4; }
+.ov-card-blue { border-color:#BFDBFE; background:#EFF6FF; }
+.big-num { font-size:32px; font-weight:800; color:#130D2A; line-height:1; }
+.big-num-warn { color:#D97706; }
+.big-num-ok   { color:#059669; }
+.big-num-red  { color:#DC2626; }
+.num-label { font-size:10.5px; color:#918DA0; margin-bottom:6px; }
+.num-sub   { font-size:10px; color:#AAA7B8; margin-top:5px; }
+.row-stat { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:0.5px solid #F6F5FF; }
+.row-stat:last-child { border-bottom:none; }
+.row-key { font-size:12px; color:#5E5A71; }
+.row-val { font-size:13px; font-weight:700; color:#130D2A; }
+.platform-row { display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:0.5px solid #F6F5FF; }
+.platform-row:last-child { border-bottom:none; }
+.platform-name { font-size:12px; font-weight:600; color:#130D2A; width:80px; flex-shrink:0; }
+.platform-metrics { display:flex; gap:10px; flex-wrap:wrap; }
+.platform-metric { font-size:11px; color:#5E5A71; }
+.platform-metric span { font-weight:700; color:#130D2A; }
+.no-data { font-size:12px; color:#AAA7B8; text-align:center; padding:20px; }
+.refresh-time { font-size:10px; color:#AAA7B8; }
+.guard-bar { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.guard-chip { font-size:11px; padding:3px 10px; border-radius:99px; font-weight:600; }
+.guard-green  { background:#F0FDF4; color:#059669; border:0.5px solid #BBF7D0; }
+.guard-yellow { background:#FFFBEB; color:#D97706; border:0.5px solid #FDE68A; }
+.guard-red    { background:#FEF2F2; color:#DC2626; border:0.5px solid #FECACA; }
+@media (max-width: 900px) {
+  .ov-grid { grid-template-columns:1fr; }
+  .ov-grid-3 { grid-template-columns:1fr 1fr; }
+}
+{% endblock %}
+
+{% block topbar_title %}시스템 현황{% endblock %}
+{% block topbar_sub %}<span class="refresh-time">마지막 갱신: {{ s.now }}</span>{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-ghost btn-sm" onclick="location.reload()">새로고침</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── 모니터링 ── -->
+<div class="section-title">Listen — 모니터링</div>
+<div class="kpi-grid-4" style="margin-bottom:14px">
+  <div class="kpi-card">
+    <div class="kpi-label">누적 수집</div>
+    <div class="kpi-value">{{ "{:,}".format(s.posts_total) }}</div>
+    <div class="kpi-sub">전체 게시글</div>
+  </div>
+  <div class="kpi-card {% if s.posts_today > 0 %}kpi-card-ok{% endif %}">
+    <div class="kpi-label">오늘 수집</div>
+    <div class="kpi-value {% if s.posts_today > 0 %}" style="color:#059669{% endif %}">{{ s.posts_today }}</div>
+    <div class="kpi-sub">오늘 신규 게시글</div>
+  </div>
+  <div class="kpi-card {% if s.unprocessed > 0 %}kpi-card-warn{% endif %}">
+    <div class="kpi-label">미분석</div>
+    <div class="kpi-value {% if s.unprocessed > 0 %}big-num-warn{% endif %}">{{ s.unprocessed }}</div>
+    <div class="kpi-sub">AI 분석 대기</div>
+  </div>
+  <div class="kpi-card {% if s.urgent_today > 0 %}kpi-card-warn{% endif %}">
+    <div class="kpi-label">오늘 중요 이슈</div>
+    <div class="kpi-value {% if s.urgent_today > 0 %}big-num-warn{% endif %}">{{ s.urgent_today }}</div>
+    <div class="kpi-sub">중요도 7↑ 또는 부정</div>
+  </div>
+</div>
+
+<!-- ── 콘텐츠 ── -->
+<div class="section-title" style="margin-top:4px">Create — 콘텐츠</div>
+<div class="ov-grid" style="margin-bottom:14px">
+  <div class="ov-card">
+    <div class="num-label">콘텐츠 현황</div>
+    <div class="row-stat">
+      <div class="row-key">전체 (삭제 제외)</div>
+      <div class="row-val">{{ s.content_total }}건</div>
+    </div>
+    <div class="row-stat">
+      <div class="row-key">발행 완료</div>
+      <div class="row-val" style="color:#059669">{{ s.published_count }}건</div>
+    </div>
+    <div class="row-stat">
+      <div class="row-key">댓글 초안</div>
+      <div class="row-val">{{ s.reply_total }}건</div>
+    </div>
+    <div class="row-stat">
+      <div class="row-key">보도자료</div>
+      <div class="row-val">{{ s.pr_drafts }}건</div>
+    </div>
+  </div>
+  <div class="ov-card {% if s.green_unpub > 0 %}ov-card-ok{% elif s.red_count > 0 %}ov-card-warn{% endif %}">
+    <div class="num-label">검수 등급 분포</div>
+    <div class="guard-bar">
+      {% if s.green_unpub > 0 %}
+      <span class="guard-chip guard-green">green 미발행 {{ s.green_unpub }}</span>
+      {% endif %}
+      {% if s.yellow_count > 0 %}
+      <span class="guard-chip guard-yellow">yellow {{ s.yellow_count }}</span>
+      {% endif %}
+      {% if s.red_count > 0 %}
+      <span class="guard-chip guard-red">red {{ s.red_count }}</span>
+      {% endif %}
+      {% if s.green_unpub == 0 and s.yellow_count == 0 and s.red_count == 0 %}
+      <span style="font-size:12px;color:#AAA7B8">검수 대기 없음</span>
+      {% endif %}
+    </div>
+    {% if s.green_unpub > 0 %}
+    <div style="margin-top:12px">
+      <a href="/content" class="btn btn-ghost btn-sm" style="text-decoration:none">콘텐츠 목록에서 발행 →</a>
+    </div>
+    {% endif %}
+    {% if s.yellow_count > 0 or s.red_count > 0 %}
+    <div style="margin-top:12px;font-size:11px;color:#918DA0">
+      yellow {{ s.yellow_count }}건 수정 필요 / red {{ s.red_count }}건 재작성 필요
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── 채널 성과 ── -->
+<div class="section-title">채널 성과 (marketing-dashboard)</div>
+<div class="ov-card" style="margin-bottom:14px">
+  {% if s.channel_latest %}
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div style="font-size:12px;color:#918DA0">최신 데이터: <strong style="color:#130D2A">{{ s.channel_latest }}</strong></div>
+    <a href="/keywords#sync" class="btn btn-ghost btn-sm" style="text-decoration:none">수동 동기화 →</a>
+  </div>
+  {% for p in s.channel_platforms %}
+  <div class="platform-row">
+    <div class="platform-name">{{ p.platform | upper }}</div>
+    <div class="platform-metrics">
+      {% if p.subscribers %}
+      <span class="platform-metric">구독자 <span>{{ "{:,}".format(p.subscribers | int) }}</span></span>
+      {% endif %}
+      {% if p.total_views %}
+      <span class="platform-metric">총 조회 <span>{{ "{:,}".format(p.total_views | int) }}</span></span>
+      {% endif %}
+      {% if p.followers %}
+      <span class="platform-metric">팔로워 <span>{{ "{:,}".format(p.followers | int) }}</span></span>
+      {% endif %}
+      {% if p.sessions %}
+      <span class="platform-metric">세션 <span>{{ "{:,}".format(p.sessions | int) }}</span></span>
+      {% endif %}
+      {% if p.users %}
+      <span class="platform-metric">사용자 <span>{{ "{:,}".format(p.users | int) }}</span></span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="no-data">
+    채널 성과 데이터 없음 —
+    <a href="/keywords" style="color:#7000FC;font-weight:600">설정 → 채널 성과 수집</a>
+    에서 수동 동기화하세요.
+  </div>
+  {% endif %}
+</div>
+
+<!-- ── 이메일 & 리포트 ── -->
+<div class="ov-grid-3" style="margin-bottom:14px">
+  <div class="ov-card">
+    <div class="num-label">이메일 발송</div>
+    <div class="big-num">{{ s.email_today }}</div>
+    <div class="num-sub">오늘 발송</div>
+    <div style="margin-top:8px">
+      <div class="row-stat">
+        <div class="row-key">이번 주</div>
+        <div class="row-val">{{ s.email_week }}건</div>
+      </div>
+      <div class="row-stat">
+        <div class="row-key">전체 누적</div>
+        <div class="row-val">{{ s.email_total }}건</div>
+      </div>
+    </div>
+  </div>
+  <div class="ov-card">
+    <div class="num-label">리포트 아카이브</div>
+    <div class="big-num">{{ s.reports_arch }}</div>
+    <div class="num-sub">저장된 리포트</div>
+    <div style="margin-top:12px">
+      <div class="row-stat">
+        <div class="row-key">마지막 저장</div>
+        <div class="row-val" style="font-size:11px">{{ s.last_report }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="ov-card">
+    <div class="num-label">관광 통계</div>
+    <div class="num-sub" style="margin-top:0;margin-bottom:8px">자동 수집 현황</div>
+    <div class="row-stat">
+      <div class="row-key">월별 입국자 (JNTO/KTO)</div>
+      <div class="row-val">271건</div>
+    </div>
+    <div class="row-stat">
+      <div class="row-key">연간 통계 (KOSIS)</div>
+      <div class="row-val">27건</div>
+    </div>
+    <div class="row-stat">
+      <div class="row-key">다음 갱신</div>
+      <div class="row-val" style="font-size:11px">매월 5일/15일</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── 바로가기 ── -->
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+  <a href="/" class="btn btn-neutral btn-sm" style="text-decoration:none">수집 피드</a>
+  <a href="/insights" class="btn btn-neutral btn-sm" style="text-decoration:none">인사이트</a>
+  <a href="/content" class="btn btn-neutral btn-sm" style="text-decoration:none">콘텐츠</a>
+  <a href="/monthly-report" class="btn btn-neutral btn-sm" style="text-decoration:none">월별 실적</a>
+  <a href="/reports" class="btn btn-neutral btn-sm" style="text-decoration:none">리포트 아카이브</a>
+  <a href="/keywords" class="btn btn-neutral btn-sm" style="text-decoration:none">설정</a>
+</div>
+
+{% endblock %}

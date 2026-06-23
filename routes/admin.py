@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, make_response, render_template, request
@@ -324,3 +325,32 @@ def performance_get():
     conn.close()
 
     return jsonify({"data": [dict(r) for r in rows], "days": days, "platform": platform})
+
+
+# ── 채널 성과 수동 동기화 ─────────────────────────────────────────────────────
+
+_DASHBOARD_DIR = os.path.join(APPS_ROOT, "marketing-dashboard")
+
+@admin_bp.route("/api/admin/sync-channels", methods=["POST"])
+def sync_channels():
+    """marketing-dashboard/sync.js 를 백그라운드 실행하여 채널 성과를 수집·저장."""
+    sync_path = os.path.join(_DASHBOARD_DIR, "sync.js")
+    if not os.path.exists(sync_path):
+        return jsonify({"ok": False, "error": "sync.js 파일을 찾을 수 없습니다."}), 404
+
+    try:
+        result = subprocess.run(
+            ["node", sync_path],
+            cwd=_DASHBOARD_DIR,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        success = result.returncode == 0
+        output  = (result.stdout or "") + (result.stderr or "")
+        print(f"[채널동기화] returncode={result.returncode}", flush=True)
+        return jsonify({"ok": success, "output": output[-2000:], "returncode": result.returncode})
+    except subprocess.TimeoutExpired:
+        return jsonify({"ok": False, "error": "실행 타임아웃 (120초)"}), 504
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500

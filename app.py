@@ -17,7 +17,7 @@ import config  # noqa: F401 (side-effect: .env load, sys.path update)
 from flask import Flask
 
 from db import init_db, get_setting
-from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp, admin_bp, monthly_perf_bp
+from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp, admin_bp, monthly_perf_bp, overview_bp
 from services.naver import collect_all
 from services.email_svc import send_daily_report
 from services.pipeline import run_content_pipeline
@@ -74,13 +74,37 @@ app.register_blueprint(reports_bp)
 app.register_blueprint(keywords_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(monthly_perf_bp)
+app.register_blueprint(overview_bp)
 
 # ── DB 초기화 + 스케줄러 (gunicorn/직접 실행 모두 동작) ───────────────────────
 from apscheduler.schedulers.background import BackgroundScheduler
 
 init_db()
 
-_scheduler = BackgroundScheduler(timezone="Asia/Seoul")
+# 이미지 생성 저장 경로 자동 초기화
+import pathlib
+pathlib.Path(os.path.join(MONITOR_DIR, "static", "generated", "images")).mkdir(parents=True, exist_ok=True)
+
+def _sync_channel_performance():
+    """marketing-dashboard/sync.js 실행 → channel_performance 자동 수집."""
+    import subprocess
+    sync_path = os.path.join(APPS_ROOT, "marketing-dashboard", "sync.js")
+    if not os.path.exists(sync_path):
+        print("[채널동기화] sync.js 없음 — 스킵", flush=True)
+        return
+    try:
+        result = subprocess.run(
+            ["node", sync_path],
+            cwd=os.path.join(APPS_ROOT, "marketing-dashboard"),
+            capture_output=True, text=True, timeout=120,
+        )
+        print(f"[채널동기화] 완료 (returncode={result.returncode})", flush=True)
+    except Exception as e:
+        print(f"[채널동기화] 오류: {e}", flush=True)
+
+
+# misfire_grace_time=3600: 맥 절전 후 깨어날 때 최대 1시간 이내 잡 소급 실행
+_scheduler = BackgroundScheduler(timezone="Asia/Seoul", misfire_grace_time=3600, coalesce=True)
 _scheduler.add_job(collect_all,          "interval", hours=1,  id="collect")
 _scheduler.add_job(_daily_weekday,       "cron", day_of_week="mon-fri", hour=8, minute=0, id="daily_weekday")
 _scheduler.add_job(_daily_weekend,       "cron", day_of_week="sat,sun",  hour=8, minute=0, id="daily_weekend")
@@ -92,11 +116,12 @@ _scheduler.add_job(save_daily_report,    "cron", hour=23, minute=55,            
 _scheduler.add_job(save_weekly_log,      "cron", day_of_week="mon", hour=8, minute=5,  id="log_weekly")
 _scheduler.add_job(save_monthly_report,  "cron", day=1,  hour=8, minute=10,            id="log_monthly")
 _scheduler.add_job(update_tourism,       "cron", day=1,  hour=9, minute=30,            id="tourism_update")
-_scheduler.add_job(fetch_jnto,           "cron", day=15, hour=10, minute=0,            id="jnto_monthly")
-_scheduler.add_job(fetch_kto_total,      "cron", day=5,  hour=10, minute=30,           id="kto_monthly")
+_scheduler.add_job(fetch_jnto,                "cron", day=15, hour=10, minute=0,   id="jnto_monthly")
+_scheduler.add_job(fetch_kto_total,           "cron", day=5,  hour=10, minute=30,  id="kto_monthly")
+_scheduler.add_job(_sync_channel_performance, "cron", hour=0, minute=30,           id="channel_sync")
 _scheduler.start()
 app._scheduler = _scheduler
-print("[스케줄러] 수집 1h / 아침브리핑 08:00(평일) / 주간리포트 월08:00 / 콘텐츠 09:00 / 로그저장 23:55")
+print("[스케줄러] 수집 1h / 아침브리핑 08:00(평일) / 주간리포트 월08:00 / 콘텐츠 09:00 / 채널동기화 00:30 / 로그저장 23:55")
 
 if __name__ == "__main__":
     print("\n✅ GLN 모니터링 시작!")

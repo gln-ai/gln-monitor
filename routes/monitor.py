@@ -1,6 +1,7 @@
 """
 routes/monitor.py — 대시보드, 게시글 상세, 기본 API 라우트
 """
+import json
 import os
 import threading
 from datetime import datetime
@@ -10,7 +11,7 @@ from flask import Blueprint, jsonify, render_template, request
 from config import KST
 from db import get_db
 from services.naver import collect_all
-from services.analysis import process_unanalyzed
+from services.analysis import process_unanalyzed, COMPETITOR_LABEL
 from services.email_svc import send_daily_report
 
 monitor_bp = Blueprint("monitor", __name__)
@@ -112,7 +113,7 @@ def dashboard():
         SELECT p.id, p.title, p.link, p.cafe_name, p.post_date, p.is_urgent,
                p.keyword, p.created_at, p.reply_status, p.status_updated_at,
                p.description,
-               a.summary, a.category, a.sentiment, a.importance_score
+               a.summary, a.category, a.sentiment, a.importance_score, a.competitors
         FROM posts p
         LEFT JOIN ai_analysis a ON p.id = a.post_id
         WHERE (a.is_relevant IS NULL OR a.is_relevant = 1)
@@ -181,6 +182,11 @@ def dashboard():
         d["country"] = _detect_country(
             (d.get("title") or "") + " " + (d.get("description") or "") + " " + (d.get("cafe_name") or "")
         )
+        raw_comp = d.get("competitors") or ""
+        try:
+            d["competitors"] = json.loads(raw_comp) if raw_comp else []
+        except Exception:
+            d["competitors"] = []
         posts.append(d)
 
     stats_where = "WHERE 1=1"
@@ -203,6 +209,15 @@ def dashboard():
         "urgent":   conn.execute(f"SELECT COUNT(*) FROM posts {stats_where} AND is_urgent=1", stats_args).fetchone()[0],
         "negative": conn.execute("SELECT COUNT(*) FROM ai_analysis WHERE sentiment='negative'").fetchone()[0],
         "total":    conn.execute("SELECT COUNT(*) FROM posts").fetchone()[0],
+        "unprocessed":     conn.execute(
+            "SELECT COUNT(*) FROM posts WHERE id NOT IN (SELECT post_id FROM ai_analysis)"
+        ).fetchone()[0],
+        "unpublished_green": conn.execute(
+            "SELECT COUNT(*) FROM content_drafts WHERE guard_grade='green' AND approval_status='unpublished' AND deleted_at IS NULL"
+        ).fetchone()[0],
+        "email_today": conn.execute(
+            "SELECT COUNT(*) FROM email_log WHERE DATE(sent_at)=DATE('now','localtime') AND status='ok'"
+        ).fetchone()[0],
     }
     conn.close()
     report_to = os.getenv("REPORT_TO", "")
@@ -213,6 +228,7 @@ def dashboard():
         today_str=today_str,
         country_label=COUNTRY_LABEL,
         country_emoji=COUNTRY_EMOJI,
+        competitor_label=COMPETITOR_LABEL,
         filters={"sentiment": sentiment, "category": category,
                  "urgent": urgent, "date_from": date_from, "date_to": date_to,
                  "channel": channel, "reply_status": reply_status, "country": country},

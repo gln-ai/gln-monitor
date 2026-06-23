@@ -65,6 +65,7 @@ def init_db():
             created_at TEXT DEFAULT (datetime('now','localtime'))
         );
 
+        -- 연간 외래관광객 통계 (KOSIS, year_month='2023' 형식, 연도 단위)
         CREATE TABLE IF NOT EXISTS tourism_stats (
             year_month  TEXT NOT NULL,
             country     TEXT NOT NULL,
@@ -73,6 +74,7 @@ def init_db():
             PRIMARY KEY (year_month, country)
         );
 
+        -- 월별 입국자 통계 (JNTO/KTO/수동업로드, year_month='2024-01' 형식, 월 단위)
         CREATE TABLE IF NOT EXISTS tourism_monthly (
             year_month  TEXT NOT NULL,
             country     TEXT NOT NULL,
@@ -160,6 +162,8 @@ def init_db():
         "ALTER TABLE pr_drafts ADD COLUMN tags TEXT",
         "ALTER TABLE pr_drafts ADD COLUMN sent_at TEXT",
         "ALTER TABLE pr_drafts ADD COLUMN sent_to TEXT",
+        # v15: 경쟁사 언급 감지 (JSON 배열: ["toss","kakaopay"] 형태)
+        "ALTER TABLE ai_analysis ADD COLUMN competitors TEXT DEFAULT ''",
     ]:
         try:
             conn.execute(alter_sql)

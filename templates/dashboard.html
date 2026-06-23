@@ -98,6 +98,23 @@
     <div class="kpi-sub">누적 전체</div>
   </div>
 </div>
+<div class="kpi-grid-3" style="margin-top:8px">
+  <div class="kpi-card {% if stats.unprocessed > 0 %}kpi-card-warn{% endif %}">
+    <div class="kpi-label">미분석 게시글</div>
+    <div class="kpi-value" style="color:{% if stats.unprocessed > 0 %}#D97706{% else %}#059669{% endif %}">{{ stats.unprocessed }}</div>
+    <div class="kpi-sub">AI 분석 대기 중</div>
+  </div>
+  <div class="kpi-card {% if stats.unpublished_green > 0 %}kpi-card-ok{% endif %}">
+    <div class="kpi-label">발행 대기 콘텐츠</div>
+    <div class="kpi-value" style="color:{% if stats.unpublished_green > 0 %}#059669{% else %}#AAA7B8{% endif %}">{{ stats.unpublished_green }}</div>
+    <div class="kpi-sub">green 등급 · 미발행</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">오늘 이메일 발송</div>
+    <div class="kpi-value" style="color:{% if stats.email_today > 0 %}#7000FC{% else %}#AAA7B8{% endif %}">{{ stats.email_today }}</div>
+    <div class="kpi-sub">성공 발송 건수</div>
+  </div>
+</div>
 
 <!-- 날짜 필터 -->
 <div class="date-bar">
@@ -206,6 +223,7 @@
           {% elif post.sentiment == 'negative' %}<span class="badge badge-neg">부정</span>
           {% elif post.sentiment %}<span class="badge badge-neu">중립</span>{% endif %}
           {% if post.category %}<span class="badge badge-cat">{{ post.category }}</span>{% endif %}
+          {% for c in post.competitors %}<span class="badge badge-comp">⚡ {{ competitor_label.get(c, c) }}</span>{% endfor %}
           {% if post.importance_score %}
           <span class="{% if post.importance_score >= 7 %}score-high{% elif post.importance_score >= 4 %}score-mid{% else %}score-low{% endif %}">{{ post.importance_score }}/10</span>
           {% endif %}
