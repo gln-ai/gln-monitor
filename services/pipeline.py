@@ -10,8 +10,19 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
-from config import APPS_ROOT, KST, MONITOR_DIR
+from config import KST, MONITOR_DIR
 from db import get_db
+
+# gln-content/gln-guard 경로: Railway는 MONITOR_DIR 내부, 로컬은 ../gln-content/
+_MONITOR_DIR_LOCAL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_APPS_ROOT = os.path.dirname(_MONITOR_DIR_LOCAL)
+
+
+def _resolve_sibling(name: str) -> str:
+    """Railway(/app/name/) 또는 로컬(../name/) 중 존재하는 경로를 반환."""
+    in_monitor = os.path.join(_MONITOR_DIR_LOCAL, name)
+    in_apps    = os.path.join(_APPS_ROOT, name)
+    return in_monitor if os.path.isdir(in_monitor) else in_apps
 
 
 def _load_module(name: str, file_path: str):
@@ -23,9 +34,8 @@ def _load_module(name: str, file_path: str):
 
 
 def _get_modules():
-    # apps/gln-content, apps/gln-guard가 단일 소스. MONITOR_DIR 내 사본은 사용하지 않음.
-    cg_path = os.path.join(APPS_ROOT, "gln-content", "content_generator.py")
-    ck_path = os.path.join(APPS_ROOT, "gln-guard", "checker.py")
+    cg_path = os.path.join(_resolve_sibling("gln-content"), "content_generator.py")
+    ck_path = os.path.join(_resolve_sibling("gln-guard"), "checker.py")
     content_gen = _load_module("content_generator", cg_path)
     checker     = _load_module("checker", ck_path)
     return content_gen, checker

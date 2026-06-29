@@ -13,6 +13,7 @@ if MONITOR_DIR not in sys.path:
 
 # config를 먼저 import → .env 로드 + shared/ 경로를 sys.path에 추가
 import config  # noqa: F401 (side-effect: .env load, sys.path update)
+from config import APPS_ROOT
 
 from flask import Flask
 

@@ -11,8 +11,16 @@ from datetime import datetime
 
 from flask import Blueprint, jsonify, render_template, request
 
-from config import APPS_ROOT, KST
+from config import KST
 from db import get_db
+
+# gln-content 경로: Railway(/app/gln-content/) 또는 로컬(../gln-content/)
+_ROUTES_DIR   = os.path.dirname(os.path.abspath(__file__))
+_MONITOR_DIR  = os.path.dirname(_ROUTES_DIR)
+_APPS_ROOT    = os.path.dirname(_MONITOR_DIR)
+_GLN_CONTENT  = os.path.join(_MONITOR_DIR, "gln-content") \
+                if os.path.isdir(os.path.join(_MONITOR_DIR, "gln-content")) \
+                else os.path.join(_APPS_ROOT, "gln-content")
 from services.pipeline import generate_single, generate_multi, run_content_pipeline
 from routes.monitor import COUNTRY_LABEL, COUNTRY_EMOJI
 
@@ -351,7 +359,8 @@ def api_content_email(draft_id):
     if not row:
         return jsonify({"error": "not found"}), 404
 
-    _checker_path = os.path.join(APPS_ROOT, "gln-guard", "checker.py")
+    _gln_guard    = os.path.join(_MONITOR_DIR, "gln-guard") if os.path.isdir(os.path.join(_MONITOR_DIR, "gln-guard")) else os.path.join(_APPS_ROOT, "gln-guard")
+    _checker_path = os.path.join(_gln_guard, "checker.py")
     spec = importlib.util.spec_from_file_location("checker", _checker_path)
     mod  = importlib.util.module_from_spec(spec)
     sys.modules["checker"] = mod
@@ -448,7 +457,7 @@ def api_content_generate_images(draft_id):
         return jsonify({"error": f"이미지 생성은 instagram_card, cartoon 포맷만 지원합니다. 현재: {fmt}"}), 400
 
     # image_generator 동적 로드
-    img_gen_path = os.path.join(APPS_ROOT, "gln-content", "image_generator.py")
+    img_gen_path = os.path.join(_GLN_CONTENT, "image_generator.py")
     spec = importlib.util.spec_from_file_location("image_generator", img_gen_path)
     img_gen = importlib.util.module_from_spec(spec)
     sys.modules["image_generator"] = img_gen
