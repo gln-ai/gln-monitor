@@ -33,6 +33,8 @@ _COUNTRY_MAP = {
     "라오스": "laos",
     "괌": "guam",
     "사이판": "saipan",
+    "인도네시아": "indonesia", "자카르타": "indonesia",
+    "발리": "indonesia",       "수라바야": "indonesia",  "욕야카르타": "indonesia",
     # 베트남 도시
     "나트랑": "vietnam",   "냐짱": "vietnam",     "다낭": "vietnam",
     "달랏": "vietnam",     "다랏": "vietnam",     "푸꾸옥": "vietnam",
@@ -77,6 +79,7 @@ COUNTRY_LABEL = {
     "laos":        "라오스",
     "guam":        "괌사이판",
     "saipan":      "괌사이판",
+    "indonesia":   "인도네시아",
 }
 
 COUNTRY_EMOJI = {
@@ -85,6 +88,7 @@ COUNTRY_EMOJI = {
     "laos":        "🇱🇦", "japan":       "🇯🇵", "taiwan":      "🇹🇼",
     "mongolia":    "🇲🇳", "singapore":   "🇸🇬", "cambodia":    "🇰🇭",
     "guam":        "🏝️",  "saipan":      "🏝️",
+    "indonesia":   "🇮🇩",
 }
 
 

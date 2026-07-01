@@ -40,6 +40,8 @@ COUNTRY_MAP = {
     "라오스": "laos",
     "괌": "guam",
     "사이판": "saipan",
+    "인도네시아": "indonesia", "자카르타": "indonesia",
+    "발리": "indonesia",       "수라바야": "indonesia",
 }
 
 
@@ -93,11 +95,12 @@ def get_proactive_topics(limit: int = 5) -> list[dict]:
     모니터링 DB 데이터가 없을 때 대체 소재로 사용.
     """
     countries = [
-        ("태국",   "thailand"),
-        ("일본",   "japan"),
-        ("베트남", "vietnam"),
-        ("대만",   "taiwan"),
-        ("필리핀", "philippines"),
+        ("태국",       "thailand"),
+        ("일본",       "japan"),
+        ("베트남",     "vietnam"),
+        ("대만",       "taiwan"),
+        ("필리핀",     "philippines"),
+        ("인도네시아", "indonesia"),
     ]
     topics = [
         "{country} 여행 전 GLN으로 결제 준비하는 법",

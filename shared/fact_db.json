@@ -1,16 +1,23 @@
 {
-  "last_updated": "2026-03-27",
+  "last_updated": "2026-07-01",
   "note": "이 파일은 수동 관리. LLM이 수수료/국가 정보 직접 생성 금지. 수치 변경 시 GLN 공식 채널 확인 필수.",
   "global_disclaimer": "정확한 수수료와 이용 가능 여부는 GLN 앱에서 확인하세요. 현지 사정에 따라 서비스가 제한될 수 있습니다.",
   "about": {
-    "company": "(주)지엘엔인터내셔널",
-    "company_en": "GLN International",
-    "brand": "GLN",
+    "company": "글로벌로컬네트워크(주)",
+    "brand": "GLN (Global Loyalty Network)",
     "description": "한국 핀테크 기업이 운영하는 해외 여행자용 모바일 결제·ATM 출금 플랫폼",
     "app_name": "GLN",
-    "supported_platforms": ["iOS", "Android"],
+    "supported_platforms": [
+      "iOS",
+      "Android"
+    ],
     "headquarter": "대한민국 서울",
-    "key_features": ["QR 결제", "ATM 출금", "여행자 포인트 적립", "환율 우대"]
+    "key_features": [
+      "QR 결제",
+      "ATM 출금",
+      "여행자 포인트 적립",
+      "환율 우대"
+    ]
   },
   "countries": {
     "thailand": {
@@ -18,9 +25,20 @@
       "qr_payment": true,
       "atm": true,
       "launch_status": "서비스 중",
-      "qr_network": ["PromptPay", "Thai QR"],
-      "atm_network": ["Bangkok Bank ATM", "Kasikorn Bank ATM"],
-      "major_cities": ["방콕", "치앙마이", "파타야", "푸켓"],
+      "qr_network": [
+        "PromptPay",
+        "Thai QR"
+      ],
+      "atm_network": [
+        "Bangkok Bank ATM",
+        "Kasikorn Bank ATM"
+      ],
+      "major_cities": [
+        "방콕",
+        "치앙마이",
+        "파타야",
+        "푸켓"
+      ],
       "fee_note": "앱 내 확인 필수",
       "travel_tips": "태국 전역 편의점·관광지 가맹점에서 QR 결제 가능",
       "currency": "THB"
@@ -30,21 +48,41 @@
       "qr_payment": true,
       "atm": true,
       "launch_status": "서비스 중",
-      "qr_network": ["JPQR", "UnionPay QR"],
-      "atm_network": ["7-Eleven ATM", "Japan Post ATM", "E-net ATM"],
-      "major_cities": ["도쿄", "오사카", "교토", "삿포로", "후쿠오카"],
+      "qr_network": [
+        "JPQR",
+        "UnionPay QR"
+      ],
+      "atm_network": [
+        "세븐뱅크 ATM (Seven Bank ATM)"
+      ],
+      "major_cities": [
+        "도쿄",
+        "오사카",
+        "교토",
+        "삿포로",
+        "후쿠오카"
+      ],
       "fee_note": "앱 내 확인 필수",
-      "travel_tips": "편의점 ATM(세븐일레븐·로손 등)에서 24시간 출금 가능",
-      "currency": "JPY"
+      "travel_tips": "세븐뱅크 ATM으로 현지 통화 출금 가능. 세븐뱅크 ATM은 세븐일레븐 편의점 내에 설치되어 있으나, 쇼핑몰·지하철·공항 등 일본 전역에서 쉽게 찾을 수 있음.",
+      "currency": "JPY",
+      "atm_notes": "올바른 표기: '세븐뱅크 ATM' 또는 'Seven Bank ATM'. '세븐일레븐 ATM' '재팬포스트 ATM' 'Japan Post ATM' 'E-net ATM'은 GLN 미지원 또는 잘못된 표기이므로 사용 금지.",
+      "atm_emphasis": "세븐뱅크 ATM은 세븐일레븐 편의점 외에도 쇼핑몰·지하철역·공항 등 일본 전역에 광범위하게 설치되어 있어 접근성이 높음. 콘텐츠에 이 점 반드시 강조."
     },
     "taiwan": {
       "name_ko": "대만",
       "qr_payment": true,
       "atm": false,
       "launch_status": "서비스 중",
-      "qr_network": ["台灣Pay", "TWQR"],
+      "qr_network": [
+        "台灣Pay",
+        "TWQR"
+      ],
       "atm_network": [],
-      "major_cities": ["타이베이", "가오슝", "타이중"],
+      "major_cities": [
+        "타이베이",
+        "가오슝",
+        "타이중"
+      ],
       "fee_note": "앱 내 확인 필수",
       "travel_tips": "타이베이 관광지·백화점·편의점 가맹점 QR 결제 가능. ATM 서비스는 현재 미지원",
       "currency": "TWD"
@@ -52,13 +90,23 @@
     "vietnam": {
       "name_ko": "베트남",
       "qr_payment": true,
-      "atm": false,
+      "atm": true,
       "launch_status": "서비스 중",
-      "qr_network": ["VietQR", "NAPAS QR"],
-      "atm_network": [],
-      "major_cities": ["하노이", "호치민", "다낭", "나트랑"],
+      "qr_network": [
+        "VietQR",
+        "NAPAS QR"
+      ],
+      "atm_network": [
+        "[검증필요: 베트남 ATM 네트워크 명칭]"
+      ],
+      "major_cities": [
+        "하노이",
+        "호치민",
+        "다낭",
+        "나트랑"
+      ],
       "fee_note": "앱 내 확인 필수",
-      "travel_tips": "주요 관광지·쇼핑몰·식당에서 QR 결제 이용 가능",
+      "travel_tips": "주요 관광지·쇼핑몰·식당에서 QR 결제 이용 가능. ATM 출금도 지원 (네트워크 앱 내 확인).",
       "currency": "VND"
     },
     "philippines": {
@@ -66,9 +114,16 @@
       "qr_payment": true,
       "atm": false,
       "launch_status": "서비스 중",
-      "qr_network": ["QRPh", "InstaPay QR"],
+      "qr_network": [
+        "QRPh",
+        "InstaPay QR"
+      ],
       "atm_network": [],
-      "major_cities": ["마닐라", "세부", "보라카이"],
+      "major_cities": [
+        "마닐라",
+        "세부",
+        "보라카이"
+      ],
       "fee_note": "앱 내 확인 필수",
       "travel_tips": "마닐라 쇼핑몰·관광지 중심으로 가맹점 확대 중",
       "currency": "PHP"
@@ -78,35 +133,33 @@
       "qr_payment": true,
       "atm": false,
       "launch_status": "서비스 중",
-      "qr_network": ["SGQR", "PayNow QR"],
+      "qr_network": [
+        "SGQR",
+        "PayNow QR"
+      ],
       "atm_network": [],
-      "major_cities": ["싱가포르"],
+      "major_cities": [
+        "싱가포르"
+      ],
       "fee_note": "앱 내 확인 필수",
       "travel_tips": "마리나베이·오차드로드 등 주요 관광·쇼핑 지구에서 이용 가능",
       "currency": "SGD"
     },
-    "malaysia": {
-      "name_ko": "말레이시아",
-      "qr_payment": true,
-      "atm": false,
-      "launch_status": "서비스 중",
-      "qr_network": ["DuitNow QR", "MyQR"],
-      "atm_network": [],
-      "major_cities": ["쿠알라룸푸르", "코타키나발루", "조호르바루"],
-      "fee_note": "앱 내 확인 필수",
-      "travel_tips": "쿠알라룸푸르 쇼핑몰·관광지 중심으로 이용 가능",
-      "currency": "MYR"
-    },
     "hongkong": {
       "name_ko": "홍콩",
       "qr_payment": true,
-      "atm": true,
+      "atm": false,
       "launch_status": "서비스 중",
-      "qr_network": ["AlipayHK QR", "FPS QR"],
-      "atm_network": ["HSBC ATM", "Hang Seng ATM"],
-      "major_cities": ["홍콩"],
+      "qr_network": [
+        "AlipayHK QR",
+        "FPS QR"
+      ],
+      "atm_network": [],
+      "major_cities": [
+        "홍콩"
+      ],
       "fee_note": "앱 내 확인 필수",
-      "travel_tips": "침사추이·몽콕·중환 등 주요 상권 가맹점에서 결제·출금 가능",
+      "travel_tips": "침사추이·몽콕·중환 등 주요 상권 가맹점에서 QR 결제 가능. ATM 서비스는 현재 미지원.",
       "currency": "HKD"
     },
     "cambodia": {
@@ -114,9 +167,14 @@
       "qr_payment": true,
       "atm": false,
       "launch_status": "서비스 중",
-      "qr_network": ["KHQR"],
+      "qr_network": [
+        "KHQR"
+      ],
       "atm_network": [],
-      "major_cities": ["프놈펜", "씨엠립"],
+      "major_cities": [
+        "프놈펜",
+        "씨엠립"
+      ],
       "fee_note": "앱 내 확인 필수",
       "travel_tips": "앙코르와트 인근 관광지·숙소에서 이용 가능",
       "currency": "KHR"
@@ -126,12 +184,124 @@
       "qr_payment": true,
       "atm": false,
       "launch_status": "서비스 중",
-      "qr_network": ["QPay QR"],
+      "qr_network": [
+        "QPay QR"
+      ],
       "atm_network": [],
-      "major_cities": ["울란바토르"],
+      "major_cities": [
+        "울란바토르"
+      ],
       "fee_note": "앱 내 확인 필수",
       "travel_tips": "울란바토르 시내 주요 가맹점에서 이용 가능",
       "currency": "MNT"
+    },
+    "macau": {
+      "name_ko": "마카오",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": [
+        "UnionPay QR"
+      ],
+      "atm_network": [],
+      "major_cities": [
+        "마카오"
+      ],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "마카오 카지노·관광지·쇼핑몰 가맹점에서 QR 결제 가능. ATM 서비스 미지원.",
+      "currency": "MOP"
+    },
+    "china": {
+      "name_ko": "중국",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": [
+        "UnionPay QR",
+        "WeChat QR"
+      ],
+      "atm_network": [],
+      "major_cities": [
+        "베이징",
+        "상하이",
+        "광저우",
+        "선전"
+      ],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "주요 도시 관광지·쇼핑몰에서 QR 결제 가능. ATM 서비스 미지원.",
+      "currency": "CNY"
+    },
+    "laos": {
+      "name_ko": "라오스",
+      "qr_payment": true,
+      "atm": true,
+      "launch_status": "서비스 중",
+      "qr_network": [
+        "LAO QR"
+      ],
+      "atm_network": [
+        "[검증필요: 라오스 ATM 네트워크 명칭]"
+      ],
+      "major_cities": [
+        "비엔티안",
+        "루앙프라방"
+      ],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "비엔티안·루앙프라방 주요 관광지·식당에서 QR 결제 및 ATM 출금 가능.",
+      "currency": "LAK"
+    },
+    "guam": {
+      "name_ko": "괌",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": [
+        "UnionPay QR"
+      ],
+      "atm_network": [],
+      "major_cities": [
+        "투몬",
+        "하갓냐"
+      ],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "투몬 쇼핑·관광 지구 가맹점에서 QR 결제 가능. ATM 서비스 미지원.",
+      "currency": "USD"
+    },
+    "saipan": {
+      "name_ko": "사이판",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": [
+        "UnionPay QR"
+      ],
+      "atm_network": [],
+      "major_cities": [
+        "가라판"
+      ],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "가라판 주요 관광·쇼핑 지구에서 QR 결제 가능. ATM 서비스 미지원.",
+      "currency": "USD"
+    },
+    "indonesia": {
+      "name_ko": "인도네시아",
+      "qr_payment": true,
+      "atm": false,
+      "launch_status": "서비스 중",
+      "qr_network": [
+        "QRIS"
+      ],
+      "atm_network": [],
+      "major_cities": [
+        "자카르타",
+        "발리",
+        "수라바야",
+        "욕야카르타"
+      ],
+      "fee_note": "앱 내 확인 필수",
+      "travel_tips": "[검증필요] 인도네시아 전역 QRIS 가맹점에서 QR 결제 가능. ATM 서비스 미지원.",
+      "currency": "IDR",
+      "supported_apps": ["퍼플GLN", "토스", "하나은행", "하나머니", "하나카드"]
     }
   },
   "service_categories": {
@@ -142,6 +312,72 @@
     "atm_withdrawal": {
       "description": "해외 제휴 ATM에서 원화 기반 현지 통화 출금",
       "how_to": "앱 실행 → ATM 출금 선택 → ATM QR 스캔 또는 앱 코드 입력"
+    }
+  },
+  "app_atm_support": {
+    "_note": "파트너 앱별 ATM 지원 국가. 콘텐츠 생성 시 특정 앱 언급할 경우 반드시 이 데이터 참조.",
+    "퍼플GLN": {
+      "atm": [
+        "베트남",
+        "태국",
+        "일본",
+        "라오스"
+      ]
+    },
+    "토스": {
+      "atm": [
+        "베트남",
+        "태국",
+        "일본",
+        "라오스"
+      ]
+    },
+    "네이버페이": {
+      "atm": []
+    },
+    "카카오페이": {
+      "atm": [
+        "태국",
+        "일본"
+      ]
+    },
+    "삼성월렛": {
+      "atm": []
+    },
+    "하나은행": {
+      "atm": [
+        "베트남",
+        "태국",
+        "일본",
+        "라오스"
+      ]
+    },
+    "하나머니": {
+      "atm": [
+        "베트남",
+        "태국",
+        "일본",
+        "라오스"
+      ]
+    },
+    "하나카드": {
+      "atm": [
+        "베트남",
+        "태국",
+        "일본",
+        "라오스"
+      ]
+    },
+    "KB스타뱅킹": {
+      "atm": [
+        "베트남",
+        "태국",
+        "일본",
+        "라오스"
+      ]
+    },
+    "iM뱅크": {
+      "atm": []
     }
   }
 }

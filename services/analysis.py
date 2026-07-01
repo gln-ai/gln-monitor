@@ -50,6 +50,8 @@ _CITY_TO_COUNTRY = {
     "비엔티안": "laos",  "루앙프라방": "laos",
     "울란바토르": "mongolia",
     "투몬": "guam",
+    "자카르타": "indonesia", "발리": "indonesia",
+    "수라바야": "indonesia", "욕야카르타": "indonesia",
 }
 
 
@@ -86,6 +88,9 @@ def _build_service_context(country_code: str, fdb: dict) -> str:
     ]
     if atm_apps:
         lines.append(f"- ATM 지원 앱: {', '.join(atm_apps)}")
+    # ATM 미지원 국가의 경우 QR 지원 앱 목록 표시 (supported_apps 필드)
+    if not info.get("atm") and info.get("supported_apps"):
+        lines.append(f"- QR 결제 지원 앱: {', '.join(info['supported_apps'])}")
     return "\n".join(lines)
 
 
