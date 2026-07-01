@@ -588,18 +588,18 @@ function _loadLS(key, fallback) {
 }
 
 function App() {
-  const [countries, setCountries] = useState(()=>_loadLS("gln_fc_countries_v3", COUNTRIES.map(c=>({...c}))));
+  const [countries, setCountries] = useState(()=>_loadLS("gln_fc_countries_v4", COUNTRIES.map(c=>({...c}))));
   const [view, setView] = useState("matrix");
   const [newName, setNewName] = useState("");
   const [copied, setCopied] = useState(false);
   const [showPrompt, setShowPrompt] = useState(true);
   const [dragOverIdx, setDragOverIdx] = useState(null);
-  const [apps, setApps] = useState(()=>_loadLS("gln_fc_apps_v3", APPS));
+  const [apps, setApps] = useState(()=>_loadLS("gln_fc_apps_v4", APPS));
   const [editingApp, setEditingApp] = useState(null);
   const [logs, setLogs] = useState(()=>_loadLS("gln_fc_logs_v1", []));
 
-  useEffect(()=>{ try { localStorage.setItem("gln_fc_countries_v3", JSON.stringify(countries)); } catch {} }, [countries]);
-  useEffect(()=>{ try { localStorage.setItem("gln_fc_apps_v3", JSON.stringify(apps)); } catch {} }, [apps]);
+  useEffect(()=>{ try { localStorage.setItem("gln_fc_countries_v4", JSON.stringify(countries)); } catch {} }, [countries]);
+  useEffect(()=>{ try { localStorage.setItem("gln_fc_apps_v4", JSON.stringify(apps)); } catch {} }, [apps]);
   useEffect(()=>{ try { localStorage.setItem("gln_fc_logs_v1", JSON.stringify(logs)); } catch {} }, [logs]);
 
   const addLog = useCallback((msg) => {
@@ -915,7 +915,7 @@ function App() {
             <span className="fc-summary-sub">Claude 대화 시작 전 시스템 프롬프트로 붙여넣기</span>
           </div>
           <div className="fc-summary-actions" style={{display:"flex",gap:8,alignItems:"center"}}>
-            <button onClick={()=>{ if(!confirm("초기 데이터로 되돌리겠습니까?")) return; addLog("초기 데이터로 초기화"); ["gln_fc_countries_v2","gln_fc_apps_v2","gln_fc_countries_v3","gln_fc_apps_v3"].forEach(k=>localStorage.removeItem(k)); setCountries(COUNTRIES.map(c=>({...c}))); setApps(APPS); }} style={{border:"1px solid #E4E1EE",background:"none",borderRadius:6,padding:"3px 8px",fontSize:10,color:"#918DA0",cursor:"pointer"}}>초기화</button>
+            <button onClick={()=>{ if(!confirm("초기 데이터로 되돌리겠습니까?")) return; addLog("초기 데이터로 초기화"); ["gln_fc_countries_v2","gln_fc_apps_v2","gln_fc_countries_v3","gln_fc_apps_v3","gln_fc_countries_v4","gln_fc_apps_v4"].forEach(k=>localStorage.removeItem(k)); setCountries(COUNTRIES.map(c=>({...c}))); setApps(APPS); }} style={{border:"1px solid #E4E1EE",background:"none",borderRadius:6,padding:"3px 8px",fontSize:10,color:"#918DA0",cursor:"pointer"}}>초기화</button>
             <button onClick={()=>setShowPrompt(v=>!v)} className="fc-summary-btn">
               <i className={`ti ti-${showPrompt?"chevron-up":"eye"}`} style={{marginRight:4}}/>
               {showPrompt?"접기":"프롬프트 보기"}
@@ -1007,8 +1007,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(<App />);
 async function saveToFactDb() {
   const btn    = document.getElementById('fc-save-btn');
   const status = document.getElementById('fc-save-status');
-  const countries = JSON.parse(localStorage.getItem('gln_fc_countries_v3') || '[]');
-  const apps      = JSON.parse(localStorage.getItem('gln_fc_apps_v3')      || '[]');
+  const countries = JSON.parse(localStorage.getItem('gln_fc_countries_v4') || '[]');
+  const apps      = JSON.parse(localStorage.getItem('gln_fc_apps_v4')      || '[]');
 
   if (!countries.length && !apps.length) {
     status.textContent = '저장할 데이터 없음';
