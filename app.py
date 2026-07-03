@@ -60,6 +60,7 @@ def _daily_weekend():
         print("[일일리포트] 주말 수신자 미설정 — 스킵")
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", "gln-monitor-secret-2026")
 
 
 @app.context_processor
