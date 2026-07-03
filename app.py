@@ -18,7 +18,20 @@ from config import APPS_ROOT
 from flask import Flask
 
 from db import init_db, get_setting
-from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp, admin_bp, monthly_perf_bp, overview_bp, content_eval_bp
+print("[startup] db imported OK", flush=True)
+
+from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp, admin_bp, monthly_perf_bp, overview_bp
+print("[startup] base routes imported OK", flush=True)
+
+try:
+    from routes.content_eval import content_eval_bp
+    _content_eval_ok = True
+    print("[startup] content_eval_bp imported OK", flush=True)
+except Exception as _e:
+    content_eval_bp = None
+    _content_eval_ok = False
+    print(f"[startup] content_eval_bp import FAILED: {_e}", flush=True)
+
 from services.naver import collect_all
 from services.email_svc import send_daily_report
 from services.pipeline import run_content_pipeline
@@ -76,7 +89,9 @@ app.register_blueprint(keywords_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(monthly_perf_bp)
 app.register_blueprint(overview_bp)
-app.register_blueprint(content_eval_bp)
+if _content_eval_ok and content_eval_bp:
+    app.register_blueprint(content_eval_bp)
+    print("[startup] content_eval_bp registered OK", flush=True)
 
 # ── DB 초기화 + 스케줄러 (gunicorn/직접 실행 모두 동작) ───────────────────────
 from apscheduler.schedulers.background import BackgroundScheduler

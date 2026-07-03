@@ -9,9 +9,7 @@ services/content_eval.py — 서포터즈 콘텐츠 품질 평가 엔진
   safety_status FAIL이면 total_score와 무관하게 최종 FAIL
 """
 import json
-
-from config import MODEL_ID
-from utils import get_claude_client
+import os
 
 # ─── 기본 가이드라인 (1차 하드코딩) ─────────────────────────────────────────
 DEFAULT_GUIDELINE = {
@@ -196,9 +194,11 @@ def _score_quality_claude(text: str) -> tuple[int, str, str]:
 
     prompt = _QUALITY_PROMPT.format(text=text[:3000])
     try:
-        client = get_claude_client()
+        import anthropic as _anthropic
+        _model = os.getenv("MODEL_ID", "claude-sonnet-4-6")
+        client = _anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         msg = client.messages.create(
-            model=MODEL_ID,
+            model=_model,
             max_tokens=300,
             messages=[{"role": "user", "content": prompt}],
         )
