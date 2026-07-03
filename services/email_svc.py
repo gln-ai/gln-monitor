@@ -585,3 +585,144 @@ def send_daily_report(to: str = ""):
         import traceback
         print(f"[아침브리핑 오류] {e}")
         print(traceback.format_exc())
+
+
+# ── 서포터즈 콘텐츠 평가 리포트 ──────────────────────────────────────────────
+def send_content_eval_report(to: str = "") -> tuple[bool, str]:
+    """서포터즈 콘텐츠 평가 결과를 이메일로 발송."""
+    if not to:
+        to = get_setting("urgent_alert_to_list") or os.getenv("URGENT_ALERT_TO", "")
+    if not to:
+        return False, "수신자 없음"
+
+    try:
+        conn = get_db()
+        rows = conn.execute("""
+            SELECT s.name, s.platform, s.url,
+                   sc.guideline_score, sc.engagement_score, sc.quality_score,
+                   sc.total_score, sc.safety_status, sc.safety_reason
+            FROM content_submissions s
+            LEFT JOIN content_scores sc ON sc.submission_id = s.id
+            WHERE sc.total_score IS NOT NULL
+            ORDER BY sc.total_score DESC
+            LIMIT 100
+        """).fetchall()
+        conn.close()
+
+        submissions = [dict(r) for r in rows]
+        if not submissions:
+            return False, "평가 완료된 콘텐츠 없음"
+
+        total_cnt = len(submissions)
+        pass_cnt  = sum(1 for s in submissions if s.get("safety_status") == "PASS")
+        fail_cnt  = total_cnt - pass_cnt
+        avg_score = round(sum(s.get("total_score", 0) for s in submissions) / max(total_cnt, 1), 1)
+
+        _PLATFORM_LABEL = {"youtube": "유튜브", "naver_blog": "네이버 블로그", "instagram": "인스타그램"}
+
+        def _score_color(v, max_v):
+            ratio = v / max_v if max_v > 0 else 0
+            if ratio >= 0.75:
+                return "#059669"
+            elif ratio >= 0.5:
+                return "#D97706"
+            return "#DC2626"
+
+        rows_html = ""
+        for s in submissions:
+            status_style = (
+                "background:#F0FDF4;color:#059669;border:0.5px solid #BBF7D0"
+                if s.get("safety_status") == "PASS"
+                else "background:#FEF2F2;color:#DC2626;border:0.5px solid #FECACA"
+            )
+            pct = s.get("total_score", 0)
+            rows_html += f"""
+<tr style="border-bottom:1px solid #F3F4F6">
+  <td style="padding:8px 10px;font-size:13px;font-weight:600;color:#130D2A">{s['name']}</td>
+  <td style="padding:8px 10px;font-size:11px;color:#5E5A71">{_PLATFORM_LABEL.get(s['platform'], s['platform'])}</td>
+  <td style="padding:8px 10px;text-align:center;font-size:13px;font-weight:600;color:{_score_color(s.get('guideline_score',0),40)}">{s.get('guideline_score','—')}</td>
+  <td style="padding:8px 10px;text-align:center;font-size:13px;font-weight:600;color:{_score_color(s.get('engagement_score',0),30)}">{s.get('engagement_score','—')}</td>
+  <td style="padding:8px 10px;text-align:center;font-size:13px;font-weight:600;color:{_score_color(s.get('quality_score',0),30)}">{s.get('quality_score','—')}</td>
+  <td style="padding:8px 10px">
+    <div style="display:flex;align-items:center;gap:6px">
+      <div style="flex:1;background:#F0EAFF;border-radius:99px;height:6px;overflow:hidden">
+        <div style="width:{pct}%;background:#7000FC;height:100%;border-radius:99px"></div>
+      </div>
+      <span style="font-size:13px;font-weight:700;color:#130D2A;white-space:nowrap">{s.get('total_score','—')}</span>
+    </div>
+  </td>
+  <td style="padding:8px 10px;text-align:center">
+    <span style="padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;{status_style}">{s.get('safety_status','—')}</span>
+  </td>
+  <td style="padding:8px 10px;font-size:11px;color:#DC2626;max-width:160px">{s.get('safety_reason','') or ''}</td>
+</tr>"""
+
+        html = f"""<!DOCTYPE html>
+<html lang="ko">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:20px 12px;background:#F6F5FF;font-family:-apple-system,sans-serif">
+<div style="max-width:720px;margin:auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #DDD6FE">
+  <div style="background:#EDE7FF;padding:20px 24px">
+    <div style="font-size:12px;font-weight:800;color:#7000FC;letter-spacing:0.1em;margin-bottom:6px">GLN 서포터즈 콘텐츠 평가 리포트</div>
+    <div style="font-size:20px;font-weight:800;color:#1E0942">스코어카드 요약</div>
+    <div style="font-size:12px;color:#6D28D9;margin-top:4px">{datetime.now(KST).strftime('%Y년 %m월 %d일')}</div>
+  </div>
+  <div style="padding:20px 24px">
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px">
+      <tr>
+        <td width="25%" style="padding-right:6px">
+          <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#1E0942">{total_cnt}</div>
+            <div style="font-size:11px;color:#6B7280">총 평가</div>
+          </div>
+        </td>
+        <td width="25%" style="padding:0 3px">
+          <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#059669">{pass_cnt}</div>
+            <div style="font-size:11px;color:#6B7280">PASS</div>
+          </div>
+        </td>
+        <td width="25%" style="padding:0 3px">
+          <div style="background:#FEF2F2;border:1px solid #FECACA;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#DC2626">{fail_cnt}</div>
+            <div style="font-size:11px;color:#6B7280">FAIL</div>
+          </div>
+        </td>
+        <td width="25%" style="padding-left:6px">
+          <div style="background:#F0EAFF;border:1px solid #DDD6FE;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:#7000FC">{avg_score}</div>
+            <div style="font-size:11px;color:#6B7280">평균점수</div>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #F0EDF7">
+      <thead>
+        <tr style="background:#F9FAFB">
+          <th style="padding:7px 10px;text-align:left;font-size:10px;color:#918DA0;font-weight:500">이름</th>
+          <th style="padding:7px 10px;text-align:left;font-size:10px;color:#918DA0;font-weight:500">플랫폼</th>
+          <th style="padding:7px 10px;text-align:center;font-size:10px;color:#918DA0;font-weight:500">가이드/40</th>
+          <th style="padding:7px 10px;text-align:center;font-size:10px;color:#918DA0;font-weight:500">참여도/30</th>
+          <th style="padding:7px 10px;text-align:center;font-size:10px;color:#918DA0;font-weight:500">품질/30</th>
+          <th style="padding:7px 10px;text-align:center;font-size:10px;color:#918DA0;font-weight:500">총점</th>
+          <th style="padding:7px 10px;text-align:center;font-size:10px;color:#918DA0;font-weight:500">결과</th>
+          <th style="padding:7px 10px;text-align:left;font-size:10px;color:#918DA0;font-weight:500">사유</th>
+        </tr>
+      </thead>
+      <tbody>{rows_html}</tbody>
+    </table>
+
+    <p style="font-size:11px;color:#9CA3AF;margin-top:20px;text-align:center">GLN 모니터링 시스템 · 서포터즈 콘텐츠 평가 자동 발송</p>
+  </div>
+</div>
+</body></html>"""
+
+        subject = f"[GLN 서포터즈] 콘텐츠 평가 결과 — {total_cnt}건 (PASS {pass_cnt} / FAIL {fail_cnt})"
+        send_email(to, subject, html, report_type="content_eval")
+        return True, f"발송 완료 ({to})"
+    except Exception as e:
+        import traceback
+        print(f"[서포터즈 리포트 오류] {e}")
+        print(traceback.format_exc())
+        return False, str(e)

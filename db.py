@@ -119,6 +119,30 @@ def init_db():
             created_at     TEXT DEFAULT (datetime('now','localtime')),
             updated_at     TEXT
         );
+
+        CREATE TABLE IF NOT EXISTS content_submissions (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            name         TEXT NOT NULL,
+            platform     TEXT NOT NULL,
+            url          TEXT NOT NULL,
+            ref_id       TEXT,
+            manual_stats TEXT,
+            submitted_at TEXT DEFAULT (datetime('now','localtime'))
+        );
+
+        CREATE TABLE IF NOT EXISTS content_scores (
+            id                INTEGER PRIMARY KEY AUTOINCREMENT,
+            submission_id     INTEGER NOT NULL,
+            guideline_score   INTEGER,
+            engagement_score  INTEGER,
+            quality_score     INTEGER,
+            total_score       INTEGER,
+            safety_status     TEXT,
+            safety_reason     TEXT,
+            detail_json       TEXT,
+            evaluated_at      TEXT DEFAULT (datetime('now','localtime')),
+            FOREIGN KEY (submission_id) REFERENCES content_submissions(id)
+        );
     """)
     conn.commit()
     # 마이그레이션 — 기존 DB에 컬럼 없으면 추가

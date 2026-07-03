@@ -7,5 +7,6 @@ from routes.keywords import keywords_bp
 from routes.admin import admin_bp
 from routes.monthly_performance import monthly_perf_bp
 from routes.overview import overview_bp
+from routes.content_eval import content_eval_bp
 
-__all__ = ["monitor_bp", "content_bp", "pr_bp", "reports_bp", "keywords_bp", "admin_bp", "monthly_perf_bp", "overview_bp"]
+__all__ = ["monitor_bp", "content_bp", "pr_bp", "reports_bp", "keywords_bp", "admin_bp", "monthly_perf_bp", "overview_bp", "content_eval_bp"]

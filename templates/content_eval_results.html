@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% block title %}서포터즈 평가 결과 — GLN{% endblock %}
+
+{% block page_styles %}
+.score-bar-wrap { background: #F0EAFF; border-radius: 99px; height: 6px; flex: 1; overflow: hidden; min-width: 60px; }
+.score-bar      { background: #7000FC; height: 100%; border-radius: 99px; }
+.status-pass    { background: #F0FDF4; color: #059669; border: 0.5px solid #BBF7D0; }
+.status-fail    { background: #FEF2F2; color: #DC2626; border: 0.5px solid #FECACA; }
+.status-pending { background: #F6F5FF; color: #918DA0; border: 0.5px solid #DAD9EA; }
+.platform-yt    { background: #FEF2F2; color: #DC2626; }
+.platform-nb    { background: #F0FDF4; color: #059669; }
+.platform-ig    { background: #FFF7ED; color: #EA580C; }
+.top-card { border: 1.5px solid #7000FC; background: #FAFAFF; }
+th.sortable { cursor:pointer; user-select:none; }
+th.sortable:hover { color: #7000FC; }
+th.sortable.asc::after  { content: ' ▲'; font-size:9px; }
+th.sortable.desc::after { content: ' ▼'; font-size:9px; }
+{% endblock %}
+
+{% block sidebar_extra %}
+<div class="nav-section" style="margin-top:4px">
+  <div class="nav-section-label">서포터즈</div>
+  <a href="/content-eval" class="nav-item {% if request.endpoint and request.endpoint.startswith('content_eval.') %}active{% endif %}">
+    <span class="nav-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+        <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
+    </span>
+    <span class="nav-item-text">콘텐츠 평가</span>
+  </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="topbar-title">평가 결과 리포트</div>
+      <div class="topbar-sub">총 {{ submissions|length }}건 평가 완료</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a href="/content-eval" class="btn btn-ghost btn-sm">← 업로드</a>
+    <button onclick="sendReport()" class="btn btn-primary btn-sm">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,11 2,6"/>
+      </svg>
+      리포트 이메일 발송
+    </button>
+  </div>
+</div>
+
+<div class="page-content">
+
+  <!-- KPI 요약 -->
+  {% set evaluated = submissions | selectattr('total_score', 'ne', none) | list %}
+  {% set passed    = evaluated | selectattr('safety_status', 'eq', 'PASS') | list %}
+  {% set failed    = evaluated | selectattr('safety_status', 'eq', 'FAIL') | list %}
+  {% set avg_score = (evaluated | map(attribute='total_score') | sum / (evaluated|length or 1)) | round(1) %}
+  <div class="kpi-grid-4" style="margin-bottom:18px">
+    <div class="kpi-card">
+      <div class="kpi-label">총 평가 건수</div>
+      <div class="kpi-value">{{ evaluated|length }}</div>
+    </div>
+    <div class="kpi-card kpi-card-ok">
+      <div class="kpi-label">PASS</div>
+      <div class="kpi-value" style="color:#059669">{{ passed|length }}</div>
+    </div>
+    <div class="kpi-card {% if failed %}kpi-card-warn{% endif %}">
+      <div class="kpi-label">FAIL</div>
+      <div class="kpi-value" style="color:{% if failed %}#DC2626{% else %}#130D2A{% endif %}">{{ failed|length }}</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">평균 점수</div>
+      <div class="kpi-value">{{ avg_score }}</div>
+    </div>
+  </div>
+
+  <!-- Top 5 우수 콘텐츠 -->
+  {% if top5 %}
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-header">
+      <span class="card-title">🏆 Top 5 우수 콘텐츠 (PASS 기준)</span>
+    </div>
+    <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px">
+      {% for s in top5 %}
+      <div class="top-card" style="border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px">
+        <div style="width:28px;height:28px;border-radius:99px;background:#7000FC;color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          {{ loop.index }}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:#130D2A">{{ s.name }}</div>
+          <a href="{{ s.url }}" target="_blank" style="font-size:11px;color:#7000FC;word-break:break-all">{{ s.url[:60] }}{% if s.url|length > 60 %}…{% endif %}</a>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <span class="badge platform-{% if s.platform == 'youtube' %}yt{% elif s.platform == 'naver_blog' %}nb{% else %}ig{% endif %}">
+            {{ platform_label.get(s.platform, s.platform) }}
+          </span>
+          <span style="font-size:18px;font-weight:800;color:#7000FC">{{ s.total_score }}점</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 전체 결과 테이블 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">전체 스코어카드</span>
+      <div style="display:flex;gap:6px;font-size:11px;color:#AAA7B8">
+        정렬: 컬럼 클릭
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse" id="results-table">
+        <thead>
+          <tr style="background:#F9FAFB;border-bottom:0.5px solid #E4E1EE">
+            <th class="sortable {% if sort=='name' %}{{ order }}{% endif %}" style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500"
+                onclick="doSort('name')">이름</th>
+            <th class="sortable {% if sort=='platform' %}{{ order }}{% endif %}" style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500"
+                onclick="doSort('platform')">플랫폼</th>
+            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500">URL</th>
+            <th class="sortable {% if sort=='guideline_score' %}{{ order }}{% endif %}" style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap"
+                onclick="doSort('guideline_score')">가이드<br><span style="font-weight:400">/40</span></th>
+            <th class="sortable {% if sort=='engagement_score' %}{{ order }}{% endif %}" style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap"
+                onclick="doSort('engagement_score')">참여도<br><span style="font-weight:400">/30</span></th>
+            <th class="sortable {% if sort=='quality_score' %}{{ order }}{% endif %}" style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap"
+                onclick="doSort('quality_score')">품질<br><span style="font-weight:400">/30</span></th>
+            <th class="sortable {% if sort=='total_score' %}{{ order }}{% endif %}" style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap"
+                onclick="doSort('total_score')">총점</th>
+            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500">결과</th>
+            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">사유</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in submissions %}
+          {% set is_pending = s.total_score is none %}
+          <tr style="border-bottom:0.5px solid #F3F4F6">
+            <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#130D2A;white-space:nowrap">{{ s.name }}</td>
+            <td style="padding:10px 14px">
+              <span class="badge {% if s.platform == 'youtube' %}platform-yt{% elif s.platform == 'naver_blog' %}platform-nb{% else %}platform-ig{% endif %}">
+                {{ platform_label.get(s.platform, s.platform) }}
+              </span>
+            </td>
+            <td style="padding:10px 14px;max-width:180px">
+              <a href="{{ s.url }}" target="_blank" style="font-size:11px;color:#7000FC;word-break:break-all">
+                {{ s.url[:45] }}{% if s.url|length > 45 %}…{% endif %}
+              </a>
+            </td>
+            <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.guideline_score >= 30 %}#059669{% elif s.guideline_score >= 20 %}#D97706{% else %}#DC2626{% endif %}">
+              {% if is_pending %}—{% else %}{{ s.guideline_score }}{% endif %}
+            </td>
+            <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.engagement_score >= 20 %}#059669{% elif s.engagement_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
+              {% if is_pending %}—{% else %}{{ s.engagement_score }}{% endif %}
+            </td>
+            <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.quality_score >= 20 %}#059669{% elif s.quality_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
+              {% if is_pending %}—{% else %}{{ s.quality_score }}{% endif %}
+            </td>
+            <td style="padding:10px 14px">
+              {% if is_pending %}
+              <span style="font-size:13px;color:#AAA7B8">—</span>
+              {% else %}
+              <div style="display:flex;align-items:center;gap:6px">
+                <div class="score-bar-wrap">
+                  <div class="score-bar" style="width:{{ s.total_score }}%"></div>
+                </div>
+                <span style="font-size:13px;font-weight:700;color:#130D2A;white-space:nowrap">{{ s.total_score }}</span>
+              </div>
+              {% endif %}
+            </td>
+            <td style="padding:10px 14px;text-align:center">
+              {% if is_pending %}
+              <span class="badge status-pending">대기</span>
+              {% elif s.safety_status == 'PASS' %}
+              <span class="badge status-pass">PASS</span>
+              {% else %}
+              <span class="badge status-fail">FAIL</span>
+              {% endif %}
+            </td>
+            <td style="padding:10px 14px;font-size:11px;color:#DC2626;max-width:180px">
+              {{ s.safety_reason or '' }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if not submissions %}
+    <div class="empty-state">
+      <p>평가된 콘텐츠가 없습니다.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+function doSort(field) {
+  const cur  = '{{ sort }}';
+  const curO = '{{ order }}';
+  const newO = (field === cur && curO === 'desc') ? 'asc' : 'desc';
+  location.href = `/content-eval/results?sort=${field}&order=${newO}`;
+}
+
+function sendReport() {
+  if (!confirm('현재 평가 결과를 이메일로 발송하시겠습니까?')) return;
+  fetch('/content-eval/send-report', { method: 'POST' })
+    .then(r => r.json())
+    .then(d => alert(d.message || '발송 완료'))
+    .catch(() => alert('오류 발생'));
+}
+</script>
+{% endblock %}

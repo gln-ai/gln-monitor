@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}서포터즈 콘텐츠 평가 — GLN{% endblock %}
+
+{% block page_styles %}
+.score-bar-wrap { background: #F0EAFF; border-radius: 99px; height: 6px; flex: 1; overflow: hidden; }
+.score-bar      { background: #7000FC; height: 100%; border-radius: 99px; transition: width 0.3s; }
+.status-pass    { background: #F0FDF4; color: #059669; border: 0.5px solid #BBF7D0; }
+.status-fail    { background: #FEF2F2; color: #DC2626; border: 0.5px solid #FECACA; }
+.status-pending { background: #F6F5FF; color: #918DA0; border: 0.5px solid #DAD9EA; }
+.platform-yt    { background: #FEF2F2; color: #DC2626; }
+.platform-nb    { background: #F0FDF4; color: #059669; }
+.platform-ig    { background: #FFF7ED; color: #EA580C; }
+{% endblock %}
+
+{% block sidebar_extra %}{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="topbar-title">서포터즈 콘텐츠 평가</div>
+      <div class="topbar-sub">CSV 업로드 → 자동 수집 · 채점 · 스코어카드</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a href="/content-eval/results" class="btn btn-ghost btn-sm">결과 리포트 →</a>
+  </div>
+</div>
+
+<div class="page-content">
+
+  <!-- 플래시 메시지 -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+      <div style="margin-bottom:12px;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:500;
+        {% if cat == 'error' %}background:#FEF2F2;color:#DC2626;border:0.5px solid #FECACA;
+        {% else %}background:#F0FDF4;color:#059669;border:0.5px solid #BBF7D0;{% endif %}">
+        {{ msg }}
+      </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- CSV 양식 안내 -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-header">
+      <span class="card-title">📋 제출 양식 안내</span>
+      <a href="/static/content_eval_template.csv" download class="btn btn-ghost btn-sm">
+        ⬇ 양식 다운로드 (.csv)
+      </a>
+    </div>
+    <div class="card-body" style="padding-bottom:20px">
+
+      <!-- 서포터즈에게 안내할 내용 -->
+      <div style="background:#F6F5FF;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#130D2A;line-height:2">
+        <div style="font-size:11px;font-weight:700;color:#7000FC;margin-bottom:8px;letter-spacing:0.05em">서포터즈에게 안내할 내용</div>
+        아래 항목을 엑셀/구글시트에 작성 후 <strong>CSV로 저장</strong>해서 제출해 주세요.<br>
+        <br>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#EDE7FF">
+              <th style="padding:6px 10px;text-align:left;border-radius:6px 0 0 6px">컬럼명</th>
+              <th style="padding:6px 10px;text-align:left">내용</th>
+              <th style="padding:6px 10px;text-align:left">예시</th>
+              <th style="padding:6px 10px;text-align:left;border-radius:0 6px 6px 0">필수여부</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid #F0EDF7">
+              <td style="padding:7px 10px;font-weight:600">이름</td>
+              <td style="padding:7px 10px;color:#5E5A71">참여자 이름 또는 닉네임</td>
+              <td style="padding:7px 10px;color:#7000FC;font-family:monospace">홍길동</td>
+              <td style="padding:7px 10px"><span class="badge badge-red">필수</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #F0EDF7">
+              <td style="padding:7px 10px;font-weight:600">url</td>
+              <td style="padding:7px 10px;color:#5E5A71">콘텐츠 URL (블로그·유튜브·인스타)</td>
+              <td style="padding:7px 10px;color:#7000FC;font-family:monospace;font-size:11px">https://blog.naver.com/...</td>
+              <td style="padding:7px 10px"><span class="badge badge-red">필수</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #F0EDF7">
+              <td style="padding:7px 10px;font-weight:600">조회수</td>
+              <td style="padding:7px 10px;color:#5E5A71">인스타그램 릴스 조회수 (숫자만)</td>
+              <td style="padding:7px 10px;color:#7000FC;font-family:monospace">15000</td>
+              <td style="padding:7px 10px"><span class="badge badge-neutral">인스타만</span></td>
+            </tr>
+            <tr style="border-bottom:1px solid #F0EDF7">
+              <td style="padding:7px 10px;font-weight:600">좋아요</td>
+              <td style="padding:7px 10px;color:#5E5A71">좋아요 수 (숫자만)</td>
+              <td style="padding:7px 10px;color:#7000FC;font-family:monospace">320</td>
+              <td style="padding:7px 10px"><span class="badge badge-neutral">인스타만</span></td>
+            </tr>
+            <tr>
+              <td style="padding:7px 10px;font-weight:600">댓글수</td>
+              <td style="padding:7px 10px;color:#5E5A71">댓글 수 (숫자만)</td>
+              <td style="padding:7px 10px;color:#7000FC;font-family:monospace">45</td>
+              <td style="padding:7px 10px"><span class="badge badge-neutral">인스타만</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 지원 플랫폼 -->
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <div style="background:#FEF2F2;border:0.5px solid #FECACA;border-radius:8px;padding:8px 12px;font-size:12px">
+          <span style="color:#DC2626;font-weight:700">🎬 유튜브</span>
+          <div style="color:#5E5A71;margin-top:2px;font-size:11px">조회수·좋아요 자동 수집</div>
+        </div>
+        <div style="background:#F0FDF4;border:0.5px solid #BBF7D0;border-radius:8px;padding:8px 12px;font-size:12px">
+          <span style="color:#059669;font-weight:700">📝 네이버 블로그</span>
+          <div style="color:#5E5A71;margin-top:2px;font-size:11px">본문·이미지 자동 파싱</div>
+        </div>
+        <div style="background:#FFF7ED;border:0.5px solid #FED7AA;border-radius:8px;padding:8px 12px;font-size:12px">
+          <span style="color:#EA580C;font-weight:700">📸 인스타그램 릴스</span>
+          <div style="color:#5E5A71;margin-top:2px;font-size:11px">조회수·좋아요 직접 입력 필요</div>
+        </div>
+      </div>
+
+      <!-- 예시 미리보기 -->
+      <div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;margin-bottom:16px;overflow-x:auto">
+        <div style="font-size:10px;color:#6D6A7C;margin-bottom:6px;letter-spacing:0.08em">CSV 예시</div>
+        <pre style="color:#C4B5FD;font-size:12px;margin:0;line-height:1.8;white-space:pre">이름,url,조회수,좋아요,댓글수
+홍길동,https://blog.naver.com/example/123456789,,,
+김철수,https://www.youtube.com/watch?v=abcdefg1234,,,
+이영희,https://www.instagram.com/reel/AbCdEfGhIjK/,15000,320,45</pre>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CSV 업로드 폼 -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-header">
+      <span class="card-title">CSV 업로드</span>
+    </div>
+    <div class="card-body">
+      <form method="post" action="/content-eval/upload" enctype="multipart/form-data"
+            style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <input type="file" name="csv_file" accept=".csv"
+               style="font-size:13px;color:#130D2A;flex:1;min-width:200px">
+        <button type="submit" class="btn btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>
+            <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+          </svg>
+          업로드 및 평가 시작
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 제출 현황 테이블 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">제출 현황</span>
+      <span style="font-size:11px;color:#AAA7B8">{{ submissions|length }}건</span>
+    </div>
+
+    {% if submissions %}
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#F9FAFB;border-bottom:0.5px solid #E4E1EE">
+            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">이름</th>
+            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500">플랫폼</th>
+            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500">URL</th>
+            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">가이드<br>40점</th>
+            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">참여도<br>30점</th>
+            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">품질<br>30점</th>
+            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">총점</th>
+            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500">결과</th>
+            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">제출일</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in submissions %}
+          {% set is_pending = s.total_score is none %}
+          <tr style="border-bottom:0.5px solid #F3F4F6;{% if not loop.last %}{% endif %}">
+            <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#130D2A">{{ s.name }}</td>
+            <td style="padding:10px 14px">
+              <span class="badge {% if s.platform == 'youtube' %}platform-yt{% elif s.platform == 'naver_blog' %}platform-nb{% else %}platform-ig{% endif %}">
+                {{ platform_label.get(s.platform, s.platform) }}
+              </span>
+            </td>
+            <td style="padding:10px 14px;max-width:200px">
+              <a href="{{ s.url }}" target="_blank" style="font-size:11px;color:#7000FC;word-break:break-all">
+                {{ s.url[:50] }}{% if s.url|length > 50 %}…{% endif %}
+              </a>
+            </td>
+            <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.guideline_score >= 30 %}#059669{% elif s.guideline_score >= 20 %}#D97706{% else %}#DC2626{% endif %}">
+              {% if is_pending %}—{% else %}{{ s.guideline_score }}{% endif %}
+            </td>
+            <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.engagement_score >= 20 %}#059669{% elif s.engagement_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
+              {% if is_pending %}—{% else %}{{ s.engagement_score }}{% endif %}
+            </td>
+            <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.quality_score >= 20 %}#059669{% elif s.quality_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
+              {% if is_pending %}—{% else %}{{ s.quality_score }}{% endif %}
+            </td>
+            <td style="padding:10px 14px;text-align:center">
+              {% if is_pending %}
+              <span style="font-size:13px;color:#AAA7B8">평가 중…</span>
+              {% else %}
+              <div style="display:flex;align-items:center;gap:6px;min-width:80px">
+                <div class="score-bar-wrap">
+                  <div class="score-bar" style="width:{{ s.total_score }}%"></div>
+                </div>
+                <span style="font-size:13px;font-weight:700;color:#130D2A;white-space:nowrap">{{ s.total_score }}점</span>
+              </div>
+              {% endif %}
+            </td>
+            <td style="padding:10px 14px;text-align:center">
+              {% if is_pending %}
+              <span class="badge status-pending">대기</span>
+              {% elif s.safety_status == 'PASS' %}
+              <span class="badge status-pass">PASS</span>
+              {% else %}
+              <span class="badge status-fail" title="{{ s.safety_reason or '' }}">FAIL</span>
+              {% endif %}
+            </td>
+            <td style="padding:10px 14px;font-size:11px;color:#AAA7B8;white-space:nowrap">
+              {{ (s.submitted_at or '')[:16] }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#DDD6FE" stroke-width="1.5" style="margin-bottom:8px">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <p>아직 제출된 콘텐츠가 없습니다.</p>
+      <p>CSV 파일을 업로드해서 평가를 시작하세요.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+// 평가 중인 항목이 있으면 10초 후 새로고침
+{% if submissions | selectattr('total_score', 'none') | list | length > 0 %}
+setTimeout(() => location.reload(), 10000);
+{% endif %}
+</script>
+{% endblock %}

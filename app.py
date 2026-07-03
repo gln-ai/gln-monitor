@@ -18,7 +18,7 @@ from config import APPS_ROOT
 from flask import Flask
 
 from db import init_db, get_setting
-from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp, admin_bp, monthly_perf_bp, overview_bp
+from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp, admin_bp, monthly_perf_bp, overview_bp, content_eval_bp
 from services.naver import collect_all
 from services.email_svc import send_daily_report
 from services.pipeline import run_content_pipeline
@@ -76,6 +76,7 @@ app.register_blueprint(keywords_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(monthly_perf_bp)
 app.register_blueprint(overview_bp)
+app.register_blueprint(content_eval_bp)
 
 # ── DB 초기화 + 스케줄러 (gunicorn/직접 실행 모두 동작) ───────────────────────
 from apscheduler.schedulers.background import BackgroundScheduler
