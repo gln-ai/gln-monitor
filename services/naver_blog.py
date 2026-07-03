@@ -12,6 +12,13 @@ from urllib.parse import urlparse, urljoin
 import requests
 from bs4 import BeautifulSoup
 
+# lxml이 없는 환경(Railway slim 이미지 등)에서도 동작하도록 파서 자동 선택
+try:
+    import lxml  # noqa: F401
+    _BS_PARSER = "lxml"
+except ImportError:
+    _BS_PARSER = "html.parser"
+
 _HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -130,7 +137,7 @@ def fetch_blog_content(url: str) -> dict | None:
             res = requests.get(mobile_url, headers=_HEADERS, timeout=15)
             res.raise_for_status()
             res.encoding = "utf-8"
-            soup = BeautifulSoup(res.text, "lxml")
+            soup = BeautifulSoup(res.text, _BS_PARSER)
 
             # 구버전 블로그: mainFrame iframe이 있는 경우 한 번 더 요청
             iframe_src = _extract_iframe_src(soup, mobile_url)
@@ -138,7 +145,7 @@ def fetch_blog_content(url: str) -> dict | None:
                 inner_res = requests.get(iframe_src, headers=_HEADERS, timeout=15)
                 inner_res.raise_for_status()
                 inner_res.encoding = "utf-8"
-                soup = BeautifulSoup(inner_res.text, "lxml")
+                soup = BeautifulSoup(inner_res.text, _BS_PARSER)
 
             return _extract_from_mobile(soup)
 
