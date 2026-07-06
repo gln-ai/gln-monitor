@@ -22,6 +22,54 @@ _PLATFORM_LABEL = {
 }
 
 
+def _build_explanation(s: dict) -> dict:
+    """detail_json → 각 항목 한 줄 설명 dict 반환."""
+    if s.get("total_score") is None:
+        return {}
+    try:
+        detail = json.loads(s.get("detail_json") or "{}")
+    except Exception:
+        return {}
+
+    g = detail.get("guideline", {})
+    e = detail.get("engagement", {})
+    platform = s.get("platform", "")
+
+    # 가이드 준수 설명
+    kw = g.get("keyword_found") or []
+    kw_str = " · ".join(kw) if kw else "키워드 없음"
+    link_ok = "링크✓" if g.get("has_link_or_tag") else "링크✗"
+    length_ok = "분량✓" if g.get("length_ok") else "분량✗"
+    g_text = f"{kw_str} | {link_ok} | {length_ok}"
+
+    # 참여도 설명
+    if platform == "youtube":
+        views = e.get("view_count", 0) or 0
+        rate  = (e.get("eng_rate") or 0) * 100
+        v_str = f"{views:,}" if views >= 1000 else str(views)
+        e_text = f"조회 {v_str} · 참여율 {rate:.1f}%"
+    elif platform == "naver_blog":
+        img = e.get("image_count", 0) or 0
+        e_text = f"이미지 {img}장 기준"
+    else:  # instagram
+        ms = e.get("manual_stats") or {}
+        if ms:
+            likes = int(ms.get("like_count", 0) or 0)
+            cmts  = int(ms.get("comment_count", 0) or 0)
+            e_text = f"좋아요 {likes:,} · 댓글 {cmts}"
+        else:
+            e_text = "수동 입력 없음"
+
+    # 품질 설명
+    reason = (s.get("safety_reason") or "").strip()
+    if s.get("safety_status") == "PASS":
+        q_text = "품질 양호"
+    else:
+        q_text = reason if reason else "부적절 콘텐츠 감지"
+
+    return {"guideline": g_text, "engagement": e_text, "quality": q_text}
+
+
 def _run_eval_and_save(submission_id: int, submission: dict):
     """별도 스레드에서 평가 실행 후 DB 저장."""
     try:
@@ -56,16 +104,20 @@ def content_eval_index():
     rows = conn.execute("""
         SELECT s.id, s.name, s.platform, s.url, s.submitted_at,
                sc.guideline_score, sc.engagement_score, sc.quality_score,
-               sc.total_score, sc.safety_status, sc.safety_reason, sc.evaluated_at
+               sc.total_score, sc.safety_status, sc.safety_reason,
+               sc.detail_json, sc.evaluated_at
         FROM content_submissions s
         LEFT JOIN content_scores sc ON sc.submission_id = s.id
         ORDER BY s.submitted_at DESC
         LIMIT 200
     """).fetchall()
     conn.close()
+    submissions = [dict(r) for r in rows]
+    for s in submissions:
+        s["explanation"] = _build_explanation(s)
     return render_template(
         "content_eval.html",
-        submissions=[dict(r) for r in rows],
+        submissions=submissions,
         platform_label=_PLATFORM_LABEL,
     )
 

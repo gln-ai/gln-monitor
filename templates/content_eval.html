@@ -188,14 +188,29 @@
                 {{ s.url[:50] }}{% if s.url|length > 50 %}…{% endif %}
               </a>
             </td>
-            <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.guideline_score >= 30 %}#059669{% elif s.guideline_score >= 20 %}#D97706{% else %}#DC2626{% endif %}">
-              {% if is_pending %}—{% else %}{{ s.guideline_score }}{% endif %}
+            <td style="padding:8px 14px;text-align:center">
+              <div style="font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.guideline_score >= 30 %}#059669{% elif s.guideline_score >= 20 %}#D97706{% else %}#DC2626{% endif %}">
+                {% if is_pending %}—{% else %}{{ s.guideline_score }}{% endif %}
+              </div>
+              {% if not is_pending and s.explanation %}
+              <div style="font-size:10px;color:#AAA7B8;margin-top:3px;line-height:1.4;white-space:nowrap">{{ s.explanation.guideline }}</div>
+              {% endif %}
             </td>
-            <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.engagement_score >= 20 %}#059669{% elif s.engagement_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
-              {% if is_pending %}—{% else %}{{ s.engagement_score }}{% endif %}
+            <td style="padding:8px 14px;text-align:center">
+              <div style="font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.engagement_score >= 20 %}#059669{% elif s.engagement_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
+                {% if is_pending %}—{% else %}{{ s.engagement_score }}{% endif %}
+              </div>
+              {% if not is_pending and s.explanation %}
+              <div style="font-size:10px;color:#AAA7B8;margin-top:3px;line-height:1.4;white-space:nowrap">{{ s.explanation.engagement }}</div>
+              {% endif %}
             </td>
-            <td style="padding:10px 14px;text-align:center;font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.quality_score >= 20 %}#059669{% elif s.quality_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
-              {% if is_pending %}—{% else %}{{ s.quality_score }}{% endif %}
+            <td style="padding:8px 14px;text-align:center">
+              <div style="font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.quality_score >= 20 %}#059669{% elif s.quality_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
+                {% if is_pending %}—{% else %}{{ s.quality_score }}{% endif %}
+              </div>
+              {% if not is_pending and s.explanation %}
+              <div style="font-size:10px;color:#AAA7B8;margin-top:3px;line-height:1.4;max-width:120px">{{ s.explanation.quality }}</div>
+              {% endif %}
             </td>
             <td style="padding:10px 14px;text-align:center">
               {% if is_pending %}
