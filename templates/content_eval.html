@@ -129,6 +129,113 @@
     </div>
   </div>
 
+  <!-- 평가 기준 시각화 -->
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-header" onclick="toggleCriteria()" style="cursor:pointer;user-select:none">
+      <span class="card-title">📊 평가 기준</span>
+      <span id="criteria-toggle" style="font-size:11px;color:#7000FC;font-weight:600">접기 ▲</span>
+    </div>
+    <div id="criteria-body" class="card-body" style="padding-bottom:20px">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+
+        <!-- 가이드 준수 -->
+        <div style="background:#F9F7FF;border-radius:10px;padding:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:12px;font-weight:700;color:#130D2A">가이드 준수</span>
+            <span style="font-size:18px;font-weight:800;color:#7000FC">40점</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+            <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#EDE7FF;border-radius:6px">
+              <span style="color:#130D2A">필수 키워드<br><span style="color:#6D28D9;font-size:10px">GLN 또는 퍼플GLN 포함</span></span>
+              <span style="font-weight:700;color:#7000FC;white-space:nowrap;margin-left:8px">20점</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#EDE7FF;border-radius:6px">
+              <span style="color:#130D2A">링크 또는 해시태그<br><span style="color:#6D28D9;font-size:10px">URL · #태그 포함</span></span>
+              <span style="font-weight:700;color:#7000FC;white-space:nowrap;margin-left:8px">10점</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:6px 8px;background:#EDE7FF;border-radius:6px">
+              <span style="color:#130D2A">분량 기준<br><span style="color:#6D28D9;font-size:10px">유튜브 15초↑ · 블로그 500자↑</span></span>
+              <span style="font-weight:700;color:#7000FC;white-space:nowrap;margin-left:8px">10점</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 참여도 -->
+        <div style="background:#F0FDF4;border-radius:10px;padding:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:12px;font-weight:700;color:#130D2A">참여도</span>
+            <span style="font-size:18px;font-weight:800;color:#059669">30점</span>
+          </div>
+          <div style="font-size:10px;font-weight:600;color:#059669;margin-bottom:4px">🎬 유튜브 (참여율 기준)</div>
+          <div style="display:flex;flex-direction:column;gap:3px;font-size:11px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;color:#374151;padding:3px 6px;background:#DCFCE7;border-radius:4px">
+              <span>참여율 5% 이상</span><span style="font-weight:700">30점</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;color:#374151;padding:3px 6px;background:#DCFCE7;border-radius:4px">
+              <span>참여율 2% 이상</span><span style="font-weight:700">20점</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;color:#374151;padding:3px 6px;background:#DCFCE7;border-radius:4px">
+              <span>참여율 0.5% 이상</span><span style="font-weight:700">10점</span>
+            </div>
+          </div>
+          <div style="font-size:10px;font-weight:600;color:#059669;margin-bottom:4px">📝 네이버 블로그 (이미지 기준)</div>
+          <div style="display:flex;flex-direction:column;gap:3px;font-size:11px;margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;color:#374151;padding:3px 6px;background:#DCFCE7;border-radius:4px">
+              <span>이미지 5장 이상</span><span style="font-weight:700">30점</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;color:#374151;padding:3px 6px;background:#DCFCE7;border-radius:4px">
+              <span>이미지 3장 이상</span><span style="font-weight:700">20점</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;color:#374151;padding:3px 6px;background:#DCFCE7;border-radius:4px">
+              <span>이미지 1장 이상</span><span style="font-weight:700">10점</span>
+            </div>
+          </div>
+          <div style="font-size:10px;font-weight:600;color:#059669;margin-bottom:4px">📸 인스타그램 (수동 입력)</div>
+          <div style="font-size:11px;color:#374151;padding:3px 6px;background:#DCFCE7;border-radius:4px">
+            조회수·좋아요 입력 시 참여율 산정 / 미입력 → 0점
+          </div>
+        </div>
+
+        <!-- 콘텐츠 품질 -->
+        <div style="background:#FFF7ED;border-radius:10px;padding:14px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:12px;font-weight:700;color:#130D2A">콘텐츠 품질</span>
+            <span style="font-size:18px;font-weight:800;color:#EA580C">30점</span>
+          </div>
+          <div style="font-size:10px;font-weight:600;color:#EA580C;margin-bottom:6px">Claude AI 정성 평가</div>
+          <div style="display:flex;flex-direction:column;gap:4px;font-size:11px;margin-bottom:10px">
+            <div style="padding:5px 8px;background:#FFEDD5;border-radius:6px;color:#374151">
+              ✅ 정보성 높고 독자에게 실질 도움<br>→ 높은 점수
+            </div>
+            <div style="padding:5px 8px;background:#FFEDD5;border-radius:6px;color:#374151">
+              ⚠️ 경쟁 서비스 언급 → 소폭 감점<br><span style="color:#EA580C;font-weight:600">FAIL 처리 안 함</span>
+            </div>
+            <div style="padding:5px 8px;background:#FFEDD5;border-radius:6px;color:#374151">
+              📢 단순 홍보 나열·과장 → 낮은 점수
+            </div>
+          </div>
+          <div style="font-size:10px;font-weight:600;color:#DC2626;margin-bottom:4px">❌ FAIL 조건</div>
+          <div style="font-size:11px;padding:6px 8px;background:#FEF2F2;border:0.5px solid #FECACA;border-radius:6px;color:#374151;line-height:1.6">
+            명백한 허위사실 기재<br>
+            심각한 부적절 콘텐츠<br>
+            <span style="font-size:10px;color:#9CA3AF">(혐오·음란·폭력 등)</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 총점 바 -->
+      <div style="display:flex;align-items:center;gap:0;border-radius:8px;overflow:hidden;height:28px;font-size:11px;font-weight:700">
+        <div style="flex:40;background:#7000FC;color:#fff;display:flex;align-items:center;justify-content:center">가이드 40점</div>
+        <div style="flex:30;background:#059669;color:#fff;display:flex;align-items:center;justify-content:center">참여도 30점</div>
+        <div style="flex:30;background:#EA580C;color:#fff;display:flex;align-items:center;justify-content:center">품질 30점</div>
+      </div>
+      <div style="text-align:center;margin-top:6px;font-size:11px;color:#918DA0">총점 100점 · 70점 이상 PASS 권장</div>
+
+    </div>
+  </div>
+
   <!-- CSV 업로드 폼 -->
   <div class="card" style="margin-bottom:18px">
     <div class="card-header">
@@ -256,6 +363,17 @@
 </div>
 
 <script>
+function toggleCriteria() {
+  var body = document.getElementById('criteria-body');
+  var toggle = document.getElementById('criteria-toggle');
+  if (body.style.display === 'none') {
+    body.style.display = '';
+    toggle.textContent = '접기 ▲';
+  } else {
+    body.style.display = 'none';
+    toggle.textContent = '펼치기 ▼';
+  }
+}
 // 평가 중인 항목이 있으면 10초 후 새로고침
 {% if submissions | selectattr('total_score', 'none') | list | length > 0 %}
 setTimeout(() => location.reload(), 10000);
