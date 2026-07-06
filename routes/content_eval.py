@@ -100,25 +100,173 @@ def _run_eval_and_save(submission_id: int, submission: dict):
 
 @content_eval_bp.route("/content-eval")
 def content_eval_index():
+    sort    = request.args.get("sort", "submitted_at")
+    order   = request.args.get("order", "desc")
+    status  = request.args.get("status", "all")      # all/pass/fail/pending
+    pf      = request.args.get("platform", "all")    # all/youtube/naver_blog/instagram
+
+    _allowed = {"name", "platform", "total_score", "guideline_score",
+                "engagement_score", "quality_score", "submitted_at", "star"}
+    if sort not in _allowed:
+        sort = "submitted_at"
+    order_sql = "DESC" if order == "desc" else "ASC"
+    order_col = f"s.{sort}" if sort in ("star", "submitted_at", "name", "platform") else f"sc.{sort}"
+
+    where_parts, params = [], []
+    if status == "pass":
+        where_parts.append("sc.safety_status = 'PASS'")
+    elif status == "fail":
+        where_parts.append("sc.safety_status = 'FAIL'")
+    elif status == "pending":
+        where_parts.append("sc.total_score IS NULL")
+    if pf != "all":
+        where_parts.append("s.platform = ?")
+        params.append(pf)
+    where_sql = ("WHERE " + " AND ".join(where_parts)) if where_parts else ""
+
     conn = get_db()
-    rows = conn.execute("""
+    rows = conn.execute(f"""
         SELECT s.id, s.name, s.platform, s.url, s.submitted_at,
+               s.memo, s.star, s.manual_stats,
                sc.guideline_score, sc.engagement_score, sc.quality_score,
                sc.total_score, sc.safety_status, sc.safety_reason,
                sc.detail_json, sc.evaluated_at
         FROM content_submissions s
         LEFT JOIN content_scores sc ON sc.submission_id = s.id
-        ORDER BY s.submitted_at DESC
+        {where_sql}
+        ORDER BY {order_col} {order_sql} NULLS LAST
         LIMIT 200
-    """).fetchall()
+    """, params).fetchall()
     conn.close()
+
     submissions = [dict(r) for r in rows]
     for s in submissions:
         s["explanation"] = _build_explanation(s)
+        ms = {}
+        try:
+            ms = json.loads(s.get("manual_stats") or "{}")
+        except Exception:
+            pass
+        s["manual_view"]    = int(ms.get("view_count", 0) or 0)
+        s["manual_like"]    = int(ms.get("like_count", 0) or 0)
+        s["manual_comment"] = int(ms.get("comment_count", 0) or 0)
+
     return render_template(
         "content_eval.html",
         submissions=submissions,
         platform_label=_PLATFORM_LABEL,
+        sort=sort, order=order, status=status, platform_filter=pf,
+    )
+
+
+@content_eval_bp.route("/content-eval/submissions/<int:sub_id>/memo", methods=["POST"])
+def content_eval_memo(sub_id):
+    memo = request.json.get("memo", "")
+    conn = get_db()
+    conn.execute("UPDATE content_submissions SET memo=? WHERE id=?", (memo, sub_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+
+
+@content_eval_bp.route("/content-eval/submissions/<int:sub_id>/star", methods=["POST"])
+def content_eval_star(sub_id):
+    star = max(0, min(5, int(request.json.get("star", 0))))
+    conn = get_db()
+    conn.execute("UPDATE content_submissions SET star=? WHERE id=?", (star, sub_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+
+
+@content_eval_bp.route("/content-eval/submissions/<int:sub_id>/edit", methods=["POST"])
+def content_eval_edit(sub_id):
+    data        = request.json or {}
+    name        = data.get("name", "").strip()
+    url         = normalize_url(data.get("url", "").strip())
+    reevaluate  = bool(data.get("reevaluate", False))
+    view_c      = data.get("view_count", 0)
+    like_c      = data.get("like_count", 0)
+    comment_c   = data.get("comment_count", 0)
+
+    if not name or not url:
+        return jsonify({"ok": False, "message": "이름과 URL은 필수입니다"})
+
+    platform = detect_platform(url)
+    manual_stats = None
+    if any([view_c, like_c, comment_c]):
+        manual_stats = json.dumps(
+            {"view_count": int(view_c), "like_count": int(like_c), "comment_count": int(comment_c)},
+            ensure_ascii=False,
+        )
+
+    conn = get_db()
+    conn.execute(
+        "UPDATE content_submissions SET name=?, url=?, platform=?, manual_stats=? WHERE id=?",
+        (name, url, platform, manual_stats, sub_id),
+    )
+    if reevaluate:
+        conn.execute("DELETE FROM content_scores WHERE submission_id=?", (sub_id,))
+    conn.commit()
+    conn.close()
+
+    if reevaluate:
+        t = threading.Thread(
+            target=_run_eval_and_save,
+            args=(sub_id, {"platform": platform, "url": url, "manual_stats": manual_stats}),
+            daemon=True,
+        )
+        t.start()
+
+    return jsonify({"ok": True})
+
+
+@content_eval_bp.route("/content-eval/submissions/delete", methods=["POST"])
+def content_eval_delete():
+    ids = [int(i) for i in (request.json or {}).get("ids", []) if str(i).isdigit()]
+    if not ids:
+        return jsonify({"ok": False, "message": "선택된 항목이 없습니다"})
+    ph = ",".join("?" * len(ids))
+    conn = get_db()
+    conn.execute(f"DELETE FROM content_scores WHERE submission_id IN ({ph})", ids)
+    conn.execute(f"DELETE FROM content_submissions WHERE id IN ({ph})", ids)
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "deleted": len(ids)})
+
+
+@content_eval_bp.route("/content-eval/export")
+def content_eval_export():
+    import io as _io
+    conn = get_db()
+    rows = conn.execute("""
+        SELECT s.name, s.platform, s.url, s.star, s.memo, s.submitted_at,
+               sc.guideline_score, sc.engagement_score, sc.quality_score,
+               sc.total_score, sc.safety_status, sc.safety_reason
+        FROM content_submissions s
+        LEFT JOIN content_scores sc ON sc.submission_id = s.id
+        ORDER BY s.submitted_at DESC
+    """).fetchall()
+    conn.close()
+
+    buf = _io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["이름", "플랫폼", "URL", "별점", "메모", "제출일",
+                     "가이드점수", "참여도점수", "품질점수", "총점", "결과", "사유"])
+    for r in rows:
+        writer.writerow([
+            r["name"], _PLATFORM_LABEL.get(r["platform"], r["platform"]), r["url"],
+            r["star"] or 0, r["memo"] or "", (r["submitted_at"] or "")[:16],
+            r["guideline_score"] or "", r["engagement_score"] or "",
+            r["quality_score"] or "", r["total_score"] or "",
+            r["safety_status"] or "대기", r["safety_reason"] or "",
+        ])
+
+    from flask import Response
+    return Response(
+        "﻿" + buf.getvalue(),
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": "attachment; filename=content_eval_result.csv"},
     )
 
 

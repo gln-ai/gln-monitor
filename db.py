@@ -188,6 +188,9 @@ def init_db():
         "ALTER TABLE pr_drafts ADD COLUMN sent_to TEXT",
         # v15: 경쟁사 언급 감지 (JSON 배열: ["toss","kakaopay"] 형태)
         "ALTER TABLE ai_analysis ADD COLUMN competitors TEXT DEFAULT ''",
+        # v16: 서포터즈 평가 — 메모 · 별점
+        "ALTER TABLE content_submissions ADD COLUMN memo TEXT DEFAULT ''",
+        "ALTER TABLE content_submissions ADD COLUMN star INTEGER DEFAULT 0",
     ]:
         try:
             conn.execute(alter_sql)

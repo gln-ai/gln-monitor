@@ -259,89 +259,190 @@
 
   <!-- 제출 현황 테이블 -->
   <div class="card">
-    <div class="card-header">
-      <span class="card-title">제출 현황</span>
-      <span style="font-size:11px;color:#AAA7B8">{{ submissions|length }}건</span>
+    <!-- 컨트롤 바 -->
+    <div style="padding:10px 14px;border-bottom:0.5px solid #E4E1EE;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+
+      <!-- 상태 필터 -->
+      {% set fp = '&platform=' ~ platform_filter %}
+      {% set fs = '&sort=' ~ sort ~ '&order=' ~ order %}
+      <div style="display:flex;gap:4px">
+        {% for val, label in [('all','전체'),('pass','PASS'),('fail','FAIL'),('pending','대기')] %}
+        <a href="?status={{ val }}{{ fp }}{{ fs }}"
+           style="padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;text-decoration:none;
+                  {% if status == val %}background:#7000FC;color:#fff{% else %}background:#F3F4F6;color:#918DA0{% endif %}">
+          {{ label }}
+        </a>
+        {% endfor %}
+      </div>
+
+      <!-- 플랫폼 필터 -->
+      <select onchange="location.href='?platform='+this.value+'&status={{ status }}{{ fs }}'"
+              style="font-size:11px;padding:4px 8px;border:0.5px solid #E4E1EE;border-radius:6px;color:#130D2A;background:#fff">
+        <option value="all" {% if platform_filter=='all' %}selected{% endif %}>플랫폼 전체</option>
+        <option value="youtube" {% if platform_filter=='youtube' %}selected{% endif %}>유튜브</option>
+        <option value="naver_blog" {% if platform_filter=='naver_blog' %}selected{% endif %}>네이버 블로그</option>
+        <option value="instagram" {% if platform_filter=='instagram' %}selected{% endif %}>인스타그램</option>
+      </select>
+
+      <!-- 선택 삭제 (선택 시 표시) -->
+      <div id="bulk-bar" style="display:none;align-items:center;gap:6px">
+        <span id="sel-count" style="font-size:11px;color:#918DA0"></span>
+        <button onclick="deleteSelected()"
+                style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:#FEF2F2;color:#DC2626;border:0.5px solid #FECACA;cursor:pointer">
+          선택 삭제
+        </button>
+      </div>
+
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <span style="font-size:11px;color:#AAA7B8">{{ submissions|length }}건</span>
+        <a href="/content-eval/export" class="btn btn-ghost btn-sm">⬇ CSV 내보내기</a>
+      </div>
     </div>
 
     {% if submissions %}
     <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse">
+      <table style="width:100%;border-collapse:collapse;min-width:900px">
         <thead>
           <tr style="background:#F9FAFB;border-bottom:0.5px solid #E4E1EE">
-            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">이름</th>
-            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500">플랫폼</th>
-            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500">URL</th>
-            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">가이드<br>40점</th>
-            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">참여도<br>30점</th>
-            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">품질<br>30점</th>
-            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">총점</th>
-            <th style="padding:8px 14px;text-align:center;font-size:11px;color:#918DA0;font-weight:500">결과</th>
-            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">제출일</th>
+            <th style="padding:8px 10px;width:36px">
+              <input type="checkbox" id="chk-all" onclick="toggleAll(this)"
+                     style="width:14px;height:14px;cursor:pointer">
+            </th>
+
+            {% macro sort_th(col, label, align='center') %}
+            {% set next_ord = 'asc' if (sort == col and order == 'desc') else 'desc' %}
+            <th style="padding:8px 10px;text-align:{{ align }};font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">
+              <a href="?sort={{ col }}&order={{ next_ord }}&status={{ status }}&platform={{ platform_filter }}"
+                 style="color:{% if sort==col %}#7000FC{% else %}#918DA0{% endif %};text-decoration:none;display:inline-flex;align-items:center;gap:2px">
+                {{ label }}{% if sort==col %} {{ '▼' if order=='desc' else '▲' }}{% endif %}
+              </a>
+            </th>
+            {% endmacro %}
+
+            {{ sort_th('name', '이름', 'left') }}
+            <th style="padding:8px 10px;font-size:11px;color:#918DA0;font-weight:500">플랫폼</th>
+            <th style="padding:8px 10px;font-size:11px;color:#918DA0;font-weight:500">URL</th>
+            {{ sort_th('guideline_score', '가이드/40') }}
+            {{ sort_th('engagement_score', '참여도/30') }}
+            {{ sort_th('quality_score', '품질/30') }}
+            {{ sort_th('total_score', '총점') }}
+            <th style="padding:8px 10px;text-align:center;font-size:11px;color:#918DA0;font-weight:500">결과</th>
+            {{ sort_th('star', '⭐ 별점') }}
+            <th style="padding:8px 10px;text-align:center;font-size:11px;color:#918DA0;font-weight:500">메모·수정</th>
+            {{ sort_th('submitted_at', '제출일', 'left') }}
           </tr>
         </thead>
         <tbody>
           {% for s in submissions %}
           {% set is_pending = s.total_score is none %}
-          <tr style="border-bottom:0.5px solid #F3F4F6;{% if not loop.last %}{% endif %}">
-            <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#130D2A">{{ s.name }}</td>
-            <td style="padding:10px 14px">
-              <span class="badge {% if s.platform == 'youtube' %}platform-yt{% elif s.platform == 'naver_blog' %}platform-nb{% else %}platform-ig{% endif %}">
+          <tr id="row-{{ s.id }}" style="border-bottom:0.5px solid #F3F4F6">
+            <td style="padding:8px 10px;text-align:center">
+              <input type="checkbox" class="row-chk" value="{{ s.id }}"
+                     onchange="updateBulkBar()"
+                     style="width:14px;height:14px;cursor:pointer">
+            </td>
+            <td style="padding:8px 10px;font-size:13px;font-weight:600;color:#130D2A;white-space:nowrap">{{ s.name }}</td>
+            <td style="padding:8px 10px">
+              <span class="badge {% if s.platform=='youtube' %}platform-yt{% elif s.platform=='naver_blog' %}platform-nb{% else %}platform-ig{% endif %}">
                 {{ platform_label.get(s.platform, s.platform) }}
               </span>
             </td>
-            <td style="padding:10px 14px;max-width:200px">
-              <a href="{{ s.url }}" target="_blank" style="font-size:11px;color:#7000FC;word-break:break-all">
-                {{ s.url[:50] }}{% if s.url|length > 50 %}…{% endif %}
+            <td style="padding:8px 10px;max-width:180px">
+              <a href="{{ s.url }}" target="_blank"
+                 style="font-size:11px;color:#7000FC;word-break:break-all;display:block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                {{ s.url[:55] }}{% if s.url|length > 55 %}…{% endif %}
               </a>
             </td>
-            <td style="padding:8px 14px;text-align:center">
+
+            <!-- 가이드 -->
+            <td style="padding:6px 10px;text-align:center">
               <div style="font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.guideline_score >= 30 %}#059669{% elif s.guideline_score >= 20 %}#D97706{% else %}#DC2626{% endif %}">
                 {% if is_pending %}—{% else %}{{ s.guideline_score }}{% endif %}
               </div>
               {% if not is_pending and s.explanation %}
-              <div style="font-size:10px;color:#AAA7B8;margin-top:3px;line-height:1.4;white-space:nowrap">{{ s.explanation.guideline }}</div>
+              <div style="font-size:10px;color:#C4B5FD;margin-top:2px;line-height:1.3">{{ s.explanation.guideline }}</div>
               {% endif %}
             </td>
-            <td style="padding:8px 14px;text-align:center">
+
+            <!-- 참여도 -->
+            <td style="padding:6px 10px;text-align:center">
               <div style="font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.engagement_score >= 20 %}#059669{% elif s.engagement_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
                 {% if is_pending %}—{% else %}{{ s.engagement_score }}{% endif %}
               </div>
               {% if not is_pending and s.explanation %}
-              <div style="font-size:10px;color:#AAA7B8;margin-top:3px;line-height:1.4;white-space:nowrap">{{ s.explanation.engagement }}</div>
+              <div style="font-size:10px;color:#C4B5FD;margin-top:2px;line-height:1.3">{{ s.explanation.engagement }}</div>
               {% endif %}
             </td>
-            <td style="padding:8px 14px;text-align:center">
+
+            <!-- 품질 -->
+            <td style="padding:6px 10px;text-align:center">
               <div style="font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.quality_score >= 20 %}#059669{% elif s.quality_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
                 {% if is_pending %}—{% else %}{{ s.quality_score }}{% endif %}
               </div>
               {% if not is_pending and s.explanation %}
-              <div style="font-size:10px;color:#AAA7B8;margin-top:3px;line-height:1.4;max-width:120px">{{ s.explanation.quality }}</div>
+              <div style="font-size:10px;color:#C4B5FD;margin-top:2px;line-height:1.3;max-width:100px;margin-left:auto;margin-right:auto">{{ s.explanation.quality }}</div>
               {% endif %}
             </td>
-            <td style="padding:10px 14px;text-align:center">
+
+            <!-- 총점 -->
+            <td style="padding:8px 10px;text-align:center">
               {% if is_pending %}
-              <span style="font-size:13px;color:#AAA7B8">평가 중…</span>
+              <span style="font-size:12px;color:#AAA7B8">평가 중…</span>
               {% else %}
-              <div style="display:flex;align-items:center;gap:6px;min-width:80px">
-                <div class="score-bar-wrap">
-                  <div class="score-bar" style="width:{{ s.total_score }}%"></div>
-                </div>
-                <span style="font-size:13px;font-weight:700;color:#130D2A;white-space:nowrap">{{ s.total_score }}점</span>
+              <div style="display:flex;align-items:center;gap:5px;min-width:70px">
+                <div class="score-bar-wrap"><div class="score-bar" style="width:{{ s.total_score }}%"></div></div>
+                <span style="font-size:12px;font-weight:700;color:#130D2A;white-space:nowrap">{{ s.total_score }}</span>
               </div>
               {% endif %}
             </td>
-            <td style="padding:10px 14px;text-align:center">
-              {% if is_pending %}
-              <span class="badge status-pending">대기</span>
-              {% elif s.safety_status == 'PASS' %}
-              <span class="badge status-pass">PASS</span>
-              {% else %}
-              <span class="badge status-fail" title="{{ s.safety_reason or '' }}">FAIL</span>
-              {% endif %}
+
+            <!-- 결과 -->
+            <td style="padding:8px 10px;text-align:center">
+              {% if is_pending %}<span class="badge status-pending">대기</span>
+              {% elif s.safety_status == 'PASS' %}<span class="badge status-pass">PASS</span>
+              {% else %}<span class="badge status-fail" title="{{ s.safety_reason or '' }}">FAIL</span>{% endif %}
             </td>
-            <td style="padding:10px 14px;font-size:11px;color:#AAA7B8;white-space:nowrap">
+
+            <!-- 별점 -->
+            <td style="padding:8px 10px;text-align:center">
+              <div class="star-row" id="stars-{{ s.id }}" data-star="{{ s.star or 0 }}" style="display:inline-flex;gap:2px;cursor:pointer">
+                {% for i in range(1, 6) %}
+                <span onclick="setStar({{ s.id }}, {{ i }})"
+                      onmouseenter="hoverStar({{ s.id }}, {{ i }})"
+                      onmouseleave="unhoverStar({{ s.id }})"
+                      style="font-size:16px;line-height:1;transition:transform 0.1s"
+                      class="star-{{ s.id }}"
+                      data-val="{{ i }}">{{ '★' if (s.star or 0) >= i else '☆' }}</span>
+                {% endfor %}
+              </div>
+            </td>
+
+            <!-- 메모·수정 -->
+            <td style="padding:8px 10px;text-align:center;white-space:nowrap">
+              <button onclick="toggleMemo({{ s.id }})"
+                      title="{{ s.memo or '메모 없음' }}"
+                      style="background:{% if s.memo %}#EDE7FF{% else %}transparent{% endif %};border:0.5px solid {% if s.memo %}#DDD6FE{% else %}#E4E1EE{% endif %};border-radius:6px;padding:4px 7px;cursor:pointer;font-size:13px">
+                📝
+              </button>
+              <button onclick="openEdit({{ s.id }}, {{ s.name|tojson }}, {{ s.url|tojson }}, '{{ s.platform }}', {{ s.manual_view }}, {{ s.manual_like }}, {{ s.manual_comment }})"
+                      style="background:transparent;border:0.5px solid #E4E1EE;border-radius:6px;padding:4px 7px;cursor:pointer;font-size:13px;margin-left:3px">
+                ✏️
+              </button>
+            </td>
+
+            <!-- 제출일 -->
+            <td style="padding:8px 10px;font-size:11px;color:#AAA7B8;white-space:nowrap">
               {{ (s.submitted_at or '')[:16] }}
+            </td>
+          </tr>
+
+          <!-- 메모 서브행 -->
+          <tr id="memo-row-{{ s.id }}" style="display:none;background:#FAFAFA">
+            <td colspan="13" style="padding:8px 14px 10px">
+              <textarea id="memo-text-{{ s.id }}"
+                        placeholder="메모를 입력하세요…"
+                        onblur="saveMemo({{ s.id }}, this.value)"
+                        style="width:100%;min-height:60px;padding:8px 10px;font-size:12px;border:0.5px solid #DDD6FE;border-radius:8px;resize:vertical;font-family:inherit;color:#130D2A;background:#fff;box-sizing:border-box">{{ s.memo or '' }}</textarea>
             </td>
           </tr>
           {% endfor %}
@@ -360,21 +461,180 @@
     {% endif %}
   </div>
 
+  <!-- 수정 모달 -->
+  <div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:24px;width:440px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+      <div style="font-size:15px;font-weight:700;color:#130D2A;margin-bottom:16px">항목 수정</div>
+
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:600;color:#918DA0;display:block;margin-bottom:4px">이름</label>
+        <input id="edit-name" style="width:100%;padding:8px 10px;border:0.5px solid #DDD6FE;border-radius:8px;font-size:13px;color:#130D2A;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:600;color:#918DA0;display:block;margin-bottom:4px">URL</label>
+        <input id="edit-url" style="width:100%;padding:8px 10px;border:0.5px solid #DDD6FE;border-radius:8px;font-size:13px;color:#130D2A;box-sizing:border-box">
+      </div>
+
+      <div id="edit-stats" style="margin-bottom:12px;display:none">
+        <label style="font-size:11px;font-weight:600;color:#918DA0;display:block;margin-bottom:6px">인스타그램 수치 (수동 입력)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div>
+            <div style="font-size:10px;color:#918DA0;margin-bottom:3px">조회수</div>
+            <input id="edit-views" type="number" min="0" style="width:100%;padding:6px 8px;border:0.5px solid #DDD6FE;border-radius:6px;font-size:12px;box-sizing:border-box">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#918DA0;margin-bottom:3px">좋아요</div>
+            <input id="edit-likes" type="number" min="0" style="width:100%;padding:6px 8px;border:0.5px solid #DDD6FE;border-radius:6px;font-size:12px;box-sizing:border-box">
+          </div>
+          <div>
+            <div style="font-size:10px;color:#918DA0;margin-bottom:3px">댓글수</div>
+            <input id="edit-comments" type="number" min="0" style="width:100%;padding:6px 8px;border:0.5px solid #DDD6FE;border-radius:6px;font-size:12px;box-sizing:border-box">
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:18px">
+        <button onclick="saveEdit(false)"
+                style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:600;background:#F3F4F6;color:#130D2A;border:none;cursor:pointer">
+          저장
+        </button>
+        <button onclick="saveEdit(true)"
+                style="flex:1;padding:9px;border-radius:8px;font-size:13px;font-weight:600;background:#7000FC;color:#fff;border:none;cursor:pointer">
+          저장 + 재평가
+        </button>
+        <button onclick="closeEdit()"
+                style="padding:9px 14px;border-radius:8px;font-size:13px;color:#918DA0;background:transparent;border:0.5px solid #E4E1EE;cursor:pointer">
+          취소
+        </button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
+/* ── 평가 기준 토글 ── */
 function toggleCriteria() {
   var body = document.getElementById('criteria-body');
   var toggle = document.getElementById('criteria-toggle');
-  if (body.style.display === 'none') {
-    body.style.display = '';
-    toggle.textContent = '접기 ▲';
-  } else {
-    body.style.display = 'none';
-    toggle.textContent = '펼치기 ▼';
-  }
+  var hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  toggle.textContent = hidden ? '접기 ▲' : '펼치기 ▼';
 }
-// 평가 중인 항목이 있으면 10초 후 새로고침
+
+/* ── 체크박스 ── */
+function toggleAll(cb) {
+  document.querySelectorAll('.row-chk').forEach(c => c.checked = cb.checked);
+  updateBulkBar();
+}
+function updateBulkBar() {
+  var sel = document.querySelectorAll('.row-chk:checked').length;
+  var bar = document.getElementById('bulk-bar');
+  bar.style.display = sel > 0 ? 'flex' : 'none';
+  document.getElementById('sel-count').textContent = sel + '건 선택';
+  document.getElementById('chk-all').indeterminate =
+    sel > 0 && sel < document.querySelectorAll('.row-chk').length;
+}
+
+/* ── 선택 삭제 ── */
+function deleteSelected() {
+  var ids = Array.from(document.querySelectorAll('.row-chk:checked')).map(c => +c.value);
+  if (!ids.length) return;
+  if (!confirm(ids.length + '건을 삭제하시겠습니까?')) return;
+  fetch('/content-eval/submissions/delete', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ids})
+  }).then(() => location.reload());
+}
+
+/* ── 별점 ── */
+var _savedStars = {};
+function setStar(id, val) {
+  _savedStars[id] = val;
+  _renderStars(id, val, true);
+  fetch('/content-eval/submissions/' + id + '/star', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({star: val})
+  });
+}
+function hoverStar(id, val) { _renderStars(id, val, false); }
+function unhoverStar(id) {
+  var saved = _savedStars[id] || +document.querySelector('#stars-' + id).dataset.star || 0;
+  _renderStars(id, saved, false);
+}
+function _renderStars(id, val, save) {
+  document.querySelectorAll('.star-' + id).forEach(s => {
+    var n = +s.dataset.val;
+    s.textContent = n <= val ? '★' : '☆';
+    s.style.color  = n <= val ? '#FBBF24' : '#D1D5DB';
+    s.style.transform = n <= val ? 'scale(1.1)' : 'scale(1)';
+  });
+  if (save) document.querySelector('#stars-' + id).dataset.star = val;
+}
+// 초기 색상 렌더링
+document.querySelectorAll('.star-row').forEach(row => {
+  var id = row.id.replace('stars-', '');
+  var cur = +row.dataset.star || 0;
+  _savedStars[id] = cur;
+  _renderStars(id, cur, false);
+});
+
+/* ── 메모 ── */
+function toggleMemo(id) {
+  var row = document.getElementById('memo-row-' + id);
+  var hidden = row.style.display === 'none' || row.style.display === '';
+  row.style.display = hidden ? 'table-row' : 'none';
+  if (hidden) document.getElementById('memo-text-' + id).focus();
+}
+function saveMemo(id, val) {
+  fetch('/content-eval/submissions/' + id + '/memo', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({memo: val})
+  }).then(() => {
+    var btn = document.querySelector('#row-' + id + ' button[onclick^="toggleMemo"]');
+    if (btn) {
+      btn.style.background = val.trim() ? '#EDE7FF' : 'transparent';
+      btn.style.border = '0.5px solid ' + (val.trim() ? '#DDD6FE' : '#E4E1EE');
+    }
+  });
+}
+
+/* ── 수정 모달 ── */
+var _editId = null, _editPlatform = null;
+function openEdit(id, name, url, platform, views, likes, comments) {
+  _editId = id; _editPlatform = platform;
+  document.getElementById('edit-name').value = name;
+  document.getElementById('edit-url').value = url;
+  document.getElementById('edit-views').value = views || 0;
+  document.getElementById('edit-likes').value = likes || 0;
+  document.getElementById('edit-comments').value = comments || 0;
+  document.getElementById('edit-stats').style.display = platform === 'instagram' ? '' : 'none';
+  var modal = document.getElementById('edit-modal');
+  modal.style.display = 'flex';
+  modal.onclick = function(e){ if(e.target===modal) closeEdit(); };
+}
+function closeEdit() { document.getElementById('edit-modal').style.display = 'none'; }
+function saveEdit(reevaluate) {
+  var body = {
+    name: document.getElementById('edit-name').value.trim(),
+    url:  document.getElementById('edit-url').value.trim(),
+    reevaluate: reevaluate,
+    view_count:    _editPlatform === 'instagram' ? +document.getElementById('edit-views').value : 0,
+    like_count:    _editPlatform === 'instagram' ? +document.getElementById('edit-likes').value : 0,
+    comment_count: _editPlatform === 'instagram' ? +document.getElementById('edit-comments').value : 0,
+  };
+  if (!body.name || !body.url) { alert('이름과 URL은 필수입니다'); return; }
+  fetch('/content-eval/submissions/' + _editId + '/edit', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  }).then(() => location.reload());
+}
+
+/* ── 대기 중 자동 새로고침 ── */
 {% if submissions | selectattr('total_score', 'none') | list | length > 0 %}
 setTimeout(() => location.reload(), 10000);
 {% endif %}
