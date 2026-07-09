@@ -109,9 +109,16 @@ def _score_engagement(raw: dict, platform: str, manual_stats: dict | None) -> tu
     detail: dict = {}
 
     if platform == "youtube":
-        views    = raw.get("view_count", 0) or 0
-        likes    = raw.get("like_count", 0) or 0
-        comments = raw.get("comment_count", 0) or 0
+        if manual_stats and any(manual_stats.get(k) for k in ("view_count", "like_count", "comment_count")):
+            views    = int(manual_stats.get("view_count", 0) or 0)
+            likes    = int(manual_stats.get("like_count", 0) or 0)
+            comments = int(manual_stats.get("comment_count", 0) or 0)
+            detail["source"] = "manual"
+        else:
+            views    = raw.get("view_count", 0) or 0
+            likes    = raw.get("like_count", 0) or 0
+            comments = raw.get("comment_count", 0) or 0
+            detail["source"] = "api"
         if views > 0:
             rate = (likes + comments) / views
         else:
@@ -131,31 +138,41 @@ def _score_engagement(raw: dict, platform: str, manual_stats: dict | None) -> tu
             eng_score = 5 if views > 0 else 0
 
     elif platform == "naver_blog":
-        # 네이버 블로그: 정확한 조회수 수집 어려움 → 이미지 수 + 발행 후 경과일 대체 지표
-        # TODO: 실제 조회수 API가 생기면 교체 필요
-        img_count    = raw.get("image_count", 0) or 0
-        published_at = raw.get("published_at", "") or ""
-        days_elapsed = 0
-        if published_at:
-            from datetime import date
-            try:
-                pub = date.fromisoformat(published_at)
-                days_elapsed = (date.today() - pub).days
-            except Exception:
-                pass
-
-        # 이미지 5개 이상 + 발행 후 1일 이상이면 만점 처리 (조회수 대체)
-        if img_count >= 5 and days_elapsed >= 1:
-            eng_score = 30
-        elif img_count >= 3:
-            eng_score = 20
-        elif img_count >= 1:
-            eng_score = 10
+        if manual_stats and manual_stats.get("view_count"):
+            views = int(manual_stats.get("view_count", 0) or 0)
+            if views >= 1000:
+                eng_score = 30
+            elif views >= 300:
+                eng_score = 20
+            elif views >= 50:
+                eng_score = 10
+            else:
+                eng_score = 5
+            detail["view_count"] = views
+            detail["source"] = "manual"
         else:
-            eng_score = 30  # 이미지 없어도 만점 처리 (TODO: 조회수 기반으로 교체)
-        detail["image_count"] = img_count
-        detail["days_elapsed"] = days_elapsed
-        detail["note"] = "조회수 API 미지원 — 이미지·경과일 대체 지표 사용"
+            img_count    = raw.get("image_count", 0) or 0
+            published_at = raw.get("published_at", "") or ""
+            days_elapsed = 0
+            if published_at:
+                from datetime import date
+                try:
+                    pub = date.fromisoformat(published_at)
+                    days_elapsed = (date.today() - pub).days
+                except Exception:
+                    pass
+            if img_count >= 5 and days_elapsed >= 1:
+                eng_score = 30
+            elif img_count >= 3:
+                eng_score = 20
+            elif img_count >= 1:
+                eng_score = 10
+            else:
+                eng_score = 30
+            detail["image_count"] = img_count
+            detail["days_elapsed"] = days_elapsed
+            detail["source"] = "proxy"
+            detail["note"] = "조회수 미입력 — 이미지·경과일 대체 지표 사용"
 
     else:  # instagram
         if manual_stats:
