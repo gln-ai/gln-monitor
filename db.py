@@ -191,6 +191,8 @@ def init_db():
         # v16: 서포터즈 평가 — 메모 · 별점
         "ALTER TABLE content_submissions ADD COLUMN memo TEXT DEFAULT ''",
         "ALTER TABLE content_submissions ADD COLUMN star INTEGER DEFAULT 0",
+        # v17: 서포터즈 프로젝트 구분
+        "ALTER TABLE content_submissions ADD COLUMN project TEXT DEFAULT ''",
     ]:
         try:
             conn.execute(alter_sql)

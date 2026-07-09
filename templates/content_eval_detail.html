@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+{% block title %}{{ s.name }} — 콘텐츠 상세 · GLN{% endblock %}
+
+{% block page_styles %}
+.score-bar-wrap { background: #F0EAFF; border-radius: 99px; height: 8px; flex: 1; overflow: hidden; }
+.score-bar      { background: #7000FC; height: 100%; border-radius: 99px; }
+.status-pass    { background: #F0FDF4; color: #059669; border: 0.5px solid #BBF7D0; }
+.status-fail    { background: #FEF2F2; color: #DC2626; border: 0.5px solid #FECACA; }
+.status-pending { background: #F6F5FF; color: #918DA0; border: 0.5px solid #DAD9EA; }
+.platform-yt    { background: #FEF2F2; color: #DC2626; }
+.platform-nb    { background: #F0FDF4; color: #059669; }
+.platform-ig    { background: #FFF7ED; color: #EA580C; }
+.score-card     { background: #FAFAFA; border: 0.5px solid #E4E1EE; border-radius: 12px; padding: 18px 20px; }
+.label          { font-size: 11px; color: #918DA0; font-weight: 500; margin-bottom: 4px; }
+.field-input    { width: 100%; padding: 8px 11px; border: 0.5px solid #E4E1EE; border-radius: 8px; font-size: 13px; color: #130D2A; font-family: inherit; background: #fff; box-sizing: border-box; }
+.field-input:focus { outline: none; border-color: #7000FC; box-shadow: 0 0 0 3px rgba(112,0,252,0.08); }
+.star-btn       { background: none; border: none; font-size: 22px; cursor: pointer; padding: 2px; line-height: 1; transition: transform 0.1s; }
+.star-btn:hover { transform: scale(1.2); }
+{% endblock %}
+
+{% block sidebar_extra %}{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div class="topbar-left">
+    <a href="/content-eval" class="btn btn-ghost btn-sm" style="margin-right:12px">← 목록</a>
+    <div>
+      <div class="topbar-title">{{ s.name }}</div>
+      <div class="topbar-sub">
+        <span class="badge {% if s.platform=='youtube' %}platform-yt{% elif s.platform=='naver_blog' %}platform-nb{% else %}platform-ig{% endif %}" style="font-size:10px">
+          {{ platform_label.get(s.platform, s.platform) }}
+        </span>
+        {% if s.project %}&nbsp;·&nbsp; {{ s.project }}{% endif %}
+        &nbsp;·&nbsp; 제출일 {{ (s.submitted_at or '')[:10] }}
+      </div>
+    </div>
+  </div>
+  <div class="topbar-right" style="gap:8px">
+    <button onclick="doDelete()" class="btn btn-ghost btn-sm" style="color:#DC2626;border-color:#FECACA">🗑 삭제</button>
+  </div>
+</div>
+
+<div class="page-content" style="display:grid;gap:18px">
+
+  <!-- ── 상단: 총점 배너 ─────────────────────────────────────────────── -->
+  {% set is_pending = s.total_score is none %}
+  <div class="card" style="padding:20px 24px">
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      {% if is_pending %}
+        <div style="font-size:36px;font-weight:800;color:#918DA0">—</div>
+        <span class="badge status-pending" style="font-size:13px;padding:5px 12px">평가 대기</span>
+      {% else %}
+        <div style="font-size:42px;font-weight:800;color:{% if s.safety_status=='PASS' %}#059669{% elif s.safety_status=='FAIL' %}#DC2626{% else %}#130D2A{% endif %}">
+          {{ s.total_score }}<span style="font-size:20px;font-weight:500;color:#918DA0">/100</span>
+        </div>
+        <span class="badge {% if s.safety_status=='PASS' %}status-pass{% else %}status-fail{% endif %}" style="font-size:14px;padding:6px 14px;font-weight:700">
+          {{ s.safety_status }}
+        </span>
+        {% if s.safety_status == 'FAIL' and s.safety_reason %}
+        <span style="font-size:12px;color:#DC2626;background:#FEF2F2;border:0.5px solid #FECACA;border-radius:8px;padding:5px 12px">
+          {{ s.safety_reason }}
+        </span>
+        {% endif %}
+      {% endif %}
+
+      <!-- 별점 -->
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:#918DA0">별점</span>
+        <div id="star-display" style="display:inline-flex;gap:2px">
+          {% for i in range(1, 6) %}
+          <button class="star-btn" id="star-btn-{{ i }}"
+                  onclick="setStar({{ i }})"
+                  onmouseenter="hoverStar({{ i }})"
+                  onmouseleave="unhoverStar()"
+                  data-val="{{ i }}">{{ '★' if (s.star or 0) >= i else '☆' }}</button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- 총점 바 -->
+    {% if not is_pending %}
+    <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+      <div class="score-bar-wrap" style="height:10px">
+        <div class="score-bar" style="width:{{ s.total_score }}%"></div>
+      </div>
+      <span style="font-size:11px;color:#918DA0;white-space:nowrap">{{ s.total_score }}점</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- ── 점수 카드 3개 ───────────────────────────────────────────────── -->
+  {% if not is_pending %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+
+    <!-- 가이드 준수 -->
+    <div class="score-card">
+      <div class="label">가이드 준수 (40점)</div>
+      <div style="font-size:28px;font-weight:800;color:{% if s.guideline_score >= 30 %}#059669{% elif s.guideline_score >= 20 %}#D97706{% else %}#DC2626{% endif %}">
+        {{ s.guideline_score }}<span style="font-size:14px;font-weight:400;color:#918DA0">/40</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+        <div class="score-bar-wrap"><div class="score-bar" style="width:{{ (s.guideline_score / 40 * 100)|int }}%"></div></div>
+      </div>
+      {% if s.explanation and s.explanation.guideline %}
+      <div style="font-size:11px;color:#918DA0;margin-top:8px;line-height:1.5">{{ s.explanation.guideline }}</div>
+      {% endif %}
+    </div>
+
+    <!-- 참여도 -->
+    <div class="score-card">
+      <div class="label">참여도 (30점)</div>
+      <div style="font-size:28px;font-weight:800;color:{% if s.engagement_score >= 20 %}#059669{% elif s.engagement_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
+        {{ s.engagement_score }}<span style="font-size:14px;font-weight:400;color:#918DA0">/30</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+        <div class="score-bar-wrap"><div class="score-bar" style="width:{{ (s.engagement_score / 30 * 100)|int }}%"></div></div>
+      </div>
+      {% if s.explanation and s.explanation.engagement %}
+      <div style="font-size:11px;color:#918DA0;margin-top:8px;line-height:1.5">{{ s.explanation.engagement }}</div>
+      {% endif %}
+    </div>
+
+    <!-- 콘텐츠 품질 -->
+    <div class="score-card">
+      <div class="label">콘텐츠 품질 (30점)</div>
+      <div style="font-size:28px;font-weight:800;color:{% if s.quality_score >= 20 %}#059669{% elif s.quality_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
+        {{ s.quality_score }}<span style="font-size:14px;font-weight:400;color:#918DA0">/30</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+        <div class="score-bar-wrap"><div class="score-bar" style="width:{{ (s.quality_score / 30 * 100)|int }}%"></div></div>
+      </div>
+      {% if s.explanation and s.explanation.quality %}
+      <div style="font-size:11px;color:#918DA0;margin-top:8px;line-height:1.5">{{ s.explanation.quality }}</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── 수정 폼 ─────────────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">✏️ 정보 수정</span></div>
+    <div class="card-body" style="display:grid;gap:14px;padding-bottom:20px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <div class="label">프로젝트</div>
+          <input id="edit-project" class="field-input" type="text" value="{{ s.project or '' }}" placeholder="예: 중국퍼플크리에이터">
+        </div>
+        <div></div>
+        <div>
+          <div class="label">이름</div>
+          <input id="edit-name" class="field-input" type="text" value="{{ s.name }}">
+        </div>
+        <div>
+          <div class="label">URL</div>
+          <input id="edit-url" class="field-input" type="url" value="{{ s.url }}">
+        </div>
+      </div>
+
+      {% if s.platform in ('youtube', 'instagram', 'naver_blog') %}
+      <div>
+        <div class="label" style="margin-bottom:8px">
+          {% if s.platform == 'youtube' %}유튜브 지표 직접 입력
+            <span style="font-size:10px;color:#AAA7B8;font-weight:400">— 입력하면 API 수집값 대신 이 값으로 참여도 점수 계산</span>
+          {% elif s.platform == 'naver_blog' %}네이버 블로그 조회수 직접 입력
+            <span style="font-size:10px;color:#AAA7B8;font-weight:400">— 입력하면 대체 지표 대신 이 값으로 참여도 점수 계산</span>
+          {% else %}인스타그램 지표 직접 입력{% endif %}
+        </div>
+        <div style="display:grid;grid-template-columns:{% if s.platform == 'naver_blog' %}1fr 2fr{% else %}1fr 1fr 1fr{% endif %};gap:10px">
+          <div>
+            <div class="label">조회수</div>
+            <input id="edit-views" class="field-input" type="number" min="0" value="{{ s.manual_view }}" placeholder="0">
+          </div>
+          {% if s.platform != 'naver_blog' %}
+          <div>
+            <div class="label">좋아요</div>
+            <input id="edit-likes" class="field-input" type="number" min="0" value="{{ s.manual_like }}" placeholder="0">
+          </div>
+          <div>
+            <div class="label">댓글</div>
+            <input id="edit-comments" class="field-input" type="number" min="0" value="{{ s.manual_comment }}" placeholder="0">
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div style="display:flex;gap:10px;padding-top:4px">
+        <button onclick="saveEdit(false)" class="btn btn-primary btn-sm">저장</button>
+        <button onclick="saveEdit(true)"  class="btn btn-ghost btn-sm">저장 + 재평가</button>
+      </div>
+      <div id="save-status" style="font-size:12px;color:#059669;display:none">저장되었습니다.</div>
+    </div>
+  </div>
+
+  <!-- ── 메모 ──────────────────────────────────────────────────────────── -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">📝 메모</span></div>
+    <div class="card-body" style="padding-bottom:20px">
+      <textarea id="memo-text" placeholder="메모를 입력하세요…" onblur="saveMemo(this.value)"
+                style="width:100%;min-height:80px;padding:10px 12px;font-size:13px;border:0.5px solid #E4E1EE;border-radius:10px;resize:vertical;font-family:inherit;color:#130D2A;background:#fff;box-sizing:border-box">{{ s.memo or '' }}</textarea>
+      <div id="memo-status" style="font-size:11px;color:#059669;margin-top:6px;display:none">메모 저장됨</div>
+    </div>
+  </div>
+
+  <!-- ── URL 링크 ───────────────────────────────────────────────────────── -->
+  <div style="font-size:12px;color:#918DA0;padding-bottom:20px">
+    원본 콘텐츠:
+    <a href="{{ s.url }}" target="_blank" style="color:#7000FC;word-break:break-all">{{ s.url }}</a>
+  </div>
+
+</div><!-- /page-content -->
+
+<script>
+var SUB_ID = {{ s.id }};
+var PLATFORM = {{ s.platform|tojson }};
+var currentStar = {{ s.star or 0 }};
+
+/* ── 별점 ── */
+function hoverStar(val) {
+  for (var i = 1; i <= 5; i++) {
+    document.getElementById('star-btn-' + i).textContent = i <= val ? '★' : '☆';
+  }
+}
+function unhoverStar() {
+  for (var i = 1; i <= 5; i++) {
+    document.getElementById('star-btn-' + i).textContent = i <= currentStar ? '★' : '☆';
+  }
+}
+function setStar(val) {
+  currentStar = currentStar === val ? 0 : val;
+  unhoverStar();
+  fetch('/content-eval/submissions/' + SUB_ID + '/star', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({star: currentStar})
+  });
+}
+
+/* ── 메모 ── */
+function saveMemo(val) {
+  fetch('/content-eval/submissions/' + SUB_ID + '/memo', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({memo: val})
+  }).then(function() {
+    var el = document.getElementById('memo-status');
+    el.style.display = 'block';
+    setTimeout(function() { el.style.display = 'none'; }, 2000);
+  });
+}
+
+/* ── 수정 저장 ── */
+function saveEdit(reevaluate) {
+  var body = {
+    name: document.getElementById('edit-name').value.trim(),
+    url:  document.getElementById('edit-url').value.trim(),
+    project: document.getElementById('edit-project').value.trim(),
+    reevaluate: reevaluate
+  };
+  if (PLATFORM === 'instagram' || PLATFORM === 'youtube') {
+    body.view_count    = parseInt(document.getElementById('edit-views').value)    || 0;
+    body.like_count    = parseInt(document.getElementById('edit-likes').value)    || 0;
+    body.comment_count = parseInt(document.getElementById('edit-comments').value) || 0;
+  } else if (PLATFORM === 'naver_blog') {
+    body.view_count    = parseInt(document.getElementById('edit-views').value)    || 0;
+  }
+  fetch('/content-eval/submissions/' + SUB_ID + '/edit', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.ok) {
+      if (reevaluate) {
+        window.location.reload();
+      } else {
+        var el = document.getElementById('save-status');
+        el.style.display = 'block';
+        setTimeout(function() { el.style.display = 'none'; }, 2000);
+      }
+    } else {
+      alert('저장 실패: ' + (d.error || '오류'));
+    }
+  });
+}
+
+/* ── 삭제 ── */
+function doDelete() {
+  if (!confirm('이 항목을 삭제하시겠습니까?')) return;
+  fetch('/content-eval/submissions/delete', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ids: [SUB_ID]})
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (d.ok) window.location.href = '/content-eval';
+    else alert('삭제 실패');
+  });
+}
+</script>
+{% endblock %}

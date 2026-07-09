@@ -44,13 +44,16 @@
 
   <!-- CSV 양식 안내 -->
   <div class="card" style="margin-bottom:18px">
-    <div class="card-header">
+    <div class="card-header" onclick="toggleGuide()" style="cursor:pointer;user-select:none">
       <span class="card-title">📋 제출 양식 안내</span>
-      <a href="/static/content_eval_template.csv" download class="btn btn-ghost btn-sm">
-        ⬇ 양식 다운로드 (.csv)
-      </a>
+      <div style="display:flex;align-items:center;gap:10px">
+        <a href="/static/content_eval_template.csv" download onclick="event.stopPropagation()" class="btn btn-ghost btn-sm">
+          ⬇ 양식 다운로드 (.csv)
+        </a>
+        <span id="guide-toggle" style="font-size:11px;color:#7000FC;font-weight:600">펼치기 ▼</span>
+      </div>
     </div>
-    <div class="card-body" style="padding-bottom:20px">
+    <div id="guide-body" class="card-body" style="padding-bottom:20px;display:none">
 
       <!-- 서포터즈에게 안내할 내용 -->
       <div style="background:#F6F5FF;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#130D2A;line-height:2">
@@ -67,6 +70,12 @@
             </tr>
           </thead>
           <tbody>
+            <tr style="border-bottom:1px solid #F0EDF7">
+              <td style="padding:7px 10px;font-weight:600">프로젝트</td>
+              <td style="padding:7px 10px;color:#5E5A71">참여 캠페인/프로젝트명</td>
+              <td style="padding:7px 10px;color:#7000FC;font-family:monospace">중국퍼플크리에이터</td>
+              <td style="padding:7px 10px"><span class="badge badge-neutral">선택</span></td>
+            </tr>
             <tr style="border-bottom:1px solid #F0EDF7">
               <td style="padding:7px 10px;font-weight:600">이름</td>
               <td style="padding:7px 10px;color:#5E5A71">참여자 이름 또는 닉네임</td>
@@ -120,10 +129,10 @@
       <!-- 예시 미리보기 -->
       <div style="background:#1E1B2E;border-radius:8px;padding:12px 14px;margin-bottom:16px;overflow-x:auto">
         <div style="font-size:10px;color:#6D6A7C;margin-bottom:6px;letter-spacing:0.08em">CSV 예시</div>
-        <pre style="color:#C4B5FD;font-size:12px;margin:0;line-height:1.8;white-space:pre">이름,url,조회수,좋아요,댓글수
-홍길동,https://blog.naver.com/example/123456789,,,
-김철수,https://www.youtube.com/watch?v=abcdefg1234,,,
-이영희,https://www.instagram.com/reel/AbCdEfGhIjK/,15000,320,45</pre>
+        <pre style="color:#C4B5FD;font-size:12px;margin:0;line-height:1.8;white-space:pre">프로젝트,이름,url,조회수,좋아요,댓글수
+중국퍼플크리에이터,홍길동,https://blog.naver.com/example/123456789,,,
+중국퍼플크리에이터,김철수,https://www.youtube.com/watch?v=abcdefg1234,,,
+중국퍼플크리에이터,이영희,https://www.instagram.com/reel/AbCdEfGhIjK/,15000,320,45</pre>
       </div>
 
     </div>
@@ -133,9 +142,9 @@
   <div class="card" style="margin-bottom:18px">
     <div class="card-header" onclick="toggleCriteria()" style="cursor:pointer;user-select:none">
       <span class="card-title">📊 평가 기준</span>
-      <span id="criteria-toggle" style="font-size:11px;color:#7000FC;font-weight:600">접기 ▲</span>
+      <span id="criteria-toggle" style="font-size:11px;color:#7000FC;font-weight:600">펼치기 ▼</span>
     </div>
-    <div id="criteria-body" class="card-body" style="padding-bottom:20px">
+    <div id="criteria-body" class="card-body" style="padding-bottom:20px;display:none">
 
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
 
@@ -264,10 +273,11 @@
 
       <!-- 상태 필터 -->
       {% set fp = '&platform=' ~ platform_filter %}
+      {% set fj = '&project=' ~ project_filter %}
       {% set fs = '&sort=' ~ sort ~ '&order=' ~ order %}
       <div style="display:flex;gap:4px">
         {% for val, label in [('all','전체'),('pass','PASS'),('fail','FAIL'),('pending','대기')] %}
-        <a href="?status={{ val }}{{ fp }}{{ fs }}"
+        <a href="?status={{ val }}{{ fp }}{{ fj }}{{ fs }}"
            style="padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;text-decoration:none;
                   {% if status == val %}background:#7000FC;color:#fff{% else %}background:#F3F4F6;color:#918DA0{% endif %}">
           {{ label }}
@@ -276,12 +286,21 @@
       </div>
 
       <!-- 플랫폼 필터 -->
-      <select onchange="location.href='?platform='+this.value+'&status={{ status }}{{ fs }}'"
+      <select onchange="location.href='?platform='+this.value+'&status={{ status }}{{ fj }}{{ fs }}'"
               style="font-size:11px;padding:4px 8px;border:0.5px solid #E4E1EE;border-radius:6px;color:#130D2A;background:#fff">
         <option value="all" {% if platform_filter=='all' %}selected{% endif %}>플랫폼 전체</option>
         <option value="youtube" {% if platform_filter=='youtube' %}selected{% endif %}>유튜브</option>
         <option value="naver_blog" {% if platform_filter=='naver_blog' %}selected{% endif %}>네이버 블로그</option>
         <option value="instagram" {% if platform_filter=='instagram' %}selected{% endif %}>인스타그램</option>
+      </select>
+
+      <!-- 프로젝트 필터 -->
+      <select onchange="location.href='?project='+encodeURIComponent(this.value)+'&status={{ status }}{{ fp }}{{ fs }}'"
+              style="font-size:11px;padding:4px 8px;border:0.5px solid #E4E1EE;border-radius:6px;color:#130D2A;background:#fff">
+        <option value="all" {% if project_filter=='all' %}selected{% endif %}>프로젝트 전체</option>
+        {% for p in projects %}
+        <option value="{{ p }}" {% if project_filter==p %}selected{% endif %}>{{ p }}</option>
+        {% endfor %}
       </select>
 
       <!-- 선택 삭제 (선택 시 표시) -->
@@ -301,150 +320,120 @@
 
     {% if submissions %}
     <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse;min-width:900px">
+      <table style="width:100%;border-collapse:collapse;min-width:700px">
         <thead>
           <tr style="background:#F9FAFB;border-bottom:0.5px solid #E4E1EE">
             <th style="padding:8px 10px;width:36px">
-              <input type="checkbox" id="chk-all" onclick="toggleAll(this)"
-                     style="width:14px;height:14px;cursor:pointer">
+              <input type="checkbox" id="chk-all" onclick="toggleAll(this)" style="width:14px;height:14px;cursor:pointer">
             </th>
 
             {% macro sort_th(col, label, align='center') %}
             {% set next_ord = 'asc' if (sort == col and order == 'desc') else 'desc' %}
             <th style="padding:8px 10px;text-align:{{ align }};font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">
-              <a href="?sort={{ col }}&order={{ next_ord }}&status={{ status }}&platform={{ platform_filter }}"
+              <a href="?sort={{ col }}&order={{ next_ord }}&status={{ status }}&platform={{ platform_filter }}&project={{ project_filter }}"
                  style="color:{% if sort==col %}#7000FC{% else %}#918DA0{% endif %};text-decoration:none;display:inline-flex;align-items:center;gap:2px">
                 {{ label }}{% if sort==col %} {{ '▼' if order=='desc' else '▲' }}{% endif %}
               </a>
             </th>
             {% endmacro %}
 
+            {{ sort_th('submitted_at', '제출일', 'left') }}
             {{ sort_th('name', '이름', 'left') }}
             <th style="padding:8px 10px;font-size:11px;color:#918DA0;font-weight:500">플랫폼</th>
-            <th style="padding:8px 10px;font-size:11px;color:#918DA0;font-weight:500">URL</th>
-            {{ sort_th('guideline_score', '가이드/40') }}
-            {{ sort_th('engagement_score', '참여도/30') }}
-            {{ sort_th('quality_score', '품질/30') }}
             {{ sort_th('total_score', '총점') }}
-            <th style="padding:8px 10px;text-align:center;font-size:11px;color:#918DA0;font-weight:500">결과</th>
             {{ sort_th('star', '⭐ 별점') }}
             <th style="padding:8px 10px;text-align:center;font-size:11px;color:#918DA0;font-weight:500">메모·수정</th>
-            {{ sort_th('submitted_at', '제출일', 'left') }}
+            <th style="padding:8px 10px;font-size:11px;color:#918DA0;font-weight:500">URL</th>
           </tr>
         </thead>
         <tbody>
-          {% for s in submissions %}
+          {% for project_name, glist in submissions | groupby('project') %}
+          {% set gid = 'g' ~ loop.index %}
+          {% set gscored = glist | selectattr('total_score', 'ne', none) | list %}
+          {% set gpass = glist | selectattr('safety_status', 'eq', 'PASS') | list | length %}
+          <tr class="proj-group-header" onclick="toggleGroup('{{ gid }}')"
+              style="background:#F9F7FF;cursor:pointer;border-bottom:0.5px solid #E4E1EE">
+            <td colspan="8" style="padding:8px 14px;font-size:12px;font-weight:700;color:#130D2A">
+              <span id="{{ gid }}-arrow">▾</span> {{ project_name or '미지정' }}
+              <span style="font-weight:500;color:#918DA0;margin-left:6px">
+                {{ glist|length }}건{% if gscored %} · 평균 {{ (gscored | map(attribute='total_score') | sum / gscored|length) | round(1) }}점{% endif %}{% if gpass %} · PASS {{ gpass }}{% endif %}
+              </span>
+            </td>
+          </tr>
+          {% for s in glist %}
           {% set is_pending = s.total_score is none %}
-          <tr id="row-{{ s.id }}" style="border-bottom:0.5px solid #F3F4F6">
-            <td style="padding:8px 10px;text-align:center">
-              <input type="checkbox" class="row-chk" value="{{ s.id }}"
-                     onchange="updateBulkBar()"
+          <tr id="row-{{ s.id }}" class="tbl-row {{ gid }}-row" data-href="/content-eval/submissions/{{ s.id }}"
+              style="border-bottom:0.5px solid #F3F4F6;cursor:pointer;transition:background 0.1s"
+              onmouseenter="this.style.background='#FAFAFA'" onmouseleave="this.style.background=''">
+
+            <td class="no-nav" style="padding:8px 10px;text-align:center">
+              <input type="checkbox" class="row-chk" value="{{ s.id }}" onchange="updateBulkBar()"
                      style="width:14px;height:14px;cursor:pointer">
             </td>
-            <td style="padding:8px 10px;font-size:13px;font-weight:600;color:#130D2A;white-space:nowrap">{{ s.name }}</td>
+
+            <td style="padding:8px 10px;font-size:11px;color:#AAA7B8;white-space:nowrap">
+              {{ (s.submitted_at or '')[:10] }}
+            </td>
+
+            <td style="padding:8px 10px;font-size:13px;font-weight:600;color:#130D2A;white-space:nowrap">
+              {{ s.name }}
+            </td>
+
             <td style="padding:8px 10px">
               <span class="badge {% if s.platform=='youtube' %}platform-yt{% elif s.platform=='naver_blog' %}platform-nb{% else %}platform-ig{% endif %}">
                 {{ platform_label.get(s.platform, s.platform) }}
               </span>
             </td>
-            <td style="padding:8px 10px;max-width:180px">
-              <a href="{{ s.url }}" target="_blank"
-                 style="font-size:11px;color:#7000FC;word-break:break-all;display:block;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-                {{ s.url[:55] }}{% if s.url|length > 55 %}…{% endif %}
-              </a>
-            </td>
 
-            <!-- 가이드 -->
-            <td style="padding:6px 10px;text-align:center">
-              <div style="font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.guideline_score >= 30 %}#059669{% elif s.guideline_score >= 20 %}#D97706{% else %}#DC2626{% endif %}">
-                {% if is_pending %}—{% else %}{{ s.guideline_score }}{% endif %}
-              </div>
-              {% if not is_pending and s.explanation %}
-              <div style="font-size:10px;color:#C4B5FD;margin-top:2px;line-height:1.3">{{ s.explanation.guideline }}</div>
-              {% endif %}
-            </td>
-
-            <!-- 참여도 -->
-            <td style="padding:6px 10px;text-align:center">
-              <div style="font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.engagement_score >= 20 %}#059669{% elif s.engagement_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
-                {% if is_pending %}—{% else %}{{ s.engagement_score }}{% endif %}
-              </div>
-              {% if not is_pending and s.explanation %}
-              <div style="font-size:10px;color:#C4B5FD;margin-top:2px;line-height:1.3">{{ s.explanation.engagement }}</div>
-              {% endif %}
-            </td>
-
-            <!-- 품질 -->
-            <td style="padding:6px 10px;text-align:center">
-              <div style="font-size:13px;font-weight:600;color:{% if is_pending %}#AAA7B8{% elif s.quality_score >= 20 %}#059669{% elif s.quality_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
-                {% if is_pending %}—{% else %}{{ s.quality_score }}{% endif %}
-              </div>
-              {% if not is_pending and s.explanation %}
-              <div style="font-size:10px;color:#C4B5FD;margin-top:2px;line-height:1.3;max-width:100px;margin-left:auto;margin-right:auto">{{ s.explanation.quality }}</div>
-              {% endif %}
-            </td>
-
-            <!-- 총점 -->
-            <td style="padding:8px 10px;text-align:center">
+            <td style="padding:8px 12px;text-align:center">
               {% if is_pending %}
-              <span style="font-size:12px;color:#AAA7B8">평가 중…</span>
+                <span style="font-size:12px;color:#AAA7B8">대기</span>
               {% else %}
-              <div style="display:flex;align-items:center;gap:5px;min-width:70px">
-                <div class="score-bar-wrap"><div class="score-bar" style="width:{{ s.total_score }}%"></div></div>
-                <span style="font-size:12px;font-weight:700;color:#130D2A;white-space:nowrap">{{ s.total_score }}</span>
-              </div>
+                <div style="display:flex;align-items:center;gap:6px;min-width:80px">
+                  <div class="score-bar-wrap"><div class="score-bar" style="width:{{ s.total_score }}%"></div></div>
+                  <span style="font-size:13px;font-weight:700;color:{% if s.safety_status=='PASS' %}#059669{% elif s.safety_status=='FAIL' %}#DC2626{% else %}#130D2A{% endif %};white-space:nowrap">
+                    {{ s.total_score }}
+                    <span style="font-size:10px;font-weight:500">{% if s.safety_status=='PASS' %}✓{% elif s.safety_status=='FAIL' %}✗{% endif %}</span>
+                  </span>
+                </div>
               {% endif %}
             </td>
 
-            <!-- 결과 -->
-            <td style="padding:8px 10px;text-align:center">
-              {% if is_pending %}<span class="badge status-pending">대기</span>
-              {% elif s.safety_status == 'PASS' %}<span class="badge status-pass">PASS</span>
-              {% else %}<span class="badge status-fail" title="{{ s.safety_reason or '' }}">FAIL</span>{% endif %}
-            </td>
-
-            <!-- 별점 -->
-            <td style="padding:8px 10px;text-align:center">
-              <div class="star-row" id="stars-{{ s.id }}" data-star="{{ s.star or 0 }}" style="display:inline-flex;gap:2px;cursor:pointer">
+            <td class="no-nav" style="padding:8px 10px;text-align:center">
+              <div class="star-row" id="stars-{{ s.id }}" data-star="{{ s.star or 0 }}" style="display:inline-flex;gap:1px;cursor:pointer">
                 {% for i in range(1, 6) %}
                 <span onclick="setStar({{ s.id }}, {{ i }})"
                       onmouseenter="hoverStar({{ s.id }}, {{ i }})"
                       onmouseleave="unhoverStar({{ s.id }})"
-                      style="font-size:16px;line-height:1;transition:transform 0.1s"
-                      class="star-{{ s.id }}"
-                      data-val="{{ i }}">{{ '★' if (s.star or 0) >= i else '☆' }}</span>
+                      style="font-size:15px;line-height:1;transition:transform 0.1s"
+                      class="star-{{ s.id }}" data-val="{{ i }}">{{ '★' if (s.star or 0) >= i else '☆' }}</span>
                 {% endfor %}
               </div>
             </td>
 
-            <!-- 메모·수정 -->
-            <td style="padding:8px 10px;text-align:center;white-space:nowrap">
-              <button onclick="toggleMemo({{ s.id }})"
-                      title="{{ s.memo or '메모 없음' }}"
-                      style="background:{% if s.memo %}#EDE7FF{% else %}transparent{% endif %};border:0.5px solid {% if s.memo %}#DDD6FE{% else %}#E4E1EE{% endif %};border-radius:6px;padding:4px 7px;cursor:pointer;font-size:13px">
-                📝
-              </button>
-              <button onclick="openEdit({{ s.id }}, {{ s.name|tojson }}, {{ s.url|tojson }}, '{{ s.platform }}', {{ s.manual_view }}, {{ s.manual_like }}, {{ s.manual_comment }})"
-                      style="background:transparent;border:0.5px solid #E4E1EE;border-radius:6px;padding:4px 7px;cursor:pointer;font-size:13px;margin-left:3px">
-                ✏️
-              </button>
+            <td class="no-nav" style="padding:8px 10px;text-align:center;white-space:nowrap">
+              <button onclick="toggleMemo({{ s.id }})" title="{{ s.memo or '메모 없음' }}"
+                      style="background:{% if s.memo %}#EDE7FF{% else %}transparent{% endif %};border:0.5px solid {% if s.memo %}#DDD6FE{% else %}#E4E1EE{% endif %};border-radius:6px;padding:4px 7px;cursor:pointer;font-size:13px">📝</button>
+              <a href="/content-eval/submissions/{{ s.id }}"
+                 style="display:inline-block;margin-left:3px;background:transparent;border:0.5px solid #E4E1EE;border-radius:6px;padding:4px 7px;text-decoration:none;font-size:13px">✏️</a>
             </td>
 
-            <!-- 제출일 -->
-            <td style="padding:8px 10px;font-size:11px;color:#AAA7B8;white-space:nowrap">
-              {{ (s.submitted_at or '')[:16] }}
+            <td style="padding:8px 10px;max-width:200px">
+              <a href="{{ s.url }}" target="_blank" onclick="event.stopPropagation()"
+                 style="font-size:11px;color:#7000FC;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">
+                {{ s.url[:60] }}{% if s.url|length > 60 %}…{% endif %}
+              </a>
             </td>
           </tr>
 
-          <!-- 메모 서브행 -->
-          <tr id="memo-row-{{ s.id }}" style="display:none;background:#FAFAFA">
-            <td colspan="13" style="padding:8px 14px 10px">
-              <textarea id="memo-text-{{ s.id }}"
-                        placeholder="메모를 입력하세요…"
+          <tr id="memo-row-{{ s.id }}" class="{{ gid }}-row" style="display:none;background:#FAFAFA">
+            <td colspan="8" style="padding:8px 14px 10px">
+              <textarea id="memo-text-{{ s.id }}" placeholder="메모를 입력하세요…"
                         onblur="saveMemo({{ s.id }}, this.value)"
                         style="width:100%;min-height:60px;padding:8px 10px;font-size:12px;border:0.5px solid #DDD6FE;border-radius:8px;resize:vertical;font-family:inherit;color:#130D2A;background:#fff;box-sizing:border-box">{{ s.memo or '' }}</textarea>
             </td>
           </tr>
+          {% endfor %}
           {% endfor %}
         </tbody>
       </table>
@@ -513,13 +502,41 @@
 </div>
 
 <script>
-/* ── 평가 기준 토글 ── */
+/* ── 행 클릭 → 상세 페이지 ── */
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.tbl-row').forEach(function(row) {
+    row.addEventListener('click', function(e) {
+      if (e.target.closest('.no-nav') || e.target.tagName === 'A' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+      var href = row.dataset.href;
+      if (href) window.location.href = href;
+    });
+  });
+});
+
+/* ── 안내 · 평가 기준 토글 ── */
+function toggleGuide() {
+  var body = document.getElementById('guide-body');
+  var toggle = document.getElementById('guide-toggle');
+  var hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  toggle.textContent = hidden ? '접기 ▲' : '펼치기 ▼';
+}
 function toggleCriteria() {
   var body = document.getElementById('criteria-body');
   var toggle = document.getElementById('criteria-toggle');
   var hidden = body.style.display === 'none';
   body.style.display = hidden ? '' : 'none';
   toggle.textContent = hidden ? '접기 ▲' : '펼치기 ▼';
+}
+
+/* ── 프로젝트 그룹 접기/펼치기 ── */
+function toggleGroup(gid) {
+  var mainRows = document.querySelectorAll('tr.tbl-row.' + gid + '-row');
+  var collapsing = mainRows.length && mainRows[0].style.display !== 'none';
+  document.querySelectorAll('.' + gid + '-row').forEach(function(r) {
+    r.style.display = (collapsing || !r.classList.contains('tbl-row')) ? 'none' : '';
+  });
+  document.getElementById(gid + '-arrow').textContent = collapsing ? '▸' : '▾';
 }
 
 /* ── 체크박스 ── */

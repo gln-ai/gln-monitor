@@ -105,12 +105,15 @@ def content_eval_index():
     status  = request.args.get("status", "all")      # all/pass/fail/pending
     pf      = request.args.get("platform", "all")    # all/youtube/naver_blog/instagram
 
+    proj    = request.args.get("project", "all")
+
     _allowed = {"name", "platform", "total_score", "guideline_score",
-                "engagement_score", "quality_score", "submitted_at", "star"}
+                "engagement_score", "quality_score", "submitted_at", "star", "project"}
     if sort not in _allowed:
         sort = "submitted_at"
     order_sql = "DESC" if order == "desc" else "ASC"
-    order_col = f"s.{sort}" if sort in ("star", "submitted_at", "name", "platform") else f"sc.{sort}"
+    order_col = f"s.{sort}" if sort in ("star", "submitted_at", "name", "platform", "project") else f"sc.{sort}"
+    project_order_sql = order_sql if sort == "project" else "ASC"
 
     where_parts, params = [], []
     if status == "pass":
@@ -122,21 +125,27 @@ def content_eval_index():
     if pf != "all":
         where_parts.append("s.platform = ?")
         params.append(pf)
+    if proj != "all":
+        where_parts.append("s.project = ?")
+        params.append(proj)
     where_sql = ("WHERE " + " AND ".join(where_parts)) if where_parts else ""
 
     conn = get_db()
     rows = conn.execute(f"""
         SELECT s.id, s.name, s.platform, s.url, s.submitted_at,
-               s.memo, s.star, s.manual_stats,
+               s.memo, s.star, s.manual_stats, s.project,
                sc.guideline_score, sc.engagement_score, sc.quality_score,
                sc.total_score, sc.safety_status, sc.safety_reason,
                sc.detail_json, sc.evaluated_at
         FROM content_submissions s
         LEFT JOIN content_scores sc ON sc.submission_id = s.id
         {where_sql}
-        ORDER BY {order_col} {order_sql} NULLS LAST
+        ORDER BY s.project {project_order_sql}, {order_col} {order_sql} NULLS LAST
         LIMIT 200
     """, params).fetchall()
+    projects = [r[0] for r in conn.execute(
+        "SELECT DISTINCT project FROM content_submissions WHERE project != '' ORDER BY project"
+    ).fetchall()]
     conn.close()
 
     submissions = [dict(r) for r in rows]
@@ -156,6 +165,7 @@ def content_eval_index():
         submissions=submissions,
         platform_label=_PLATFORM_LABEL,
         sort=sort, order=order, status=status, platform_filter=pf,
+        projects=projects, project_filter=proj,
     )
 
 
@@ -184,6 +194,7 @@ def content_eval_edit(sub_id):
     data        = request.json or {}
     name        = data.get("name", "").strip()
     url         = normalize_url(data.get("url", "").strip())
+    project     = data.get("project", "").strip()
     reevaluate  = bool(data.get("reevaluate", False))
     view_c      = data.get("view_count", 0)
     like_c      = data.get("like_count", 0)
@@ -202,8 +213,8 @@ def content_eval_edit(sub_id):
 
     conn = get_db()
     conn.execute(
-        "UPDATE content_submissions SET name=?, url=?, platform=?, manual_stats=? WHERE id=?",
-        (name, url, platform, manual_stats, sub_id),
+        "UPDATE content_submissions SET name=?, url=?, platform=?, manual_stats=?, project=? WHERE id=?",
+        (name, url, platform, manual_stats, project, sub_id),
     )
     if reevaluate:
         conn.execute("DELETE FROM content_scores WHERE submission_id=?", (sub_id,))
@@ -235,12 +246,41 @@ def content_eval_delete():
     return jsonify({"ok": True, "deleted": len(ids)})
 
 
+@content_eval_bp.route("/content-eval/submissions/<int:sub_id>")
+def content_eval_detail(sub_id):
+    conn = get_db()
+    row = conn.execute("""
+        SELECT s.id, s.name, s.platform, s.url, s.submitted_at,
+               s.memo, s.star, s.manual_stats, s.project,
+               sc.guideline_score, sc.engagement_score, sc.quality_score,
+               sc.total_score, sc.safety_status, sc.safety_reason,
+               sc.detail_json, sc.evaluated_at
+        FROM content_submissions s
+        LEFT JOIN content_scores sc ON sc.submission_id = s.id
+        WHERE s.id = ?
+    """, (sub_id,)).fetchone()
+    conn.close()
+    if not row:
+        return redirect(url_for("content_eval.content_eval_index"))
+    s = dict(row)
+    s["explanation"] = _build_explanation(s)
+    ms = {}
+    try:
+        ms = json.loads(s.get("manual_stats") or "{}")
+    except Exception:
+        pass
+    s["manual_view"]    = int(ms.get("view_count", 0) or 0)
+    s["manual_like"]    = int(ms.get("like_count", 0) or 0)
+    s["manual_comment"] = int(ms.get("comment_count", 0) or 0)
+    return render_template("content_eval_detail.html", s=s, platform_label=_PLATFORM_LABEL)
+
+
 @content_eval_bp.route("/content-eval/export")
 def content_eval_export():
     import io as _io
     conn = get_db()
     rows = conn.execute("""
-        SELECT s.name, s.platform, s.url, s.star, s.memo, s.submitted_at,
+        SELECT s.project, s.name, s.platform, s.url, s.star, s.memo, s.submitted_at,
                sc.guideline_score, sc.engagement_score, sc.quality_score,
                sc.total_score, sc.safety_status, sc.safety_reason
         FROM content_submissions s
@@ -251,11 +291,11 @@ def content_eval_export():
 
     buf = _io.StringIO()
     writer = csv.writer(buf)
-    writer.writerow(["이름", "플랫폼", "URL", "별점", "메모", "제출일",
+    writer.writerow(["프로젝트", "이름", "플랫폼", "URL", "별점", "메모", "제출일",
                      "가이드점수", "참여도점수", "품질점수", "총점", "결과", "사유"])
     for r in rows:
         writer.writerow([
-            r["name"], _PLATFORM_LABEL.get(r["platform"], r["platform"]), r["url"],
+            r["project"] or "", r["name"], _PLATFORM_LABEL.get(r["platform"], r["platform"]), r["url"],
             r["star"] or 0, r["memo"] or "", (r["submitted_at"] or "")[:16],
             r["guideline_score"] or "", r["engagement_score"] or "",
             r["quality_score"] or "", r["total_score"] or "",
@@ -289,6 +329,7 @@ def content_eval_upload():
             if not name or not url:
                 continue
 
+            project = (row.get("project") or row.get("프로젝트") or "").strip() or "중국퍼플크리에이터"
             url      = normalize_url(url)
             platform = detect_platform(url)
 
@@ -306,9 +347,9 @@ def content_eval_upload():
 
             conn = get_db()
             cur = conn.execute(
-                """INSERT INTO content_submissions (name, platform, url, manual_stats)
-                   VALUES (?, ?, ?, ?)""",
-                (name, platform, url, manual_stats),
+                """INSERT INTO content_submissions (name, platform, url, manual_stats, project)
+                   VALUES (?, ?, ?, ?, ?)""",
+                (name, platform, url, manual_stats, project),
             )
             submission_id = cur.lastrowid
             conn.commit()
