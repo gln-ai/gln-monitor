@@ -65,29 +65,13 @@ def run_content_pipeline(channel: str = None, formats: list = None):
         ch_formats = formats or _DEFAULT_FORMATS.get(ch, ["blog"])
         print(f"[파이프라인] {ch} 채널 시작 — 포맷: {ch_formats}")
 
-        # 소재: Reactive 우선, 없으면 Proactive
-        briefs = content_gen.get_briefs(min_score=7, limit=2)
-        if not briefs:
-            briefs = content_gen.get_briefs(min_score=5, limit=2)
-
-        if briefs:
-            sources = [
-                {
-                    "topic":          b.get("summary") or b["title"][:60],
-                    "country":        content_gen.detect_country(
-                                          f"{b['title']} {b.get('description','') or ''}"),
-                    "brief_summary":  b.get("summary", ""),
-                    "source_post_id": b["id"],
-                }
-                for b in briefs[:1]
-            ]
-        else:
-            proactive = content_gen.get_proactive_topics(limit=1)
-            sources = [
-                {"topic": p["title"], "country": p["country"],
-                 "brief_summary": "", "source_post_id": None}
-                for p in proactive
-            ]
+        # 소재: Proactive 전용 (최근 이슈 기반 자동 생성 비활성화)
+        proactive = content_gen.get_proactive_topics(limit=1)
+        sources = [
+            {"topic": p["title"], "country": p["country"],
+             "brief_summary": "", "source_post_id": None}
+            for p in proactive
+        ]
 
         if not sources:
             print(f"[파이프라인] {ch} 채널 소재 없음")
