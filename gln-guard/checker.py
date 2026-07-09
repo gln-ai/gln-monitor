@@ -21,7 +21,7 @@ _APPS_ROOT  = os.path.dirname(_THIS_DIR)
 # symlink 또는 Railway 번들 시: db.py가 _APPS_ROOT에 있으면 그 자체가 gln-monitor
 MONITOR_DIR = _APPS_ROOT if os.path.exists(os.path.join(_APPS_ROOT, "db.py")) \
               else os.path.join(_APPS_ROOT, "gln-monitor")
-SHARED      = os.path.join(os.path.dirname(MONITOR_DIR), "shared")
+SHARED      = os.path.join(_APPS_ROOT, "shared")
 
 load_dotenv(os.path.join(MONITOR_DIR, ".env"))
 
