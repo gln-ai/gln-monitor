@@ -9,7 +9,7 @@
 ## 실행 환경
 - **경로**: ~/apps/gln-monitor
 - **실행**: pm2 (gln-monitor), 포트 5001
-- **접속**: http://192.168.1.60:5001 (내부망)
+- **접속**: http://192.168.1.30:5001 (내부망)
 - **Python**: 3.14 / .venv
 
 ## 기술 스택
@@ -23,7 +23,7 @@ SMTP_USER=glninternational.ai@gmail.com
 SMTP_PASS (앱비밀번호 16자리, 띄어쓰기 없이)
 REPORT_TO=brad@,heybk@,chaechae0704@,jane.oh@
 URGENT_ALERT_TO=brad@glninternational.com
-BASE_URL=http://192.168.1.60:5001
+BASE_URL=http://192.168.1.30:5001
 ```
 
 ---

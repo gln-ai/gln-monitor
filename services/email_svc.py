@@ -245,7 +245,7 @@ def send_urgent_alert(title: str, analysis: dict,
         print(f"[긴급 알림] 발송 시간 외 ({now_hour}시) — 스킵")
         return
 
-    base_url     = os.getenv("BASE_URL", "http://192.168.1.60:5001")
+    base_url     = os.getenv("BASE_URL", "http://192.168.1.30:5001")
     collected_at = created_at[:16] if created_at else datetime.now(KST).strftime("%Y-%m-%d %H:%M")
     detail_url   = f"{base_url}/post/{post_id}" if post_id else base_url
 
