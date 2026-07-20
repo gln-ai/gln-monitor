@@ -103,6 +103,14 @@ init_db()
 import pathlib
 pathlib.Path(os.path.join(MONITOR_DIR, "static", "generated", "images")).mkdir(parents=True, exist_ok=True)
 
+def _scheduled_content_pipeline():
+    """콘텐츠 자동생성 스케줄러 잡 — 설정에서 OFF면 스킵 (수동 생성/실행에는 영향 없음)."""
+    if get_setting("content_auto_generate_enabled", "0") != "1":
+        print("[콘텐츠 자동생성] 설정 OFF — 스킵", flush=True)
+        return
+    run_content_pipeline()
+
+
 def _sync_channel_performance():
     """marketing-dashboard/sync.js 실행 → channel_performance 자동 수집."""
     import subprocess
@@ -126,7 +134,7 @@ _scheduler = BackgroundScheduler(timezone="Asia/Seoul", misfire_grace_time=3600,
 _scheduler.add_job(collect_all,          "interval", hours=1,  id="collect")
 _scheduler.add_job(_daily_weekday,       "cron", day_of_week="mon-fri", hour=8, minute=0, id="daily_weekday")
 _scheduler.add_job(_daily_weekend,       "cron", day_of_week="sat,sun",  hour=8, minute=0, id="daily_weekend")
-_scheduler.add_job(run_content_pipeline, "cron", hour=9,  minute=0, id="content_pipeline")
+_scheduler.add_job(_scheduled_content_pipeline, "cron", hour=9,  minute=0, id="content_pipeline")
 # _scheduler.add_job(send_sla_reminder,    "cron", hour=17, minute=0, id="sla_reminder")
 # _scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
 _scheduler.add_job(send_weekly_report,   "cron", day_of_week="mon", hour=8, minute=0,  id="weekly_report")

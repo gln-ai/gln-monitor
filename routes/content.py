@@ -12,7 +12,7 @@ from datetime import datetime
 from flask import Blueprint, jsonify, render_template, request
 
 from config import KST
-from db import get_db
+from db import get_db, get_setting
 
 # gln-content 경로: Railway(/app/gln-content/) 또는 로컬(../gln-content/)
 _ROUTES_DIR   = os.path.dirname(os.path.abspath(__file__))
@@ -177,6 +177,7 @@ def content_status():
         content_countries=content_countries,
         format_label=FORMAT_LABEL,
         format_icon=FORMAT_ICON,
+        auto_generate_enabled=get_setting("content_auto_generate_enabled", "0") == "1",
     )
 
 
