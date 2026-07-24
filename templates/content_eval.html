@@ -340,6 +340,10 @@
             {{ sort_th('submitted_at', '제출일', 'left') }}
             {{ sort_th('name', '이름', 'left') }}
             <th style="padding:8px 10px;font-size:11px;color:#918DA0;font-weight:500">플랫폼</th>
+            <th style="padding:8px 10px;text-align:right;font-size:11px;color:#918DA0;font-weight:500;white-space:nowrap">조회수</th>
+            {{ sort_th('guideline_score', '가이드') }}
+            {{ sort_th('engagement_score', '참여도') }}
+            {{ sort_th('quality_score', '품질') }}
             {{ sort_th('total_score', '총점') }}
             {{ sort_th('star', '⭐ 별점') }}
             <th style="padding:8px 10px;text-align:center;font-size:11px;color:#918DA0;font-weight:500">메모·수정</th>
@@ -353,7 +357,7 @@
           {% set gpass = glist | selectattr('safety_status', 'eq', 'PASS') | list | length %}
           <tr class="proj-group-header" onclick="toggleGroup('{{ gid }}')"
               style="background:#F9F7FF;cursor:pointer;border-bottom:0.5px solid #E4E1EE">
-            <td colspan="8" style="padding:8px 14px;font-size:12px;font-weight:700;color:#130D2A">
+            <td colspan="12" style="padding:8px 14px;font-size:12px;font-weight:700;color:#130D2A">
               <span id="{{ gid }}-arrow">▾</span> {{ project_name or '미지정' }}
               <span style="font-weight:500;color:#918DA0;margin-left:6px">
                 {{ glist|length }}건{% if gscored %} · 평균 {{ (gscored | map(attribute='total_score') | sum / gscored|length) | round(1) }}점{% endif %}{% if gpass %} · PASS {{ gpass }}{% endif %}
@@ -385,16 +389,35 @@
               </span>
             </td>
 
+            <td style="padding:8px 10px;text-align:right;font-size:12px;color:#5E5A71;white-space:nowrap">
+              {% set vc = s.explanation.view_count %}
+              {{ '{:,}'.format(vc) if vc else '—' }}
+            </td>
+
+            {% for field, maxv in [('guideline_score', 40), ('engagement_score', 30), ('quality_score', 30)] %}
+            <td class="no-nav" style="padding:8px 10px;text-align:center">
+              {% if is_pending %}
+                <span style="font-size:12px;color:#AAA7B8">-</span>
+              {% else %}
+                <span class="score-cell" data-field="{{ field }}" data-max="{{ maxv }}" data-sub="{{ s.id }}"
+                      onclick="editScore(this)"
+                      style="cursor:pointer;font-size:13px;font-weight:600;color:#130D2A;border-bottom:1px dashed #DDD6FE;padding-bottom:1px">{{ s[field] }}</span>
+              {% endif %}
+            </td>
+            {% endfor %}
+
             <td style="padding:8px 12px;text-align:center">
               {% if is_pending %}
                 <span style="font-size:12px;color:#AAA7B8">대기</span>
               {% else %}
                 <div style="display:flex;align-items:center;gap:6px;min-width:80px">
-                  <div class="score-bar-wrap"><div class="score-bar" style="width:{{ s.total_score }}%"></div></div>
-                  <span style="font-size:13px;font-weight:700;color:{% if s.safety_status=='PASS' %}#059669{% elif s.safety_status=='FAIL' %}#DC2626{% else %}#130D2A{% endif %};white-space:nowrap">
-                    {{ s.total_score }}
+                  <div class="score-bar-wrap"><div class="score-bar" id="totalbar-{{ s.id }}" style="width:{{ s.total_score }}%"></div></div>
+                  <span id="total-{{ s.id }}" style="font-size:13px;font-weight:700;color:{% if s.safety_status=='PASS' %}#059669{% elif s.safety_status=='FAIL' %}#DC2626{% else %}#130D2A{% endif %};white-space:nowrap">
+                    <span id="totalnum-{{ s.id }}">{{ s.total_score }}</span>
                     <span style="font-size:10px;font-weight:500">{% if s.safety_status=='PASS' %}✓{% elif s.safety_status=='FAIL' %}✗{% endif %}</span>
                   </span>
+                  <span id="editbadge-{{ s.id }}" title="{% if s.score_edited_at %}수동 조정: {{ s.score_edited_at }}{% endif %}"
+                        style="font-size:10px;color:#7000FC;cursor:help;{% if not s.score_edited_at %}display:none{% endif %}">✎</span>
                 </div>
               {% endif %}
             </td>
@@ -427,7 +450,7 @@
           </tr>
 
           <tr id="memo-row-{{ s.id }}" class="{{ gid }}-row" style="display:none;background:#FAFAFA">
-            <td colspan="8" style="padding:8px 14px 10px">
+            <td colspan="12" style="padding:8px 14px 10px">
               <textarea id="memo-text-{{ s.id }}" placeholder="메모를 입력하세요…"
                         onblur="saveMemo({{ s.id }}, this.value)"
                         style="width:100%;min-height:60px;padding:8px 10px;font-size:12px;border:0.5px solid #DDD6FE;border-radius:8px;resize:vertical;font-family:inherit;color:#130D2A;background:#fff;box-sizing:border-box">{{ s.memo or '' }}</textarea>
@@ -597,6 +620,51 @@ document.querySelectorAll('.star-row').forEach(row => {
   _savedStars[id] = cur;
   _renderStars(id, cur, false);
 });
+
+/* ── 점수 인라인 수정 (가이드/참여도/품질) ── */
+function editScore(el) {
+  if (el.querySelector('input')) return;
+  var cur   = el.textContent.trim();
+  var max   = el.dataset.max;
+  var field = el.dataset.field;
+  var subId = el.dataset.sub;
+  el.dataset.orig = cur;
+  el.innerHTML = '<input type="number" min="0" max="' + max + '" value="' + cur + '" ' +
+    'style="width:44px;font-size:13px;padding:2px 4px;border:1px solid #7000FC;border-radius:4px;text-align:center">';
+  var input = el.querySelector('input');
+  input.focus();
+  input.select();
+  input.addEventListener('blur', function() { saveScore(subId, field, input.value, el); });
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { el.textContent = cur; }
+  });
+}
+function saveScore(subId, field, val, el) {
+  var body = {};
+  body[field] = val;
+  fetch('/content-eval/submissions/' + subId + '/scores', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  }).then(r => r.json()).then(d => {
+    if (!d.ok) {
+      alert(d.message || '저장 실패');
+      el.textContent = el.dataset.orig || '';
+      return;
+    }
+    el.textContent = d[field];
+    var totalNum = document.getElementById('totalnum-' + subId);
+    var totalBar = document.getElementById('totalbar-' + subId);
+    var badge    = document.getElementById('editbadge-' + subId);
+    if (totalNum) totalNum.textContent = d.total_score;
+    if (totalBar) totalBar.style.width = d.total_score + '%';
+    if (badge && d.score_edited_at) {
+      badge.style.display = '';
+      badge.title = '수동 조정: ' + d.score_edited_at;
+    }
+  });
+}
 
 /* ── 메모 ── */
 function toggleMemo(id) {

@@ -35,6 +35,12 @@ def _build_explanation(s: dict) -> dict:
     e = detail.get("engagement", {})
     platform = s.get("platform", "")
 
+    # 조회수 (목록 컬럼용) — youtube/네이버(수동) 는 engagement.view_count,
+    # 인스타는 engagement.manual_stats.view_count
+    view_count = e.get("view_count")
+    if view_count is None:
+        view_count = (e.get("manual_stats") or {}).get("view_count")
+
     # 가이드 준수 설명
     kw = g.get("keyword_found") or []
     kw_str = " · ".join(kw) if kw else "키워드 없음"
@@ -67,7 +73,7 @@ def _build_explanation(s: dict) -> dict:
     else:
         q_text = reason if reason else "부적절 콘텐츠 감지"
 
-    return {"guideline": g_text, "engagement": e_text, "quality": q_text}
+    return {"guideline": g_text, "engagement": e_text, "quality": q_text, "view_count": view_count}
 
 
 def _run_eval_and_save(submission_id: int, submission: dict):
@@ -136,7 +142,7 @@ def content_eval_index():
                s.memo, s.star, s.manual_stats, s.project,
                sc.guideline_score, sc.engagement_score, sc.quality_score,
                sc.total_score, sc.safety_status, sc.safety_reason,
-               sc.detail_json, sc.evaluated_at
+               sc.detail_json, sc.evaluated_at, sc.score_edited_at
         FROM content_submissions s
         LEFT JOIN content_scores sc ON sc.submission_id = s.id
         {where_sql}
@@ -187,6 +193,55 @@ def content_eval_star(sub_id):
     conn.commit()
     conn.close()
     return jsonify({"ok": True})
+
+
+_SCORE_MAX = {"guideline_score": 40, "engagement_score": 30, "quality_score": 30}
+
+
+@content_eval_bp.route("/content-eval/submissions/<int:sub_id>/scores", methods=["POST"])
+def content_eval_scores(sub_id):
+    """가이드/참여도/품질 점수 수동 조정 (부분 업데이트 — 온 필드만 반영)."""
+    data = request.json or {}
+
+    conn = get_db()
+    row = conn.execute(
+        "SELECT guideline_score, engagement_score, quality_score FROM content_scores WHERE submission_id=?",
+        (sub_id,),
+    ).fetchone()
+    if not row:
+        conn.close()
+        return jsonify({"ok": False, "message": "평가가 완료된 후 수정할 수 있습니다"})
+
+    values = dict(row)
+    for field, max_val in _SCORE_MAX.items():
+        if field in data:
+            try:
+                values[field] = max(0, min(max_val, int(data[field])))
+            except (TypeError, ValueError):
+                pass
+
+    total = sum(values[f] or 0 for f in _SCORE_MAX)
+    conn.execute(
+        """UPDATE content_scores
+           SET guideline_score=?, engagement_score=?, quality_score=?,
+               total_score=?, score_edited_at=datetime('now','localtime')
+           WHERE submission_id=?""",
+        (values["guideline_score"], values["engagement_score"], values["quality_score"], total, sub_id),
+    )
+    conn.commit()
+    edited_at = conn.execute(
+        "SELECT score_edited_at FROM content_scores WHERE submission_id=?", (sub_id,)
+    ).fetchone()[0]
+    conn.close()
+
+    return jsonify({
+        "ok": True,
+        "guideline_score":  values["guideline_score"],
+        "engagement_score": values["engagement_score"],
+        "quality_score":    values["quality_score"],
+        "total_score":      total,
+        "score_edited_at":  edited_at,
+    })
 
 
 @content_eval_bp.route("/content-eval/submissions/<int:sub_id>/edit", methods=["POST"])
@@ -254,7 +309,7 @@ def content_eval_detail(sub_id):
                s.memo, s.star, s.manual_stats, s.project,
                sc.guideline_score, sc.engagement_score, sc.quality_score,
                sc.total_score, sc.safety_status, sc.safety_reason,
-               sc.detail_json, sc.evaluated_at
+               sc.detail_json, sc.evaluated_at, sc.score_edited_at
         FROM content_submissions s
         LEFT JOIN content_scores sc ON sc.submission_id = s.id
         WHERE s.id = ?

@@ -193,6 +193,8 @@ def init_db():
         "ALTER TABLE content_submissions ADD COLUMN star INTEGER DEFAULT 0",
         # v17: 서포터즈 프로젝트 구분
         "ALTER TABLE content_submissions ADD COLUMN project TEXT DEFAULT ''",
+        # v18: 서포터즈 평가 — 점수 수동 조정 시각
+        "ALTER TABLE content_scores ADD COLUMN score_edited_at TEXT",
     ]:
         try:
             conn.execute(alter_sql)

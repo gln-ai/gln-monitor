@@ -51,7 +51,7 @@
         <span class="badge status-pending" style="font-size:13px;padding:5px 12px">평가 대기</span>
       {% else %}
         <div style="font-size:42px;font-weight:800;color:{% if s.safety_status=='PASS' %}#059669{% elif s.safety_status=='FAIL' %}#DC2626{% else %}#130D2A{% endif %}">
-          {{ s.total_score }}<span style="font-size:20px;font-weight:500;color:#918DA0">/100</span>
+          <span id="totalnum">{{ s.total_score }}</span><span style="font-size:20px;font-weight:500;color:#918DA0">/100</span>
         </div>
         <span class="badge {% if s.safety_status=='PASS' %}status-pass{% else %}status-fail{% endif %}" style="font-size:14px;padding:6px 14px;font-weight:700">
           {{ s.safety_status }}
@@ -61,6 +61,8 @@
           {{ s.safety_reason }}
         </span>
         {% endif %}
+        <span id="editbadge" title="{% if s.score_edited_at %}수동 조정: {{ s.score_edited_at }}{% endif %}"
+              style="font-size:12px;color:#7000FC;cursor:help;{% if not s.score_edited_at %}display:none{% endif %}">✎ 수동조정</span>
       {% endif %}
 
       <!-- 별점 -->
@@ -82,7 +84,7 @@
     {% if not is_pending %}
     <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
       <div class="score-bar-wrap" style="height:10px">
-        <div class="score-bar" style="width:{{ s.total_score }}%"></div>
+        <div class="score-bar" id="totalbar" style="width:{{ s.total_score }}%"></div>
       </div>
       <span style="font-size:11px;color:#918DA0;white-space:nowrap">{{ s.total_score }}점</span>
     </div>
@@ -95,12 +97,15 @@
 
     <!-- 가이드 준수 -->
     <div class="score-card">
-      <div class="label">가이드 준수 (40점)</div>
-      <div style="font-size:28px;font-weight:800;color:{% if s.guideline_score >= 30 %}#059669{% elif s.guideline_score >= 20 %}#D97706{% else %}#DC2626{% endif %}">
-        {{ s.guideline_score }}<span style="font-size:14px;font-weight:400;color:#918DA0">/40</span>
+      <div class="label" style="display:flex;justify-content:space-between;align-items:center">
+        <span>가이드 준수 (40점)</span>
+        <span onclick="editDetailScore('guideline_score', 40)" title="수정" style="cursor:pointer;color:#7000FC;font-size:12px">✎</span>
+      </div>
+      <div id="guideline_score-display" style="font-size:28px;font-weight:800;color:{% if s.guideline_score >= 30 %}#059669{% elif s.guideline_score >= 20 %}#D97706{% else %}#DC2626{% endif %}">
+        <span id="guideline_score-num">{{ s.guideline_score }}</span><span style="font-size:14px;font-weight:400;color:#918DA0">/40</span>
       </div>
       <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
-        <div class="score-bar-wrap"><div class="score-bar" style="width:{{ (s.guideline_score / 40 * 100)|int }}%"></div></div>
+        <div class="score-bar-wrap"><div class="score-bar" id="guideline_score-bar" style="width:{{ (s.guideline_score / 40 * 100)|int }}%"></div></div>
       </div>
       {% if s.explanation and s.explanation.guideline %}
       <div style="font-size:11px;color:#918DA0;margin-top:8px;line-height:1.5">{{ s.explanation.guideline }}</div>
@@ -109,12 +114,15 @@
 
     <!-- 참여도 -->
     <div class="score-card">
-      <div class="label">참여도 (30점)</div>
-      <div style="font-size:28px;font-weight:800;color:{% if s.engagement_score >= 20 %}#059669{% elif s.engagement_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
-        {{ s.engagement_score }}<span style="font-size:14px;font-weight:400;color:#918DA0">/30</span>
+      <div class="label" style="display:flex;justify-content:space-between;align-items:center">
+        <span>참여도 (30점)</span>
+        <span onclick="editDetailScore('engagement_score', 30)" title="수정" style="cursor:pointer;color:#7000FC;font-size:12px">✎</span>
+      </div>
+      <div id="engagement_score-display" style="font-size:28px;font-weight:800;color:{% if s.engagement_score >= 20 %}#059669{% elif s.engagement_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
+        <span id="engagement_score-num">{{ s.engagement_score }}</span><span style="font-size:14px;font-weight:400;color:#918DA0">/30</span>
       </div>
       <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
-        <div class="score-bar-wrap"><div class="score-bar" style="width:{{ (s.engagement_score / 30 * 100)|int }}%"></div></div>
+        <div class="score-bar-wrap"><div class="score-bar" id="engagement_score-bar" style="width:{{ (s.engagement_score / 30 * 100)|int }}%"></div></div>
       </div>
       {% if s.explanation and s.explanation.engagement %}
       <div style="font-size:11px;color:#918DA0;margin-top:8px;line-height:1.5">{{ s.explanation.engagement }}</div>
@@ -123,12 +131,15 @@
 
     <!-- 콘텐츠 품질 -->
     <div class="score-card">
-      <div class="label">콘텐츠 품질 (30점)</div>
-      <div style="font-size:28px;font-weight:800;color:{% if s.quality_score >= 20 %}#059669{% elif s.quality_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
-        {{ s.quality_score }}<span style="font-size:14px;font-weight:400;color:#918DA0">/30</span>
+      <div class="label" style="display:flex;justify-content:space-between;align-items:center">
+        <span>콘텐츠 품질 (30점)</span>
+        <span onclick="editDetailScore('quality_score', 30)" title="수정" style="cursor:pointer;color:#7000FC;font-size:12px">✎</span>
+      </div>
+      <div id="quality_score-display" style="font-size:28px;font-weight:800;color:{% if s.quality_score >= 20 %}#059669{% elif s.quality_score >= 10 %}#D97706{% else %}#DC2626{% endif %}">
+        <span id="quality_score-num">{{ s.quality_score }}</span><span style="font-size:14px;font-weight:400;color:#918DA0">/30</span>
       </div>
       <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
-        <div class="score-bar-wrap"><div class="score-bar" style="width:{{ (s.quality_score / 30 * 100)|int }}%"></div></div>
+        <div class="score-bar-wrap"><div class="score-bar" id="quality_score-bar" style="width:{{ (s.quality_score / 30 * 100)|int }}%"></div></div>
       </div>
       {% if s.explanation and s.explanation.quality %}
       <div style="font-size:11px;color:#918DA0;margin-top:8px;line-height:1.5">{{ s.explanation.quality }}</div>
@@ -234,6 +245,67 @@ function setStar(val) {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({star: currentStar})
+  });
+}
+
+/* ── 점수 인라인 수정 ── */
+var _SCORE_COLOR = {
+  guideline_score:  [[30, '#059669'], [20, '#D97706'], [0, '#DC2626']],
+  engagement_score: [[20, '#059669'], [10, '#D97706'], [0, '#DC2626']],
+  quality_score:    [[20, '#059669'], [10, '#D97706'], [0, '#DC2626']],
+};
+function _colorFor(field, val) {
+  var rules = _SCORE_COLOR[field];
+  for (var i = 0; i < rules.length; i++) {
+    if (val >= rules[i][0]) return rules[i][1];
+  }
+  return rules[rules.length - 1][1];
+}
+function editDetailScore(field, max) {
+  var numEl = document.getElementById(field + '-num');
+  if (!numEl || numEl.querySelector('input')) return;
+  var cur = numEl.textContent.trim();
+  numEl.dataset.orig = cur;
+  numEl.innerHTML = '<input type="number" min="0" max="' + max + '" value="' + cur + '" ' +
+    'style="width:56px;font-size:20px;padding:2px 6px;border:1px solid #7000FC;border-radius:6px;text-align:center">';
+  var input = numEl.querySelector('input');
+  input.focus();
+  input.select();
+  input.addEventListener('blur', function() { saveDetailScore(field, input.value, numEl); });
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') input.blur();
+    if (e.key === 'Escape') { numEl.textContent = cur; }
+  });
+}
+function saveDetailScore(field, val, numEl) {
+  var body = {};
+  body[field] = val;
+  fetch('/content-eval/submissions/' + SUB_ID + '/scores', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  }).then(function(r) { return r.json(); }).then(function(d) {
+    if (!d.ok) {
+      alert(d.message || '저장 실패');
+      numEl.textContent = numEl.dataset.orig || '';
+      return;
+    }
+    numEl.textContent = d[field];
+    var barEl = document.getElementById(field + '-bar');
+    var displayEl = document.getElementById(field + '-display');
+    var max = field === 'guideline_score' ? 40 : 30;
+    if (barEl) barEl.style.width = (d[field] / max * 100) + '%';
+    if (displayEl) displayEl.style.color = _colorFor(field, d[field]);
+
+    var totalNum = document.getElementById('totalnum');
+    var totalBar = document.getElementById('totalbar');
+    var badge    = document.getElementById('editbadge');
+    if (totalNum) totalNum.textContent = d.total_score;
+    if (totalBar) totalBar.style.width = d.total_score + '%';
+    if (badge && d.score_edited_at) {
+      badge.style.display = '';
+      badge.title = '수동 조정: ' + d.score_edited_at;
+    }
   });
 }
 
