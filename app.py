@@ -129,25 +129,31 @@ def _sync_channel_performance():
         print(f"[채널동기화] 오류: {e}", flush=True)
 
 
-# misfire_grace_time=3600: 맥 절전 후 깨어날 때 최대 1시간 이내 잡 소급 실행
-_scheduler = BackgroundScheduler(timezone="Asia/Seoul", misfire_grace_time=3600, coalesce=True)
-_scheduler.add_job(collect_all,          "interval", hours=1,  id="collect")
-_scheduler.add_job(_daily_weekday,       "cron", day_of_week="mon-fri", hour=8, minute=0, id="daily_weekday")
-_scheduler.add_job(_daily_weekend,       "cron", day_of_week="sat,sun",  hour=8, minute=0, id="daily_weekend")
-_scheduler.add_job(_scheduled_content_pipeline, "cron", hour=9,  minute=0, id="content_pipeline")
-# _scheduler.add_job(send_sla_reminder,    "cron", hour=17, minute=0, id="sla_reminder")
-# _scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
-_scheduler.add_job(send_weekly_report,   "cron", day_of_week="mon", hour=8, minute=0,  id="weekly_report")
-_scheduler.add_job(save_daily_report,    "cron", hour=23, minute=55,                   id="log_daily")
-_scheduler.add_job(save_weekly_log,      "cron", day_of_week="mon", hour=8, minute=5,  id="log_weekly")
-_scheduler.add_job(save_monthly_report,  "cron", day=1,  hour=8, minute=10,            id="log_monthly")
-_scheduler.add_job(update_tourism,       "cron", day=1,  hour=9, minute=30,            id="tourism_update")
-_scheduler.add_job(fetch_jnto,                "cron", day=15, hour=10, minute=0,   id="jnto_monthly")
-_scheduler.add_job(fetch_kto_total,           "cron", day=5,  hour=10, minute=30,  id="kto_monthly")
-_scheduler.add_job(_sync_channel_performance, "cron", hour=0, minute=30,           id="channel_sync")
-_scheduler.start()
-app._scheduler = _scheduler
-print("[스케줄러] 수집 1h / 아침브리핑 08:00(평일) / 주간리포트 월08:00 / 콘텐츠 09:00 / 채널동기화 00:30 / 로그저장 23:55")
+# Railway 배포본은 대시보드 열람용 — 수집/분석/이메일은 로컬 맥미니 스케줄러만 실행 (중복 API 크레딧 소모 방지)
+_IS_RAILWAY = bool(os.getenv("RAILWAY_ENVIRONMENT"))
+
+if not _IS_RAILWAY:
+    # misfire_grace_time=3600: 맥 절전 후 깨어날 때 최대 1시간 이내 잡 소급 실행
+    _scheduler = BackgroundScheduler(timezone="Asia/Seoul", misfire_grace_time=3600, coalesce=True)
+    _scheduler.add_job(collect_all,          "interval", hours=1,  id="collect")
+    _scheduler.add_job(_daily_weekday,       "cron", day_of_week="mon-fri", hour=8, minute=0, id="daily_weekday")
+    _scheduler.add_job(_daily_weekend,       "cron", day_of_week="sat,sun",  hour=8, minute=0, id="daily_weekend")
+    _scheduler.add_job(_scheduled_content_pipeline, "cron", hour=9,  minute=0, id="content_pipeline")
+    # _scheduler.add_job(send_sla_reminder,    "cron", hour=17, minute=0, id="sla_reminder")
+    # _scheduler.add_job(send_spike_alert,     "interval", hours=1, id="spike_detector")
+    _scheduler.add_job(send_weekly_report,   "cron", day_of_week="mon", hour=8, minute=0,  id="weekly_report")
+    _scheduler.add_job(save_daily_report,    "cron", hour=23, minute=55,                   id="log_daily")
+    _scheduler.add_job(save_weekly_log,      "cron", day_of_week="mon", hour=8, minute=5,  id="log_weekly")
+    _scheduler.add_job(save_monthly_report,  "cron", day=1,  hour=8, minute=10,            id="log_monthly")
+    _scheduler.add_job(update_tourism,       "cron", day=1,  hour=9, minute=30,            id="tourism_update")
+    _scheduler.add_job(fetch_jnto,                "cron", day=15, hour=10, minute=0,   id="jnto_monthly")
+    _scheduler.add_job(fetch_kto_total,           "cron", day=5,  hour=10, minute=30,  id="kto_monthly")
+    _scheduler.add_job(_sync_channel_performance, "cron", hour=0, minute=30,           id="channel_sync")
+    _scheduler.start()
+    app._scheduler = _scheduler
+    print("[스케줄러] 수집 1h / 아침브리핑 08:00(평일) / 주간리포트 월08:00 / 콘텐츠 09:00 / 채널동기화 00:30 / 로그저장 23:55")
+else:
+    print("[스케줄러] Railway 환경 감지 — 중복 실행 방지를 위해 스케줄러 비활성화 (수집/분석/이메일은 로컬 맥미니에서만 실행)")
 
 if __name__ == "__main__":
     print("\n✅ GLN 모니터링 시작!")
