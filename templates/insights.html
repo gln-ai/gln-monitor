@@ -227,7 +227,7 @@ let dailyChart=null, sentimentChart=null, tourismChart=null;
 let currentDateFrom='', currentDateTo='';
 let tourismRawData={}, activeCountries=new Set(), _tourismInitialized=false;
 
-const CAT_COLOR={'불만':'#DC2626','문의':'#D97706','후기':'#059669','정보공유':'#7000FC','기타':'#9CA3AF'};
+const CAT_COLOR={'불만':'#DC2626','문의':'#D97706','기능요청':'#2563EB','후기':'#059669','정보공유':'#7000FC','기타':'#9CA3AF'};
 const TOURISM_COLORS={japan:'#E11D48',thailand:'#D97706',vietnam:'#059669',taiwan:'#0EA5E9',philippines:'#8B5CF6',singapore:'#06B6D4',hongkong:'#F59E0B',macau:'#10B981',china:'#DC2626',cambodia:'#7C3AED',mongolia:'#0284C7',laos:'#65A30D',guam:'#0891B2',saipan:'#DB2777',kor_outbound:'#9CA3AF'};
 const TOURISM_LABEL={japan:'일본',thailand:'태국',vietnam:'베트남',taiwan:'대만',philippines:'필리핀',singapore:'싱가포르',hongkong:'홍콩',macau:'마카오',china:'중국',cambodia:'캄보디아',mongolia:'몽골',laos:'라오스',guam:'괌',saipan:'사이판',kor_outbound:'한국 총 출국'};
 
@@ -306,7 +306,7 @@ function renderIssueSummary(issues){
   if(!issues||!issues.length){document.getElementById('issue-summary-list').innerHTML='<div style="text-align:center;padding:24px;color:#AAA7B8;font-size:12px">이슈 없음</div>';return;}
   const groups={};
   for(const issue of issues){const cat=issue.category||'기타';if(!groups[cat])groups[cat]={issues:[],total:0,urgent:0,negative:0};groups[cat].issues.push(issue);groups[cat].total++;if(issue.is_urgent)groups[cat].urgent++;if(issue.sentiment==='negative')groups[cat].negative++;}
-  const catOrder=['불만','문의','후기','정보공유','기타'];
+  const catOrder=['불만','문의','기능요청','후기','정보공유','기타'];
   const sorted=catOrder.filter(c=>groups[c]).concat(Object.keys(groups).filter(c=>!catOrder.includes(c)));
   const maxTotal=Math.max(...sorted.map(c=>groups[c].total));
   const sentColor={positive:'#7000FC',neutral:'#9CA3AF',negative:'#DC2626'};

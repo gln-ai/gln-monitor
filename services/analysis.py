@@ -32,40 +32,6 @@ def _load_fact_db() -> dict:
         return {}
 
 
-_CITY_TO_COUNTRY = {
-    "방콕": "thailand",  "치앙마이": "thailand", "파타야": "thailand",
-    "푸켓": "thailand",  "끄라비": "thailand",
-    "도쿄": "japan",     "오사카": "japan",      "교토": "japan",
-    "후쿠오카": "japan", "삿포로": "japan",      "오키나와": "japan",
-    "나고야": "japan",   "고베": "japan",        "요코하마": "japan",
-    "호치민": "vietnam", "하노이": "vietnam",    "다낭": "vietnam",
-    "나트랑": "vietnam", "푸꾸옥": "vietnam",    "호이안": "vietnam",
-    "타이베이": "taiwan","가오슝": "taiwan",     "타이중": "taiwan",
-    "마닐라": "philippines","세부": "philippines","보라카이": "philippines",
-    "싱가포르": "singapore",
-    "홍콩": "hongkong",
-    "마카오": "macau",
-    "베이징": "china",   "상하이": "china",      "광저우": "china",
-    "씨엠립": "cambodia","프놈펜": "cambodia",
-    "비엔티안": "laos",  "루앙프라방": "laos",
-    "울란바토르": "mongolia",
-    "투몬": "guam",
-    "자카르타": "indonesia", "발리": "indonesia",
-    "수라바야": "indonesia", "욕야카르타": "indonesia",
-}
-
-
-def _detect_country_from_text(text: str, fdb: dict) -> str:
-    for code, info in fdb.get("countries", {}).items():
-        name_ko = info.get("name_ko", "")
-        if name_ko and name_ko in text:
-            return code
-    for city, code in _CITY_TO_COUNTRY.items():
-        if city in text:
-            return code
-    return ""
-
-
 def _build_service_context(country_code: str, fdb: dict) -> str:
     if not country_code:
         return ""
@@ -265,9 +231,10 @@ def analyze_post(post_id: int, title: str, description: str, competitors: list[s
 def generate_replies(post_id: int, title: str, summary: str,
                      sentiment: str, category: str, description: str = "",
                      country_code: str = ""):
+    # country_code는 analyze_post가 이미 문맥으로 판단한 값 그대로 사용.
+    # 여기서 문자열매칭으로 재추정하면 "홍콩반점"처럼 상호명이 국가명을 우연히
+    # 포함하는 경우 무관한 국가 서비스 정보가 답변에 섞여 들어갈 수 있어 금지.
     fdb = _load_fact_db()
-    if not country_code:
-        country_code = _detect_country_from_text(f"{title} {description}", fdb)
     service_ctx  = _build_service_context(country_code, fdb)
     if service_ctx:
         print(f"[답변 생성] #{post_id} 국가: {country_code}")
