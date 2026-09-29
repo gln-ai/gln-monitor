@@ -23,8 +23,11 @@ if SHARED_DIR not in sys.path:
 
 KST = pytz.timezone("Asia/Seoul")
 
-# Claude 모델 ID — 전체 시스템 공통
+# Claude 모델 ID — 전체 시스템 공통 (콘텐츠 생성 등 품질이 중요한 작업)
 MODEL_ID = "claude-sonnet-4-6"
+
+# 게시글 분류/댓글 초안처럼 저위험·고빈도 작업용 — Sonnet 대비 비용 절감
+ANALYSIS_MODEL_ID = "claude-haiku-4-5"
 
 # DB_PATH: 환경변수 우선, 없으면 로컬 파일
 DB_PATH = os.environ.get("DB_PATH") or os.path.join(MONITOR_DIR, "gln_monitor.db")
