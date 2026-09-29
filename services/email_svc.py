@@ -474,6 +474,23 @@ def send_daily_report(to: str = ""):
       <pre style="font-family:inherit;font-size:13px;color:#1E0942;white-space:pre-wrap;margin:0;line-height:1.7">{escaped_brief}</pre>
     </div>"""
 
+        # ── 오늘의 TOP 5 (채널 통합, 중요도순, 실제 클릭 가능한 링크) ───────────
+        top5_html = ""
+        if top_posts[:5]:
+            top5_rows = "".join(f"""
+              <tr style="border-bottom:1px solid #F3F4F6">
+                <td style="padding:8px 6px;font-size:12px;color:#9CA3AF;width:18px;vertical-align:top">{i}</td>
+                <td style="padding:8px 6px;font-size:13px">
+                  <a href="{p['link']}" style="color:#1D4ED8;text-decoration:none;font-weight:500">{(p['title'] or '')[:60]}</a>
+                </td>
+                <td style="padding:8px 6px;font-size:12px;color:#374151;text-align:center;white-space:nowrap;vertical-align:top">{p['importance_score'] or '-'}점</td>
+              </tr>""" for i, p in enumerate(top_posts[:5], 1))
+            top5_html = f"""
+    <div style="margin-bottom:24px">
+      <div style="font-size:13px;font-weight:700;color:#1E0942;margin-bottom:8px">🔥 오늘의 TOP 5</div>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse">{top5_rows}</table>
+    </div>"""
+
         # ── 채널 섹션 ─────────────────────────────────────────────────────────
         ch_colors = {"카페": "#1D4ED8", "블로그": "#059669", "뉴스": "#D97706"}
         sections_html = ""
@@ -563,6 +580,9 @@ def send_daily_report(to: str = ""):
 
     <!-- AI 브리핑 -->
     {claude_briefing_html}
+
+    <!-- 오늘의 TOP 5 -->
+    {top5_html}
 
     <!-- 채널별 섹션 -->
     {sections_html if sections_html else '<p style="color:#9CA3AF;font-size:13px;text-align:center;padding:20px 0">전일 수집된 게시글이 없습니다.</p>'}
