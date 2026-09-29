@@ -20,7 +20,7 @@ from flask import Flask
 from db import init_db, get_setting
 print("[startup] db imported OK", flush=True)
 
-from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp, admin_bp, monthly_perf_bp, overview_bp
+from routes import monitor_bp, content_bp, pr_bp, reports_bp, keywords_bp, admin_bp, monthly_perf_bp, overview_bp, sync_bp
 print("[startup] base routes imported OK", flush=True)
 
 try:
@@ -42,6 +42,7 @@ from services.log_reporter import save_daily_report, save_weekly_report as save_
 from services.tourism_stats import update_all as update_tourism
 from services.jnto_fetcher import fetch_jnto
 from services.kto_fetcher import fetch_kto_total
+from services.railway_sync import sync_to_railway
 
 
 def _daily_weekday():
@@ -90,6 +91,7 @@ app.register_blueprint(keywords_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(monthly_perf_bp)
 app.register_blueprint(overview_bp)
+app.register_blueprint(sync_bp)
 if _content_eval_ok and content_eval_bp:
     app.register_blueprint(content_eval_bp)
     print("[startup] content_eval_bp registered OK", flush=True)
@@ -149,9 +151,10 @@ if not _IS_RAILWAY:
     _scheduler.add_job(fetch_jnto,                "cron", day=15, hour=10, minute=0,   id="jnto_monthly")
     _scheduler.add_job(fetch_kto_total,           "cron", day=5,  hour=10, minute=30,  id="kto_monthly")
     _scheduler.add_job(_sync_channel_performance, "cron", hour=0, minute=30,           id="channel_sync")
+    _scheduler.add_job(sync_to_railway,           "cron", minute=50,                   id="railway_sync")
     _scheduler.start()
     app._scheduler = _scheduler
-    print("[스케줄러] 수집 1h / 아침브리핑 08:00(평일) / 주간리포트 월08:00 / 콘텐츠 09:00 / 채널동기화 00:30 / 로그저장 23:55")
+    print("[스케줄러] 수집 1h / 아침브리핑 08:00(평일) / 주간리포트 월08:00 / 콘텐츠 09:00 / 채널동기화 00:30 / Railway동기화 매시 50분 / 로그저장 23:55")
 else:
     print("[스케줄러] Railway 환경 감지 — 중복 실행 방지를 위해 스케줄러 비활성화 (수집/분석/이메일은 로컬 맥미니에서만 실행)")
 
