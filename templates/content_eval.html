@@ -10,6 +10,7 @@
 .platform-yt    { background: #FEF2F2; color: #DC2626; }
 .platform-nb    { background: #F0FDF4; color: #059669; }
 .platform-ig    { background: #FFF7ED; color: #EA580C; }
+.platform-etc   { background: #F3F4F6; color: #6B7280; }
 {% endblock %}
 
 {% block sidebar_extra %}{% endblock %}
@@ -292,6 +293,7 @@
         <option value="youtube" {% if platform_filter=='youtube' %}selected{% endif %}>유튜브</option>
         <option value="naver_blog" {% if platform_filter=='naver_blog' %}selected{% endif %}>네이버 블로그</option>
         <option value="instagram" {% if platform_filter=='instagram' %}selected{% endif %}>인스타그램</option>
+        <option value="unknown" {% if platform_filter=='unknown' %}selected{% endif %}>기타</option>
       </select>
 
       <!-- 프로젝트 필터 -->
@@ -384,7 +386,7 @@
             </td>
 
             <td style="padding:8px 10px">
-              <span class="badge {% if s.platform=='youtube' %}platform-yt{% elif s.platform=='naver_blog' %}platform-nb{% else %}platform-ig{% endif %}">
+              <span class="badge {% if s.platform=='youtube' %}platform-yt{% elif s.platform=='naver_blog' %}platform-nb{% elif s.platform=='instagram' %}platform-ig{% else %}platform-etc{% endif %}">
                 {{ platform_label.get(s.platform, s.platform) }}
               </span>
             </td>

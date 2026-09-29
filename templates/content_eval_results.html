@@ -10,6 +10,7 @@
 .platform-yt    { background: #FEF2F2; color: #DC2626; }
 .platform-nb    { background: #F0FDF4; color: #059669; }
 .platform-ig    { background: #FFF7ED; color: #EA580C; }
+.platform-etc   { background: #F3F4F6; color: #6B7280; }
 .top-card { border: 1.5px solid #7000FC; background: #FAFAFF; }
 th.sortable { cursor:pointer; user-select:none; }
 th.sortable:hover { color: #7000FC; }
@@ -93,7 +94,7 @@ th.sortable.desc::after { content: ' ▼'; font-size:9px; }
           <a href="{{ s.url }}" target="_blank" style="font-size:11px;color:#7000FC;word-break:break-all">{{ s.url[:60] }}{% if s.url|length > 60 %}…{% endif %}</a>
         </div>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-          <span class="badge platform-{% if s.platform == 'youtube' %}yt{% elif s.platform == 'naver_blog' %}nb{% else %}ig{% endif %}">
+          <span class="badge platform-{% if s.platform == 'youtube' %}yt{% elif s.platform == 'naver_blog' %}nb{% elif s.platform == 'instagram' %}ig{% else %}etc{% endif %}">
             {{ platform_label.get(s.platform, s.platform) }}
           </span>
           <span style="font-size:18px;font-weight:800;color:#7000FC">{{ s.total_score }}점</span>
@@ -139,7 +140,7 @@ th.sortable.desc::after { content: ' ▼'; font-size:9px; }
           <tr style="border-bottom:0.5px solid #F3F4F6">
             <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#130D2A;white-space:nowrap">{{ s.name }}</td>
             <td style="padding:10px 14px">
-              <span class="badge {% if s.platform == 'youtube' %}platform-yt{% elif s.platform == 'naver_blog' %}platform-nb{% else %}platform-ig{% endif %}">
+              <span class="badge {% if s.platform == 'youtube' %}platform-yt{% elif s.platform == 'naver_blog' %}platform-nb{% elif s.platform == 'instagram' %}platform-ig{% else %}platform-etc{% endif %}">
                 {{ platform_label.get(s.platform, s.platform) }}
               </span>
             </td>

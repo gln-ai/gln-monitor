@@ -18,7 +18,7 @@ _PLATFORM_LABEL = {
     "youtube":    "유튜브",
     "naver_blog": "네이버 블로그",
     "instagram":  "인스타그램",
-    "unknown":    "미확인",
+    "unknown":    "기타",
 }
 
 
@@ -35,11 +35,13 @@ def _build_explanation(s: dict) -> dict:
     e = detail.get("engagement", {})
     platform = s.get("platform", "")
 
-    # 조회수 (목록 컬럼용) — youtube/네이버(수동) 는 engagement.view_count,
-    # 인스타는 engagement.manual_stats.view_count
-    view_count = e.get("view_count")
-    if view_count is None:
-        view_count = (e.get("manual_stats") or {}).get("view_count")
+    # 조회수 (목록 컬럼용) — 수동 입력값이 있으면 그게 항상 최신이므로 우선 사용.
+    # (재평가 없이 저장만 하면 detail_json은 갱신 안 되므로 그 값만 보면 예전 숫자가 보임)
+    try:
+        _ms = json.loads(s.get("manual_stats") or "{}")
+    except Exception:
+        _ms = {}
+    view_count = _ms.get("view_count") or e.get("view_count")
 
     # 가이드 준수 설명
     kw = g.get("keyword_found") or []
@@ -109,7 +111,7 @@ def content_eval_index():
     sort    = request.args.get("sort", "submitted_at")
     order   = request.args.get("order", "desc")
     status  = request.args.get("status", "all")      # all/pass/fail/pending
-    pf      = request.args.get("platform", "all")    # all/youtube/naver_blog/instagram
+    pf      = request.args.get("platform", "all")    # all/youtube/naver_blog/instagram/unknown
 
     proj    = request.args.get("project", "all")
 
