@@ -52,11 +52,11 @@ def ingest():
         cur2 = conn.execute(
             """INSERT OR IGNORE INTO ai_analysis
                (post_id, summary, category, sentiment, importance_score, created_at,
-                is_relevant, competitors)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                is_relevant, competitors, country)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (post_id, a.get("summary"), a.get("category"), a.get("sentiment"),
              a.get("importance_score"), a.get("created_at"), a.get("is_relevant", 1),
-             a.get("competitors", ""))
+             a.get("competitors", ""), a.get("country", ""))
         )
         if cur2.rowcount:
             inserted_analysis += 1

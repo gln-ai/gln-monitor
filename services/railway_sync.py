@@ -40,7 +40,7 @@ def _fetch_batch(last_id: int):
         """SELECT p.id, p.title, p.link, p.description, p.cafe_name, p.post_date, p.created_at,
                   p.hash, p.keyword, p.is_processed, p.is_urgent, p.reply_status, p.status_updated_at,
                   a.summary, a.category, a.sentiment, a.importance_score,
-                  a.created_at AS analysis_created_at, a.is_relevant, a.competitors
+                  a.created_at AS analysis_created_at, a.is_relevant, a.competitors, a.country
            FROM posts p
            JOIN ai_analysis a ON a.post_id = p.id
            WHERE p.id > ?
@@ -63,7 +63,7 @@ def _to_payload(rows):
             "analysis": {
                 "summary": r["summary"], "category": r["category"], "sentiment": r["sentiment"],
                 "importance_score": r["importance_score"], "created_at": r["analysis_created_at"],
-                "is_relevant": r["is_relevant"], "competitors": r["competitors"],
+                "is_relevant": r["is_relevant"], "competitors": r["competitors"], "country": r["country"],
             },
         }
         for r in rows

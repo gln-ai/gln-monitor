@@ -369,7 +369,7 @@ def send_daily_report(to: str = ""):
             rows = conn.execute("""
                 SELECT p.id, p.title, p.link, p.cafe_name, p.created_at,
                        p.keyword, p.description, p.is_urgent,
-                       a.summary, a.category, a.sentiment, a.importance_score
+                       a.summary, a.category, a.sentiment, a.importance_score, a.country
                 FROM posts p
                 LEFT JOIN ai_analysis a ON p.id = a.post_id
                 WHERE DATE(p.created_at) = ?
@@ -400,7 +400,7 @@ def send_daily_report(to: str = ""):
             sc      = {"positive": "#16A34A", "neutral": "#6B7280", "negative": "#DC2626"}.get(p["sentiment"], "#6B7280")
             sl      = {"positive": "긍정", "neutral": "중립", "negative": "부정"}.get(p["sentiment"], "-")
             cat     = p["category"] or "-"
-            country = _detect_country_email(p["title"] or "", p["description"] or "", p["cafe_name"] or "")
+            country = p["country"] or _detect_country_email(p["title"] or "", p["description"] or "", p["cafe_name"] or "")
             badge   = _country_badge_html(country)
             urgent_mark = (
                 '<span style="background:#FEE2E2;color:#DC2626;border:0.5px solid #FECACA;'

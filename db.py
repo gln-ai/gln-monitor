@@ -195,6 +195,8 @@ def init_db():
         "ALTER TABLE content_submissions ADD COLUMN project TEXT DEFAULT ''",
         # v18: 서포터즈 평가 — 점수 수동 조정 시각
         "ALTER TABLE content_scores ADD COLUMN score_edited_at TEXT",
+        # v19: AI가 문맥으로 판단한 국가 (문자열매칭 대체, 빈값이면 미판단/구버전 데이터)
+        "ALTER TABLE ai_analysis ADD COLUMN country TEXT DEFAULT ''",
     ]:
         try:
             conn.execute(alter_sql)

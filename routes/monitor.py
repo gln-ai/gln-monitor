@@ -117,7 +117,8 @@ def dashboard():
         SELECT p.id, p.title, p.link, p.cafe_name, p.post_date, p.is_urgent,
                p.keyword, p.created_at, p.reply_status, p.status_updated_at,
                p.description,
-               a.summary, a.category, a.sentiment, a.importance_score, a.competitors
+               a.summary, a.category, a.sentiment, a.importance_score, a.competitors,
+               a.country AS ai_country
         FROM posts p
         LEFT JOIN ai_analysis a ON p.id = a.post_id
         WHERE (a.is_relevant IS NULL OR a.is_relevant = 1)
@@ -183,7 +184,8 @@ def dashboard():
     posts = []
     for r in _rows:
         d = dict(r)
-        d["country"] = _detect_country(
+        ai_country = d.pop("ai_country", None)
+        d["country"] = ai_country or _detect_country(
             (d.get("title") or "") + " " + (d.get("description") or "") + " " + (d.get("cafe_name") or "")
         )
         raw_comp = d.get("competitors") or ""
