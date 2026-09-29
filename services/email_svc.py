@@ -81,6 +81,9 @@ _COUNTRY_MAP = {
     "비엔티안": "laos",    "루앙프라방": "laos",   "방비엥": "laos",
     # 괌
     "투몬": "guam",
+    # 인도네시아
+    "인도네시아": "indonesia", "자카르타": "indonesia",
+    "발리": "indonesia",       "수라바야": "indonesia",  "욕야카르타": "indonesia",
 }
 
 _COUNTRY_LABEL = {
@@ -88,7 +91,7 @@ _COUNTRY_LABEL = {
     "vietnam": "베트남", "philippines": "필리핀", "singapore": "싱가포르",
     "hongkong": "홍콩", "macau": "마카오", "china": "중국",
     "cambodia": "캄보디아", "mongolia": "몽골", "laos": "라오스",
-    "guam": "괌사이판", "saipan": "괌사이판",
+    "guam": "괌사이판", "saipan": "괌사이판", "indonesia": "인도네시아",
 }
 
 _COUNTRY_EMOJI = {
@@ -96,7 +99,7 @@ _COUNTRY_EMOJI = {
     "macau":       "🇲🇴", "philippines": "🇵🇭", "thailand":    "🇹🇭",
     "laos":        "🇱🇦", "japan":       "🇯🇵", "taiwan":      "🇹🇼",
     "mongolia":    "🇲🇳", "singapore":   "🇸🇬", "cambodia":    "🇰🇭",
-    "guam":        "🏝️",  "saipan":      "🏝️",
+    "guam":        "🏝️",  "saipan":      "🏝️",  "indonesia":   "🇮🇩",
 }
 
 _WEEKDAY_KR = ["월", "화", "수", "목", "금", "토", "일"]

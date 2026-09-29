@@ -69,6 +69,7 @@ _COUNTRY_EMOJI = {
     "laos":        "🇱🇦",
     "guam":        "🇬🇺",
     "saipan":      "🇲🇵",
+    "indonesia":   "🇮🇩",
 }
 
 

@@ -184,7 +184,7 @@
 <div class="filter-bar-country">
   <span class="filter-section-label" style="color:#C4C1D4;font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap">국가</span>
   <div style="width:1px;height:14px;background:#E4E1EE;flex-shrink:0"></div>
-  {% set _clist = [('vietnam','🇻🇳 베트남'),('china','🇨🇳 중국'),('hongkong','🇭🇰 홍콩'),('macau','🇲🇴 마카오'),('philippines','🇵🇭 필리핀'),('thailand','🇹🇭 태국'),('laos','🇱🇦 라오스'),('japan','🇯🇵 일본'),('taiwan','🇹🇼 대만'),('mongolia','🇲🇳 몽골'),('singapore','🇸🇬 싱가포르'),('cambodia','🇰🇭 캄보디아'),('guam_saipan','🏝️ 괌·사이판')] %}
+  {% set _clist = [('vietnam','🇻🇳 베트남'),('china','🇨🇳 중국'),('hongkong','🇭🇰 홍콩'),('macau','🇲🇴 마카오'),('philippines','🇵🇭 필리핀'),('thailand','🇹🇭 태국'),('laos','🇱🇦 라오스'),('japan','🇯🇵 일본'),('taiwan','🇹🇼 대만'),('mongolia','🇲🇳 몽골'),('singapore','🇸🇬 싱가포르'),('cambodia','🇰🇭 캄보디아'),('indonesia','🇮🇩 인도네시아'),('guam_saipan','🏝️ 괌·사이판')] %}
   {% for code, label in _clist %}
   <a href="?country={{ code }}&{{ _fchan }}" class="filter-chip-country {% if filters.country == code %}active{% endif %}">{{ label }}</a>
   {% endfor %}
