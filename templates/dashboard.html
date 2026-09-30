@@ -147,7 +147,7 @@
 <div class="filter-bar" style="border-top:0.5px solid #F0EDF7">
   <span class="filter-section-label">감성</span>
   <a href="?{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
-     class="filter-chip {% if not filters.sentiment and not filters.urgent and not filters.category and not filters.reply_status %}active{% endif %}">전체</a>
+     class="filter-chip {% if not filters.sentiment and not filters.urgent and not filters.category and not filters.reply_status and not filters.relevance %}active{% endif %}">전체</a>
   <a href="?urgent=1&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
      class="filter-chip chip-red {% if filters.urgent == '1' %}active{% endif %}">🔴 긴급</a>
   <a href="?sentiment=negative&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
@@ -178,7 +178,17 @@
      class="filter-chip {% if filters.reply_status == '확인완료' %}active{% endif %}">확인완료</a>
   <a href="?reply_status=답변완료&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
      class="filter-chip chip-green {% if filters.reply_status == '답변완료' %}active{% endif %}">답변완료</a>
+  <div class="filter-sep"></div>
+  <span class="filter-section-label">관련성</span>
+  <a href="?relevance=irrelevant&{{ _fbase }}&channel={{ filters.channel }}&country={{ filters.country }}"
+     class="filter-chip {% if filters.relevance == 'irrelevant' %}active{% endif %}" title="AI가 GLN 서비스와 무관하다고 판단해 목록에서 제외한 게시글">🚫 무관 처리됨</a>
 </div>
+
+{% if filters.relevance == 'irrelevant' %}
+<div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:12px;color:#6B7280">
+  AI가 키워드는 매칭됐지만 GLN 서비스와 무관하다고 판단해 평소 목록에서 제외한 게시글입니다. 오분류로 보이면 확인해주세요.
+</div>
+{% endif %}
 
 <!-- 국가 필터 -->
 <div class="filter-bar-country">

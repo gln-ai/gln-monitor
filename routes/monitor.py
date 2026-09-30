@@ -112,8 +112,11 @@ def dashboard():
     date_to      = request.args.get("date_to", today_str)
     channel      = request.args.get("channel", "")
     reply_status = request.args.get("reply_status", "")
+    relevance    = request.args.get("relevance", "")  # "" = 관련 게시글만(기본), "irrelevant" = 무관 처리된 것만
 
-    query = """
+    _relevance_where = "a.is_relevant = 0" if relevance == "irrelevant" else "(a.is_relevant IS NULL OR a.is_relevant = 1)"
+
+    query = f"""
         SELECT p.id, p.title, p.link, p.cafe_name, p.post_date, p.is_urgent,
                p.keyword, p.created_at, p.reply_status, p.status_updated_at,
                p.description,
@@ -121,7 +124,7 @@ def dashboard():
                a.country AS ai_country
         FROM posts p
         LEFT JOIN ai_analysis a ON p.id = a.post_id
-        WHERE (a.is_relevant IS NULL OR a.is_relevant = 1)
+        WHERE {_relevance_where}
     """
     args = []
     if sentiment:
@@ -151,10 +154,10 @@ def dashboard():
     per_page = 50
     offset   = (page - 1) * per_page
 
-    count_query = """
+    count_query = f"""
         SELECT COUNT(*) FROM posts p
         LEFT JOIN ai_analysis a ON p.id = a.post_id
-        WHERE (a.is_relevant IS NULL OR a.is_relevant = 1)
+        WHERE {_relevance_where}
     """
     count_args = []
     if sentiment:
@@ -237,7 +240,8 @@ def dashboard():
         competitor_label=COMPETITOR_LABEL,
         filters={"sentiment": sentiment, "category": category,
                  "urgent": urgent, "date_from": date_from, "date_to": date_to,
-                 "channel": channel, "reply_status": reply_status, "country": country},
+                 "channel": channel, "reply_status": reply_status, "country": country,
+                 "relevance": relevance},
         page=page, total_pages=total_pages, total=total
     )
 
