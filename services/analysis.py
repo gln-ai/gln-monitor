@@ -5,7 +5,7 @@ import json
 import os
 import threading
 
-from config import APPS_ROOT, ANALYSIS_MODEL_ID
+from config import SHARED_DIR, ANALYSIS_MODEL_ID
 from db import get_db
 from utils import get_claude_client
 
@@ -24,7 +24,7 @@ def _get_alert_setting(key: str, default: str = "1") -> str:
 # ─── fact_db 서비스 현황 ────────────────────────────────────────────────────────
 
 def _load_fact_db() -> dict:
-    path = os.path.join(APPS_ROOT, "shared", "fact_db.json")
+    path = os.path.join(SHARED_DIR, "fact_db.json")
     try:
         with open(path, encoding="utf-8") as f:
             return json.load(f)
@@ -68,12 +68,31 @@ def _build_country_reference(fdb: dict) -> str:
         name = info.get("name_ko", code)
         qr = "QR지원" if info.get("qr_payment") else "QR미지원"
         atm = "ATM지원" if info.get("atm") else "ATM미지원"
-        cities = ",".join(info.get("major_cities", [])[:4])
+        cities = ",".join(info.get("major_cities", []))
         line = f"- {name}({code}): {qr}/{atm}"
         if cities:
             line += f" | 주요도시: {cities}"
         lines.append(line)
     return "\n".join(lines)
+
+
+def _infer_cafe_country(cafe_name: str, fdb: dict) -> str:
+    """카페 이름 자체에서 국가를 추정. 네이버 여행카페는 보통 특정 국가/지역
+    전문으로 운영되고 이름에 국가명이나 주요도시가 들어가 있어서(예: "베나자-
+    베트남나트랑자유여행...", "태사랑- 태국,방콕,치앙마이...") 게시글 본문보다
+    훨씬 신뢰도 높은 신호가 됨. 카페명은 자기 소개용 고정 텍스트라 본문 중
+    우연한 단어 포함(예: "홍콩반점")과 달리 오탐 위험이 낮음."""
+    if not cafe_name:
+        return ""
+    for code, info in fdb.get("countries", {}).items():
+        name_ko = info.get("name_ko", "")
+        if name_ko and name_ko in cafe_name:
+            return code
+    for code, info in fdb.get("countries", {}).items():
+        for city in info.get("major_cities", []):
+            if city in cafe_name:
+                return code
+    return ""
 
 
 _FACT_DB_CACHE = _load_fact_db()
@@ -132,7 +151,8 @@ ANALYSIS_PROMPT = """당신은 핀테크 브랜드 'GLN' 소셜미디어 모니�
 
 게시글 제목: {title}
 게시글 내용 요약: {description}
-{competitor_note}
+게시글이 올라온 카페: {cafe_name}
+{cafe_hint}{competitor_note}
 응답 형식:
 {{
   "summary": "2~3문장 요약",
@@ -144,8 +164,12 @@ ANALYSIS_PROMPT = """당신은 핀테크 브랜드 'GLN' 소셜미디어 모니�
   "reason": "중요도 판단 근거 한 줄"
 }}
 
-country 판단: 국가명·주요도시·문맥으로 명확히 특정되면 위 목록의 code를 반환. 여러 국가가 언급돼도
-글의 실제 주제인 국가 하나만 고르고, 특정 국가가 아니면 빈 문자열.
+country 판단: 네이버 여행카페는 보통 특정 국가·지역 전문으로 운영되고 카페 이름에
+그게 드러남(예: "베나자-베트남나트랑자유여행", "태사랑- 태국,방콕,치앙마이"). 게시글
+본문에 국가 언급이 없는 경우가 많으니, "카페 추정 국가"가 주어지면 그걸 우선 신호로
+삼아 country를 판단하세요 — 게시글 내용이 명백히 다른 나라를 다루는 경우에만 본문을
+따르세요. 카페 추정 국가가 없으면 게시글의 국가명·주요도시·문맥으로 판단. 여러 국가가
+언급돼도 글의 실제 주제인 국가 하나만 고르고, 특정 국가가 아니면 빈 문자열.
 
 category 판단:
 - 불만: 위 목록에서 "지원"으로 표시된 기능의 오류·장애·불편 신고
@@ -198,16 +222,25 @@ def _parse_json_response(text: str):
     return json.loads(text)
 
 
-def analyze_post(post_id: int, title: str, description: str, competitors: list[str] | None = None):
+def analyze_post(post_id: int, title: str, description: str, competitors: list[str] | None = None,
+                  cafe_name: str = ""):
     competitor_note = ""
     if competitors:
         labels = [COMPETITOR_LABEL.get(c, c) for c in competitors]
         competitor_note = f"\n감지된 경쟁사 언급: {', '.join(labels)} (GLN과 비교되는 맥락인지 판단해 중요도에 반영)\n"
 
+    cafe_hint = ""
+    cafe_country = _infer_cafe_country(cafe_name, _FACT_DB_CACHE)
+    if cafe_country:
+        label = _FACT_DB_CACHE.get("countries", {}).get(cafe_country, {}).get("name_ko", cafe_country)
+        cafe_hint = f"카페 추정 국가: {label}({cafe_country})\n"
+
     prompt = ANALYSIS_PROMPT.format(
         country_reference=COUNTRY_REFERENCE,
         title=title,
         description=description or "내용 없음",
+        cafe_name=cafe_name or "(알 수 없음)",
+        cafe_hint=cafe_hint,
         competitor_note=competitor_note,
     )
     try:
@@ -273,7 +306,8 @@ def process_unanalyzed():
         full_text   = f"{row['title']} {row['description'] or ''}"
         competitors = detect_competitors(full_text)
 
-        analysis = analyze_post(post_id, row["title"], row["description"], competitors=competitors)
+        analysis = analyze_post(post_id, row["title"], row["description"], competitors=competitors,
+                                 cafe_name=row["cafe_name"] or "")
         if not analysis:
             continue
 
